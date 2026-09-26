@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pit Lane Live Board — panel prototype</title>
+<!--
+  Phase 3 of SPEC §19: the design of every panel page, navigable, in both
+  languages, light and dark, at phone width. The Lit panel reproduces it.
+  Colours come from Home Assistant's theme variables, emulated here.
+  Data is illustrative.
+-->
+<style>
+:root {
+  --primary-color: #03a9f4;
+  --primary-background-color: #fafafa;
+  --secondary-background-color: #e5e5e5;
+  --card-background-color: #ffffff;
+  --primary-text-color: #212121;
+  --secondary-text-color: #727272;
+  --divider-color: rgba(0, 0, 0, 0.12);
+  --error-color: #db4437;
+  --warning-color: #ffa600;
+  --success-color: #43a047;
+  --ha-card-border-radius: 12px;
+}
+:root[data-theme="dark"] {
+  --primary-background-color: #111111;
+  --secondary-background-color: #282828;
+  --card-background-color: #1c1c1c;
+  --primary-text-color: #e1e1e1;
+  --secondary-text-color: #9b9b9b;
+  --divider-color: rgba(225, 225, 225, 0.12);
+}
+
+/* ---- Panel tokens (these become the Lit panel's styles) ---- */
+:root {
+  --plb-purple: #a24bdb;
+  --plb-green: #1fa855;
+  --plb-yellow: #e0b000;
+  --plb-soft: #e8333a;
+  --plb-medium: #f2c200;
+  --plb-hard: #eeeeee;
+  --plb-inter: #3aa845;
+  --plb-wet: #2f7de1;
+  --plb-unknown: #8a8a8a;
+  --plb-row-alt: color-mix(in srgb, var(--primary-text-color) 3%, transparent);
+  --plb-muted: color-mix(in srgb, var(--primary-text-color) 55%, transparent);
+  --plb-radius: var(--ha-card-border-radius, 12px);
+  --plb-gap: 16px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Roboto, "Segoe UI", system-ui, sans-serif;
+  background: var(--primary-background-color);
+  color: var(--primary-text-color);
+  -webkit-font-smoothing: antialiased;
+}
+.num { font-variant-numeric: tabular-nums; }
+
+/* Prototype controls (not part of the panel) */
+.proto {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 8px 16px; background: #263238; color: #eceff1; font-size: 13px;
+}
+.proto b { margin-right: 4px; }
+.proto button {
+  background: #37474f; color: inherit; border: 0; border-radius: 6px;
+  padding: 4px 10px; cursor: pointer; font: inherit;
+}
+.proto button.on { background: #03a9f4; color: #000; }
+.proto .sep { width: 1px; height: 20px; background: #546e7a; margin: 0 4px; }
+
+/* ---- App bar ---- */
+.appbar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 12px;
+  height: 56px; padding: 0 16px;
+  background: var(--card-background-color);
+  border-bottom: 1px solid var(--divider-color);
+}
+.brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 500; white-space: nowrap; }
+.brand-mark {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary-color), #7c4dff);
+  display: grid; place-items: center; color: #fff;
+}
+.tabs { display: flex; gap: 4px; margin-left: 8px; }
+.tab {
+  border: 0; background: none; color: var(--secondary-text-color);
+  font: inherit; font-size: 14px; font-weight: 500; letter-spacing: .02em;
+  padding: 8px 14px; border-radius: 18px; cursor: pointer;
+}
+.tab.active { color: var(--primary-color); background: color-mix(in srgb, var(--primary-color) 14%, transparent); }
+.spacer { flex: 1; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 12px; border-radius: 16px;
+  border: 1px solid var(--divider-color); background: none;
+  color: var(--primary-text-color); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
+}
+.chip svg { width: 18px; height: 18px; fill: currentColor; }
+.chip.on { background: color-mix(in srgb, var(--primary-color) 16%, transparent); border-color: transparent; color: var(--primary-color); }
+.chip.warn { color: var(--warning-color); }
+
+main { padding: var(--plb-gap); max-width: 1480px; margin: 0 auto; }
+.card {
+  background: var(--card-background-color);
+  border-radius: var(--plb-radius);
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
+  overflow: hidden;
+}
+.card-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px; border-bottom: 1px solid var(--divider-color);
+  font-size: 15px; font-weight: 500;
+}
+.card-head .spacer { flex: 1; }
+.card-head small { color: var(--secondary-text-color); font-weight: 400; font-size: 12px; }
+.card-body { padding: 12px 16px; }
+footer.disclaimer {
+  max-width: 1480px; margin: 8px auto 24px; padding: 0 var(--plb-gap);
+  color: var(--secondary-text-color); font-size: 11px; line-height: 1.5;
+}
+
+/* ---- Live: session strip ---- */
+.strip {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  padding: 14px 18px; margin-bottom: var(--plb-gap);
+}
+.strip h1 { margin: 0; font-size: 20px; font-weight: 500; }
+.strip .sub { color: var(--secondary-text-color); font-size: 13px; }
+.laps { font-size: 26px; font-weight: 600; }
+.laps small { font-size: 14px; color: var(--secondary-text-color); font-weight: 400; }
+.status-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; letter-spacing: .04em;
+}
+.status-pill::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+.st-clear { background: color-mix(in srgb, var(--plb-green) 16%, transparent); color: var(--plb-green); }
+.st-yellow { background: color-mix(in srgb, var(--plb-yellow) 22%, transparent); color: #a07d00; }
+.st-sc, .st-vsc { background: #f2c200; color: #1a1a1a; }
+.st-red { background: var(--error-color); color: #fff; }
+.st-chequered { background: repeating-conic-gradient(#222 0 25%, #fff 0 50%) 0 0/12px 12px; color: #111; text-shadow: 0 0 3px #fff; }
+.age { color: var(--secondary-text-color); font-size: 12px; }
+
+/* ---- Live: layout ---- */
+.live-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--plb-gap); align-items: start; }
+.side, .main-col { display: grid; gap: var(--plb-gap); align-content: start; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--plb-gap); align-items: start; }
+@media (max-width: 640px) { .pair { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .live-grid { grid-template-columns: 1fr; } }
+
+/* ---- Timing tower ---- */
+.tower { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tower th {
+  text-align: left; font-weight: 500; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--secondary-text-color); padding: 8px 6px; border-bottom: 1px solid var(--divider-color); white-space: nowrap;
+}
+.tower td { padding: 0 6px; height: 40px; border-bottom: 1px solid var(--divider-color); white-space: nowrap; }
+.tower tr:nth-child(even) td { background: var(--plb-row-alt); }
+.tower tr.sel td { background: color-mix(in srgb, var(--primary-color) 12%, transparent); }
+.tower tr.out td { color: var(--plb-muted); }
+.tower tr.zone td { border-bottom: 2px dashed var(--error-color); }
+.pos { width: 34px; text-align: center; font-weight: 600; font-size: 15px; }
+.drv { display: flex; align-items: center; gap: 8px; min-width: 110px; }
+.bar { width: 4px; height: 22px; border-radius: 2px; flex: none; }
+.tla { font-weight: 600; letter-spacing: .03em; }
+.drv small { color: var(--secondary-text-color); font-size: 11px; }
+.gained { font-size: 11px; font-weight: 600; min-width: 28px; }
+.up { color: var(--plb-green); } .down { color: var(--error-color); }
+.t { font-variant-numeric: tabular-nums; }
+.t.pb { color: var(--plb-green); font-weight: 600; }
+.t.ob { color: var(--plb-purple); font-weight: 600; }
+.t.prev { color: var(--plb-muted); }
+.sector { display: inline-block; min-width: 50px; }
+.tyre { display: inline-flex; align-items: center; gap: 6px; }
+.tyre-dot {
+  width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 11px; font-weight: 700; color: var(--primary-text-color);
+  border: 3px solid var(--c); background: var(--card-background-color);
+  /* The hard compound is white: a hairline keeps it visible on light themes. */
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 22%, transparent);
+}
+.tyre small { color: var(--secondary-text-color); font-size: 12px; }
+.tyre .used { font-size: 10px; color: var(--secondary-text-color); }
+@media (max-width: 640px) { .tyre .used, .gained { font-size: 10px; } .pos { width: 26px; } .tower td, .tower th { padding: 0 4px; } }
+.badge {
+  display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: .05em;
+  background: var(--secondary-background-color); color: var(--primary-text-color);
+}
+.badge.pit { background: #1e88e5; color: #fff; }
+.badge.out { background: #6d4c41; color: #fff; }
+.badge.ret { background: var(--error-color); color: #fff; }
+.badge.ko { background: var(--secondary-background-color); color: var(--secondary-text-color); }
+.col-s, .col-best { }
+@media (max-width: 900px) { .col-s { display: none; } }
+@media (max-width: 640px) {
+  .col-best, .col-int, .col-pits { display: none; }
+  .drv small { display: none; }
+  .tower td { height: 44px; }
+}
+
+/* ---- Side cards ---- */
+.map svg { display: block; width: 100%; height: auto; }
+.map .track { fill: none; stroke: var(--secondary-background-color); stroke-width: 18; stroke-linejoin: round; }
+.map .track-line { fill: none; stroke: var(--secondary-text-color); stroke-width: 3; opacity: .5; }
+.map .car text { font-size: 20px; font-weight: 700; fill: var(--primary-text-color); paint-order: stroke; stroke: var(--card-background-color); stroke-width: 5px; }
+.locked { padding: 20px 16px; color: var(--secondary-text-color); font-size: 13px; line-height: 1.5; display: grid; gap: 10px; justify-items: start; }
+.locked svg { width: 36px; height: 36px; fill: var(--secondary-text-color); opacity: .6; }
+.filters { display: flex; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--divider-color); }
+.filters .chip { height: 26px; font-size: 12px; padding: 0 10px; }
+.feed { max-height: 320px; overflow: auto; }
+.msg { display: grid; grid-template-columns: 44px 1fr; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--divider-color); font-size: 13px; }
+.msg .lap { color: var(--secondary-text-color); font-size: 12px; }
+.msg.flag { border-left: 3px solid var(--plb-yellow); }
+.msg.penalty { border-left: 3px solid var(--error-color); }
+.msg time { display: block; color: var(--secondary-text-color); font-size: 11px; margin-top: 2px; }
+.radio { display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-bottom: 1px solid var(--divider-color); font-size: 13px; }
+.play { width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--primary-color); color: #fff; cursor: pointer; display: grid; place-items: center; flex: none; }
+.play svg { width: 18px; height: 18px; fill: currentColor; }
+.radio time { margin-left: auto; color: var(--secondary-text-color); font-size: 12px; }
+.weather { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 12px 16px; }
+.weather div { display: grid; gap: 2px; }
+.weather small { color: var(--secondary-text-color); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.weather b { font-size: 18px; font-weight: 500; }
+.pits-list { font-size: 13px; }
+.pits-list div { display: flex; gap: 12px; padding: 7px 16px; border-bottom: 1px solid var(--divider-color); }
+.pits-list span:last-child { margin-left: auto; }
+
+/* ---- States ---- */
+.state {
+  display: grid; justify-items: center; gap: 12px; text-align: center;
+  padding: 56px 24px; color: var(--secondary-text-color);
+}
+.state h2 { margin: 0; color: var(--primary-text-color); font-weight: 500; font-size: 22px; }
+.state .big { font-size: 44px; font-weight: 300; color: var(--primary-text-color); }
+.state svg { width: 56px; height: 56px; fill: currentColor; opacity: .5; }
+.banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; margin-bottom: var(--plb-gap); border-radius: 10px; font-size: 14px;
+  background: color-mix(in srgb, var(--warning-color) 16%, transparent); color: var(--primary-text-color);
+}
+.banner.lost { background: color-mix(in srgb, var(--error-color) 16%, transparent); }
+.banner svg { width: 20px; height: 20px; fill: currentColor; flex: none; }
+.dim { opacity: .45; filter: grayscale(.6); }
+
+/* ---- Delay popover ---- */
+.pop {
+  position: absolute; right: 16px; top: 60px; width: 300px; padding: 16px;
+  display: none; gap: 12px; z-index: 10;
+}
+.pop.open { display: grid; }
+.pop h3 { margin: 0; font-size: 15px; font-weight: 500; }
+.pop p { margin: 0; color: var(--secondary-text-color); font-size: 12px; line-height: 1.5; }
+.stepper { display: flex; align-items: center; gap: 10px; }
+.stepper button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--divider-color); background: none; color: inherit; font-size: 18px; cursor: pointer; }
+.stepper b { font-size: 24px; font-weight: 500; min-width: 64px; text-align: center; }
+input[type=range] { width: 100%; accent-color: var(--primary-color); }
+
+/* ---- Calendar ---- */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: var(--plb-gap); }
+.toolbar h1 { margin: 0 8px 0 0; font-size: 22px; font-weight: 500; }
+select {
+  height: 36px; border-radius: 8px; border: 1px solid var(--divider-color);
+  background: var(--card-background-color); color: var(--primary-text-color); padding: 0 10px; font: inherit;
+}
+.cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--plb-gap); align-items: start; }
+.meet { display: grid; }
+.meet-head { display: flex; align-items: baseline; gap: 10px; padding: 14px 16px 6px; }
+.round { font-size: 12px; font-weight: 600; color: var(--secondary-text-color); letter-spacing: .06em; }
+.meet h3 { margin: 0; font-size: 17px; font-weight: 500; }
+.meet .where { padding: 0 16px 10px; color: var(--secondary-text-color); font-size: 13px; }
+.meet .flagline { display: flex; align-items: center; gap: 6px; padding: 0 16px 10px; }
+.podium { display: grid; gap: 4px; padding: 0 16px 10px; font-size: 13px; }
+.podium div { display: flex; align-items: center; gap: 8px; }
+.podium b { width: 18px; color: var(--secondary-text-color); font-weight: 500; }
+.meet ul { list-style: none; margin: 0; padding: 0 16px 12px; display: grid; gap: 6px; font-size: 13px; }
+.meet li { display: flex; gap: 10px; }
+.meet li span:first-child { width: 150px; color: var(--secondary-text-color); }
+.meet.done { opacity: .72; }
+.meet.next { outline: 2px solid var(--primary-color); }
+.meet.live { outline: 2px solid var(--error-color); }
+.countdown { margin: 0 16px 14px; padding: 10px 12px; border-radius: 8px; background: color-mix(in srgb, var(--primary-color) 10%, transparent); font-size: 13px; }
+.countdown b { font-size: 18px; font-weight: 500; }
+.linkish { color: var(--primary-color); font-size: 13px; padding: 0 16px 14px; cursor: pointer; }
+.pill { font-size: 10px; font-weight: 700; letter-spacing: .06em; padding: 2px 8px; border-radius: 10px; background: var(--secondary-background-color); }
+.pill.sprint { background: #7c4dff; color: #fff; }
+.pill.live { background: var(--error-color); color: #fff; }
+
+/* ---- Results ---- */
+.rounds { width: 100%; border-collapse: collapse; font-size: 14px; }
+.rounds td, .rounds th { padding: 10px 14px; border-bottom: 1px solid var(--divider-color); text-align: left; }
+.rounds th { font-size: 11px; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: .06em; font-weight: 500; }
+.rounds tr { cursor: pointer; }
+.rounds tr:hover td { background: var(--plb-row-alt); }
+.hidden-cell { color: var(--secondary-text-color); font-style: italic; }
+.subtabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--divider-color); }
+.subtabs .tab { font-size: 13px; padding: 6px 12px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl td, .tbl th { padding: 8px 12px; border-bottom: 1px solid var(--divider-color); text-align: left; white-space: nowrap; }
+.tbl th { font-size: 11px; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: .06em; font-weight: 500; }
+.tbl .r { text-align: right; }
+.chart { padding: 12px 8px 16px; overflow-x: auto; }
+.chart svg { display: block; min-width: 640px; width: 100%; height: auto; }
+.chart .axis { stroke: var(--divider-color); }
+.chart text { fill: var(--secondary-text-color); font-size: 11px; }
+.back { border: 0; background: none; color: var(--primary-color); font: inherit; cursor: pointer; padding: 0; }
+.reveal { display: grid; justify-items: center; gap: 10px; padding: 40px; color: var(--secondary-text-color); }
+.btn { height: 36px; padding: 0 16px; border-radius: 18px; border: 0; background: var(--primary-color); color: #fff; font: inherit; font-weight: 500; cursor: pointer; }
+.btn.flat { background: none; color: var(--primary-color); border: 1px solid var(--divider-color); }
+
+/* ---- Standings ---- */
+.pts { display: flex; align-items: center; gap: 8px; }
+.pts .fill { height: 6px; border-radius: 3px; background: var(--c, var(--primary-color)); }
+.note { font-size: 12px; color: var(--secondary-text-color); padding: 10px 16px; border-top: 1px solid var(--divider-color); }
+
+@media (max-width: 640px) {
+  .appbar { gap: 6px; padding: 8px 8px 0; height: auto; flex-wrap: wrap; }
+  .tabs { order: 3; width: 100%; margin: 0; overflow-x: auto; }
+  .tab { flex: 1; }
+  .tab { padding: 8px 10px; }
+  .chip .label { display: none; }
+  main { padding: 10px; }
+  .cal { grid-template-columns: 1fr; }
+  .meet li span:first-child { width: 120px; }
+}
+</style>
+</head>
+<body>
+<div class="proto" id="proto"></div>
+<header class="appbar">
+  <div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 5h2v14H3zM7 5h14v2H7zm0 4h10v2H7zm0 4h14v2H7zm0 4h8v2H7z"/></svg></div><span>Live Board</span></div>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="spacer"></div>
+  <button class="chip" id="delayChip"></button>
+  <button class="chip" id="spoilerChip"></button>
+</header>
+<div class="card pop" id="pop"></div>
+<main id="main"></main>
+<footer class="disclaimer" id="foot"></footer>
+
+<script>
+const ICON = {
+  clock: "M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16m0-18a10 10 0 1 1 0 20 10 10 0 0 1 0-20m.5 5v5.25l4.5 2.67-.75 1.23L11 13V7z",
+  eyeOff: "M11.83 9 15 12.16V12a3 3 0 0 0-3-3zm-4.3.8 1.55 1.55A3 3 0 0 0 12 15c.22 0 .44-.03.65-.08l1.55 1.55A5 5 0 0 1 7 12c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28.45.45A11.8 11.8 0 0 0 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22 21 20.73 3.27 3zM12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7",
+  eye: "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m0 8a5 5 0 1 1 0-10 5 5 0 0 1 0 10m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5",
+  play: "M8 5.14v14l11-7z",
+  lock: "M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 10 0v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3",
+  alert: "M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2z",
+  flag: "M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z",
+  timer: "M12 20a7 7 0 1 1 0-14 7 7 0 0 1 0 14m7.03-12.61 1.42-1.42c-.45-.51-.9-.97-1.41-1.41L17.62 6c-1.55-1.26-3.5-2-5.62-2a9 9 0 1 0 9 9c0-2.12-.74-4.07-1.97-5.61M11 14h2V8h-2m4-7H9v2h6z",
+};
+const svg = (d) => `<svg viewBox="0 0 24 24"><path d="${d}"/></svg>`;
+
+const T = {
+  en: {
+    live: "Live", calendar: "Calendar", results: "Results", standings: "Standings",
+    delay: "TV delay", delaySub: "Hold the page, the team radio and your automations back to match your TV or stream.",
+    delayOff: "No delay", noSpoiler: "No spoilers", spoilersShown: "Spoilers shown",
+    lap: "Lap", pos: "Pos", driver: "Driver", gap: "Gap", int: "Int", last: "Last", best: "Best", s1: "S1", s2: "S2", s3: "S3", tyre: "Tyre", pits: "Pits",
+    raceControl: "Race control", all: "All", flags: "Flags", penalties: "Penalties", other: "Other",
+    radio: "Team radio", weather: "Weather", air: "Air", track: "Track", humidity: "Humidity", wind: "Wind", rain: "Rain", pressure: "Pressure", dry: "Dry",
+    map: "Track map", mapLocked: "The live map needs an F1TV subscription. Add your token under Settings → Devices & services → Pit Lane Live Board → Configure.",
+    howTo: "How to add it", pitStops: "Pit stops", pitLane: "pit lane",
+    clear: "TRACK CLEAR", yellow: "YELLOW FLAG", sc: "SAFETY CAR", vsc: "VIRTUAL SAFETY CAR", red: "RED FLAG", chequered: "CHEQUERED FLAG",
+    age: "updated 0.4 s ago", idleTitle: "No session running", idleNext: "Next: Azerbaijan Grand Prix — Race", startsIn: "starts in",
+    syncing: "Syncing with your TV delay", syncingSub: "The first data is held back 45 s, like everything else.",
+    hiddenTitle: "No-spoiler mode is on", hiddenSub: "Spanish Grand Prix — Race is in progress. Turn the mode off when you have caught up.",
+    showAnyway: "Show everything", stale: "Live feed lost — reconnecting. Data is 38 s old.", lost: "Live feed lost for over a minute. Nothing here is live.",
+    q: "Q", knocked: "OUT", remaining: "remaining", noRadio: "No team radio published for this session yet.",
+    season: "Season", round: "Round", grandPrix: "Grand Prix", date: "Date", winner: "Winner", hidden: "Hidden — reveal",
+    race: "Race", qualifying: "Qualifying", sprint: "Sprint", lapChart: "Lap chart", strategy: "Tyre strategy", lapTimes: "Lap times", pitStopsTab: "Pit stops", rc: "Race control",
+    grid: "Grid", laps: "Laps", time: "Time / status", points: "Pts", fastest: "Fastest lap",
+    drivers: "Drivers", constructors: "Constructors", after: "After round", wins: "Wins", behind: "Behind", change: "+/−",
+    capNote: "No-spoiler mode: showing the standings before the Spanish Grand Prix.",
+    back: "All rounds", sprintWeekend: "SPRINT", done: "Results", next: "NEXT", liveNow: "LIVE NOW",
+    p1: "Practice 1", p2: "Practice 2", p3: "Practice 3", sq: "Sprint Qualifying", r: "Race", ql: "Qualifying", sp: "Sprint",
+    disclaimer: "Pit Lane Live Board is unofficial and is not associated in any way with the Formula 1 companies. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX and related marks are trade marks of Formula One Licensing B.V. Results and standings: Jolpica-F1 (CC BY-NC-SA 4.0).",
+    reveal: "Reveal this session", revealNote: "No-spoiler mode hides the Spanish Grand Prix.",
+  },
+  it: {
+    live: "Live", calendar: "Calendario", results: "Risultati", standings: "Classifiche",
+    delay: "Ritardo TV", delaySub: "Trattiene la pagina, i team radio e le tue automazioni per allinearli alla TV o allo streaming.",
+    delayOff: "Nessun ritardo", noSpoiler: "Senza spoiler", spoilersShown: "Spoiler visibili",
+    lap: "Giro", pos: "Pos", driver: "Pilota", gap: "Distacco", int: "Int", last: "Ultimo", best: "Migliore", s1: "S1", s2: "S2", s3: "S3", tyre: "Gomma", pits: "Soste",
+    raceControl: "Direzione gara", all: "Tutti", flags: "Bandiere", penalties: "Penalità", other: "Altro",
+    radio: "Team radio", weather: "Meteo", air: "Aria", track: "Pista", humidity: "Umidità", wind: "Vento", rain: "Pioggia", pressure: "Pressione", dry: "Asciutto",
+    map: "Mappa della pista", mapLocked: "La mappa live richiede un abbonamento F1TV. Aggiungi il tuo token in Impostazioni → Dispositivi e servizi → Pit Lane Live Board → Configura.",
+    howTo: "Come aggiungerlo", pitStops: "Pit stop", pitLane: "corsia box",
+    clear: "PISTA LIBERA", yellow: "BANDIERA GIALLA", sc: "SAFETY CAR", vsc: "VIRTUAL SAFETY CAR", red: "BANDIERA ROSSA", chequered: "BANDIERA A SCACCHI",
+    age: "aggiornato 0,4 s fa", idleTitle: "Nessuna sessione in corso", idleNext: "Prossima: GP dell'Azerbaigian — Gara", startsIn: "inizia tra",
+    syncing: "Sincronizzazione con il ritardo TV", syncingSub: "Anche i primi dati vengono trattenuti di 45 s, come tutto il resto.",
+    hiddenTitle: "Modalità senza spoiler attiva", hiddenSub: "Gran Premio di Spagna — Gara è in corso. Disattiva la modalità quando sei in pari.",
+    showAnyway: "Mostra tutto", stale: "Collegamento live perso — riconnessione. I dati hanno 38 s.", lost: "Collegamento live perso da oltre un minuto. Niente qui è in diretta.",
+    q: "Q", knocked: "FUORI", remaining: "rimanenti", noRadio: "Nessun team radio pubblicato per questa sessione.",
+    season: "Stagione", round: "Gara", grandPrix: "Gran Premio", date: "Data", winner: "Vincitore", hidden: "Nascosto — mostra",
+    race: "Gara", qualifying: "Qualifiche", sprint: "Sprint", lapChart: "Posizioni giro per giro", strategy: "Strategia gomme", lapTimes: "Tempi sul giro", pitStopsTab: "Pit stop", rc: "Direzione gara",
+    grid: "Griglia", laps: "Giri", time: "Tempo / stato", points: "Punti", fastest: "Giro veloce",
+    drivers: "Piloti", constructors: "Costruttori", after: "Dopo la gara", wins: "Vittorie", behind: "Distacco", change: "+/−",
+    capNote: "Modalità senza spoiler: la classifica prima del Gran Premio di Spagna.",
+    back: "Tutte le gare", sprintWeekend: "SPRINT", done: "Risultati", next: "PROSSIMO", liveNow: "IN DIRETTA",
+    p1: "Prove libere 1", p2: "Prove libere 2", p3: "Prove libere 3", sq: "Qualifiche sprint", r: "Gara", ql: "Qualifiche", sp: "Sprint",
+    disclaimer: "Pit Lane Live Board non è ufficiale e non è in alcun modo associato alle società della Formula 1. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX e i marchi correlati sono marchi di Formula One Licensing B.V. Risultati e classifiche: Jolpica-F1 (CC BY-NC-SA 4.0).",
+    reveal: "Mostra questa sessione", revealNote: "La modalità senza spoiler nasconde il Gran Premio di Spagna.",
+  },
+};
+
+const S = { page: "live", live: "race", theme: "light", lang: "en", delay: 45, noSpoiler: false, f1tv: true, pop: false, detail: false, tab: "race", standings: "drivers", selected: "16" };
+const t = (k) => T[S.lang][k] ?? k;
+const TEAM = { mercedes: "#27F4D2", ferrari: "#E8002D", mclaren: "#F47600", redbull: "#3671C6", aston: "#229971", williams: "#1868DB", alpine: "#00A1E8", haas: "#B6BABD", sauber: "#52E252", rb: "#6692FF", cadillac: "#909090" };
+const COMP = { soft: "--plb-soft", medium: "--plb-medium", hard: "--plb-hard", intermediate: "--plb-inter", wet: "--plb-wet" };
+
+const tower = [
+  ["1", "16", "LEC", "Charles Leclerc", "ferrari", "LAP 34", "", "1:38.214", "1:37.402", ["29.8", "35.1", "33.3"], ["", "pb", ""], "hard", false, 18, 1, 2, ""],
+  ["2", "12", "ANT", "Andrea Kimi Antonelli", "mercedes", "+1.227", "+1.227", "1:38.102", "1:37.018", ["29.7", "35.0", "33.4"], ["ob", "", ""], "hard", true, 20, 1, 0, ""],
+  ["3", "1", "NOR", "Lando Norris", "mclaren", "+8.328", "+7.101", "1:38.554", "1:37.550", ["29.9", "35.3", "33.3"], ["", "", "pb"], "medium", true, 12, 1, -2, ""],
+  ["4", "63", "RUS", "George Russell", "mercedes", "+11.761", "+3.433", "1:39.081", "1:37.811", ["30.1", "35.4", "33.6"], ["", "", ""], "medium", false, 14, 1, 1, ""],
+  ["5", "3", "VER", "Max Verstappen", "redbull", "+15.426", "+3.665", "1:37.985", "1:37.985", ["29.6", "35.2", "33.2"], ["pb", "", "ob"], "hard", true, 6, 2, 3, ""],
+  ["6", "81", "PIA", "Oscar Piastri", "mclaren", "+19.004", "+3.578", "1:38.771", "1:37.690", ["30.0", "35.2", ""], ["", "", ""], "hard", true, 21, 1, -1, "PIT"],
+  ["7", "44", "HAM", "Lewis Hamilton", "ferrari", "+24.310", "+5.306", "1:39.402", "1:38.012", ["30.4", "35.6", "33.4"], ["", "", ""], "soft", true, 2, 2, 3, "OUT"],
+  ["8", "14", "ALO", "Fernando Alonso", "aston", "+31.822", "+7.512", "1:39.118", "1:38.330", ["30.2", "35.5", "33.4"], ["", "", ""], "hard", false, 22, 1, 4, ""],
+  ["9", "23", "ALB", "Alexander Albon", "williams", "+36.004", "+4.182", "1:39.557", "1:38.644", ["30.3", "35.7", "33.5"], ["", "", ""], "medium", true, 16, 1, -3, ""],
+  ["10", "10", "GAS", "Pierre Gasly", "alpine", "+41.980", "+5.976", "1:39.890", "1:38.910", ["30.6", "35.8", "33.5"], ["", "", ""], "hard", true, 19, 1, 1, ""],
+  ["—", "55", "SAI", "Carlos Sainz", "williams", "", "", "1:52.330", "1:39.004", ["", "", ""], ["", "", ""], "medium", true, 6, 0, null, "RET"],
+];
+
+function tyreCell(c, isNew, age) {
+  return `<span class="tyre"><span class="tyre-dot" style="--c:var(${COMP[c]})">${c[0].toUpperCase()}</span><small class="num">${age}</small>${isNew ? "" : `<span class="used">${S.lang === "it" ? "usata" : "used"}</span>`}</span>`;
+}
+
+function towerHtml(kind) {
+  const q = kind === "qualifying";
+  const head = q
+    ? `<tr><th class="pos">${t("pos")}</th><th>${t("driver")}</th><th>Q1</th><th>Q2</th><th class="col-s">Q3</th><th>${t("gap")}</th><th class="col-s">${t("s1")}</th><th class="col-s">${t("s2")}</th><th class="col-s">${t("s3")}</th><th>${t("tyre")}</th></tr>`
+    : `<tr><th class="pos">${t("pos")}</th><th>${t("driver")}</th><th></th><th>${t("gap")}</th><th class="col-int">${t("int")}</th><th>${t("last")}</th><th class="col-best">${t("best")}</th><th class="col-s">${t("s1")}</th><th class="col-s">${t("s2")}</th><th class="col-s">${t("s3")}</th><th>${t("tyre")}</th><th class="col-pits">${t("pits")}</th></tr>`;
+  const rows = tower.map((r, i) => {
+    const [pos, num, tla, name, team, gap, int, last, best, sec, flags, comp, isNew, age, pits, gained, badge] = r;
+    const g = gained === null ? "" : gained > 0 ? `<span class="gained up">▲${gained}</span>` : gained < 0 ? `<span class="gained down">▼${-gained}</span>` : `<span class="gained" style="color:var(--secondary-text-color)">–</span>`;
+    const b = badge ? `<span class="badge ${badge === "PIT" ? "pit" : badge === "OUT" ? "out" : "ret"}">${badge}</span>` : "";
+    const secs = sec.map((s, j) => `<td class="col-s"><span class="t sector ${flags[j]} ${s ? "" : "prev"}">${s || "—"}</span></td>`).join("");
+    const cls = [num === S.selected ? "sel" : "", badge === "RET" ? "out" : "", q && i === 9 ? "zone" : "", q && i > 9 ? "out" : ""].join(" ");
+    const drv = `<td><div class="drv"><span class="bar" style="background:${TEAM[team]}"></span><span class="tla">${tla}</span><small>${num}</small>${b}</div></td>`;
+    if (q) {
+      const ko = i > 9 ? `<span class="badge ko">${t("knocked")}</span>` : "";
+      return `<tr class="${cls}"><td class="pos num">${pos === "—" ? "11" : pos}</td>${drv.replace("</div>", ko + "</div>")}<td class="t">1:3${3 + (i % 3)}.${(412 + i * 37) % 1000}</td><td class="t ${i === 0 ? "ob" : ""}">${i > 9 ? "" : "1:32." + (873 + i * 41) % 1000}</td><td class="t col-s">${i > 9 ? "" : i < 3 ? "1:31." + (824 + i * 61) : ""}</td><td class="t">${i === 0 ? "" : "+0." + String(100 + i * 58).slice(0, 3)}</td>${secs}<td>${tyreCell(i % 2 ? "soft" : "soft", i % 3 !== 0, 3 + (i % 4))}</td></tr>`;
+    }
+    return `<tr class="${cls}"><td class="pos num">${pos}</td>${drv}<td>${g}</td><td class="t">${gap}</td><td class="t col-int">${int}</td><td class="t ${flags[1] === "pb" ? "pb" : ""}">${last}</td><td class="t col-best ${i === 1 ? "ob" : ""}">${best}</td>${secs}<td>${tyreCell(comp, isNew, age)}</td><td class="num col-pits">${pits}</td></tr>`;
+  }).join("");
+  return `<table class="tower">${head}${rows}</table>`;
+}
+
+function mapSvg() {
+  // An illustrative outline (the real one is built from positions, SPEC §6.5).
+  const pts = [];
+  for (let i = 0; i < 120; i++) {
+    const a = (i / 120) * Math.PI * 2;
+    const r = 1 + 0.18 * Math.sin(3 * a) + 0.08 * Math.cos(5 * a);
+    pts.push([500 + 420 * r * Math.cos(a), 250 + 190 * r * Math.sin(a)]);
+  }
+  const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ") + "Z";
+  const cars = tower.slice(0, 10).map((r, i) => {
+    const p = pts[(i * 9 + 7) % 120];
+    const sel = r[1] === S.selected;
+    return `<g class="car"><circle cx="${p[0]}" cy="${p[1]}" r="${sel ? 17 : 13}" fill="${TEAM[r[4]]}" stroke="${sel ? "var(--primary-text-color)" : "var(--card-background-color)"}" stroke-width="4"/><text x="${p[0] + 18}" y="${p[1] - 14}">${r[2]}</text></g>`;
+  }).join("");
+  return `<svg viewBox="0 0 1000 500"><path class="track" d="${d}"/><path class="track-line" d="${d}"/>${cars}</svg>`;
+}
+
+function sideHtml() {
+  const map = S.f1tv
+    ? `<div class="card map"><div class="card-head">${t("map")}<span class="spacer"></span><small>F1TV</small></div>${mapSvg()}</div>`
+    : `<div class="card map"><div class="card-head">${t("map")}</div><div class="locked">${svg(ICON.lock)}<div>${t("mapLocked")}</div><button class="btn flat">${t("howTo")}</button></div></div>`;
+  const rcm = [
+    ["flag", 34, "15:41:02", "YELLOW IN TRACK SECTOR 7"],
+    ["penalty", 33, "15:39:48", "FIA STEWARDS: 5 SECOND TIME PENALTY FOR CAR 44 (HAM) - LEAVING THE TRACK AND GAINING AN ADVANTAGE"],
+    ["other", 31, "15:36:10", "CAR 55 (SAI) STOPPED AT TURN 11"],
+    ["flag", 31, "15:36:02", "VIRTUAL SAFETY CAR DEPLOYED"],
+    ["other", 29, "15:33:40", "FIA STEWARDS: TURN 1 INCIDENT INVOLVING CARS 3 (VER) AND 23 (ALB) NOTED"],
+  ].map(([k, lap, time, m]) => `<div class="msg ${k}"><span class="lap num">${t("lap")} ${lap}</span><span>${m}<time>${time}</time></span></div>`).join("");
+  const radio = [["LEC", "ferrari", "15:40:12"], ["NOR", "mclaren", "15:37:55"], ["VER", "redbull", "15:34:20"]]
+    .map(([tla, team, time]) => `<div class="radio"><button class="play" aria-label="play">${svg(ICON.play)}</button><span class="bar" style="background:${TEAM[team]}"></span><b>${tla}</b><time>${time}</time></div>`).join("");
+  return `<div class="side">
+    ${map}
+    <div class="card"><div class="card-head">${t("raceControl")}</div>
+      <div class="filters">${["all", "flags", "penalties", "other"].map((f, i) => `<button class="chip ${i ? "" : "on"}">${t(f)}</button>`).join("")}</div>
+      <div class="feed">${rcm}</div></div>
+    <div class="card"><div class="card-head">${t("radio")}</div>${radio}</div>
+  </div>`;
+}
+
+function underTower() {
+  return `<div class="pair">
+    <div class="card"><div class="card-head">${t("weather")}</div><div class="weather">
+      <div><small>${t("air")}</small><b class="num">31.4°</b></div><div><small>${t("track")}</small><b class="num">53.3°</b></div><div><small>${t("rain")}</small><b>${t("dry")}</b></div>
+      <div><small>${t("humidity")}</small><b class="num">21%</b></div><div><small>${t("wind")}</small><b class="num">2.2 m/s ↗</b></div><div><small>${t("pressure")}</small><b class="num">944</b></div></div></div>
+    <div class="card"><div class="card-head">${t("pitStops")}<span class="spacer"></span><small>${t("pitLane")}</small></div><div class="pits-list">
+      <div><b>PIA</b><span>${t("lap")} 34</span><span class="num">—</span></div><div><b>HAM</b><span>${t("lap")} 33</span><span class="num">22.4 s</span></div><div><b>VER</b><span>${t("lap")} 27</span><span class="num">21.9 s</span></div></div></div>
+</div>`;
+}
+
+function stripHtml(kind, status) {
+  const q = kind === "qualifying";
+  const pill = { clear: "st-clear", yellow: "st-yellow", sc: "st-sc", vsc: "st-vsc", red: "st-red", chequered: "st-chequered" }[status];
+  return `<div class="card strip">
+    <div><h1>${S.lang === "it" ? "Gran Premio di Spagna" : "Spanish Grand Prix"}</h1><div class="sub">${q ? t("qualifying") : t("race")} · Madring</div></div>
+    ${q ? `<div class="laps num">Q3 <small>· 07:42 ${t("remaining")}</small></div>` : `<div class="laps num">${t("lap")} 34<small> / 57</small></div>`}
+    <span class="status-pill ${pill}">${t(status)}</span>
+    <span class="spacer" style="flex:1"></span>
+    <span class="age">${t("age")}</span>
+  </div>`;
+}
+
+function livePage() {
+  const v = S.live;
+  if (v === "idle") {
+    return `<div class="card state">${svg(ICON.timer)}<h2>${t("idleTitle")}</h2><div>${t("idleNext")}</div><div class="big num">2 d 14 h 06 m</div><div>${t("startsIn")} · ${S.lang === "it" ? "dom 27 set, 13:00" : "Sun 27 Sep, 13:00"}</div></div>`;
+  }
+  if (v === "syncing") {
+    return `<div class="card state">${svg(ICON.clock)}<h2>${t("syncing")}</h2><div>${t("syncingSub")}</div><div class="big num">32 s</div></div>`;
+  }
+  if (v === "hidden") {
+    return `<div class="card state">${svg(ICON.eyeOff)}<h2>${t("hiddenTitle")}</h2><div>${t("hiddenSub")}</div><button class="btn" onclick="S.noSpoiler=false;render()">${t("showAnyway")}</button></div>`;
+  }
+  const banner = v === "stale" ? `<div class="banner">${svg(ICON.alert)}${t("stale")}</div>` : v === "lost" ? `<div class="banner lost">${svg(ICON.alert)}${t("lost")}</div>` : "";
+  const kind = v === "qualifying" ? "qualifying" : "race";
+  const status = v === "sc" ? "sc" : v === "qualifying" ? "clear" : v === "red" ? "red" : "yellow";
+  return `${banner}${stripHtml(kind, status)}<div class="live-grid ${v === "lost" ? "dim" : ""}"><div class="main-col"><div class="card" style="overflow-x:auto">${towerHtml(kind)}</div>${underTower()}</div>${sideHtml()}</div>`;
+}
+
+const MEETINGS = [
+  [13, "Italian Grand Prix", "Gran Premio d'Italia", "Monza · Italy", "done", false, "4–6 Sep"],
+  [14, "Spanish Grand Prix", "Gran Premio di Spagna", "Madring · Spain", "done", false, "11–13 Sep"],
+  [15, "Azerbaijan Grand Prix", "Gran Premio dell'Azerbaigian", "Baku · Azerbaijan", "live", false, "24–26 Sep"],
+  [16, "Singapore Grand Prix", "Gran Premio di Singapore", "Marina Bay · Singapore", "next", true, "9–11 Oct"],
+  [17, "United States Grand Prix", "Gran Premio degli Stati Uniti", "Austin · USA", "upcoming", false, "23–25 Oct"],
+  [18, "Mexico City Grand Prix", "Gran Premio di Città del Messico", "Mexico City · Mexico", "upcoming", false, "30 Oct–1 Nov"],
+];
+function calendarPage() {
+  const cards = MEETINGS.map(([rnd, en, it, where, state, sprint, dates]) => {
+    const sessions = sprint ? ["p1", "sq", "sp", "ql", "r"] : ["p1", "p2", "p3", "ql", "r"];
+    const times = ["Fri 11:30", "Fri 15:30", "Sat 12:00", "Sat 16:00", "Sun 14:00"];
+    const badges = `${sprint ? `<span class="pill sprint">${t("sprintWeekend")}</span>` : ""}${state === "next" ? `<span class="pill">${t("next")}</span>` : ""}${state === "live" ? `<span class="pill live">${t("liveNow")}</span>` : ""}`;
+    return `<div class="card meet ${state}">
+      <div class="meet-head"><span class="round">R${rnd}</span><h3>${S.lang === "it" ? it : en}</h3></div>
+      <div class="where">${where} · ${dates}</div>
+      ${badges ? `<div class="flagline">${badges}</div>` : ""}
+      ${state === "done" ? `<div class="podium">${(S.noSpoiler && rnd === 14 ? [] : [["Andrea Kimi Antonelli", "mercedes"], ["Charles Leclerc", "ferrari"], ["Lando Norris", "mclaren"]]).map(([n, team], i) => `<div><b>${i + 1}</b><span class="bar" style="background:${TEAM[team]}"></span>${n}</div>`).join("") || `<div class="hidden-cell">${t("hidden")}</div>`}</div><div class="linkish">${t("done")} →</div>` : `<ul>${sessions.map((s, i) => `<li><span>${t(s)}</span><span class="num">${times[i]}</span></li>`).join("")}</ul>`}
+      ${state === "next" ? `<div class="countdown">${t(sprint ? "p1" : "p1")} · ${t("startsIn")} <b class="num">13 d 02 h</b></div>` : ""}
+    </div>`;
+  }).join("");
+  return `<div class="toolbar"><h1>${t("calendar")}</h1><select><option>2026</option><option>2025</option></select></div><div class="cal">${cards}</div>`;
+}
+
+function resultsPage() {
+  if (S.detail) return resultDetail();
+  const rows = MEETINGS.slice(0, 3).reverse().map(([rnd, en, it, where, state], i) => {
+    const hidden = S.noSpoiler && i === 1;
+    const win = i === 0 ? "—" : hidden ? `<span class="hidden-cell">${t("hidden")}</span>` : `<span class="drv"><span class="bar" style="background:${TEAM.mercedes}"></span>Andrea Kimi Antonelli</span>`;
+    return `<tr onclick="S.detail=true;render()"><td class="num">${rnd}</td><td>${S.lang === "it" ? it : en}</td><td class="num">${["26 Sep", "13 Sep", "6 Sep"][i]}</td><td>${win}</td></tr>`;
+  }).join("");
+  return `<div class="toolbar"><h1>${t("results")}</h1><select><option>2026</option><option>1998</option><option>1950</option></select></div>
+    <div class="card"><table class="rounds"><tr><th>${t("round")}</th><th>${t("grandPrix")}</th><th>${t("date")}</th><th>${t("winner")}</th></tr>${rows}</table></div>`;
+}
+
+function lapChart() {
+  const drivers = tower.slice(0, 8);
+  const W = 900, H = 300, laps = 57;
+  const x = (l) => 40 + (l / laps) * (W - 60);
+  const y = (p) => 20 + (p - 1) * ((H - 40) / 9);
+  const lines = drivers.map((r, k) => {
+    let p = k + 1, d = "";
+    for (let l = 0; l <= laps; l++) {
+      if (l && (l * 7 + k * 3) % 23 === 0) p = Math.max(1, Math.min(10, p + ((l + k) % 2 ? 1 : -1)));
+      d += (l ? "L" : "M") + x(l).toFixed(1) + " " + y(p).toFixed(1);
+    }
+    return `<path d="${d}" fill="none" stroke="${TEAM[r[4]]}" stroke-width="${r[1] === S.selected ? 4 : 2}" opacity="${r[1] === S.selected ? 1 : .8}"/><text x="${W - 16}" y="${y(p) + 4}">${r[2]}</text>`;
+  }).join("");
+  const grid = Array.from({ length: 10 }, (_, i) => `<line class="axis" x1="40" x2="${W - 20}" y1="${y(i + 1)}" y2="${y(i + 1)}"/><text x="14" y="${y(i + 1) + 4}">${i + 1}</text>`).join("");
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}">${grid}${lines}</svg></div>`;
+}
+
+function strategy() {
+  const W = 900, rowH = 26, laps = 57;
+  const x = (l) => 60 + (l / laps) * (W - 80);
+  const rows = tower.slice(0, 10).map((r, i) => {
+    const stints = i % 3 === 0 ? [["medium", 0, 15], ["hard", 15, 57]] : i % 3 === 1 ? [["soft", 0, 12], ["hard", 12, 40], ["medium", 40, 57]] : [["hard", 0, 30], ["medium", 30, 57]];
+    const bars = stints.map(([c, a, b]) => `<rect x="${x(a) + 1}" y="${10 + i * rowH}" width="${x(b) - x(a) - 2}" height="${rowH - 8}" rx="4" fill="var(${COMP[c]})" stroke="var(--divider-color)"/>`).join("");
+    return `<text x="8" y="${10 + i * rowH + 13}" style="font-weight:600;fill:var(--primary-text-color)">${r[2]}</text>${bars}`;
+  }).join("");
+  const ticks = [1, 10, 20, 30, 40, 50, 57].map((l) => `<text x="${x(l)}" y="${10 + 10 * rowH + 14}" text-anchor="middle">${l}</text>`).join("");
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${10 + 10 * rowH + 24}">${rows}${ticks}</svg></div>`;
+}
+
+function resultDetail() {
+  if (S.noSpoiler) {
+    return `<div class="toolbar"><button class="back" onclick="S.detail=false;render()">← ${t("back")}</button></div>
+      <div class="card reveal">${svg(ICON.eyeOff)}<div>${t("revealNote")}</div><button class="btn">${t("reveal")}</button></div>`;
+  }
+  const tabs = ["race", "qualifying", "lapChart", "strategy", "lapTimes", "pitStopsTab", "rc"];
+  let body = "";
+  if (S.tab === "race") {
+    body = `<table class="tbl"><tr><th>${t("pos")}</th><th>${t("driver")}</th><th></th><th class="r">${t("grid")}</th><th class="r">${t("laps")}</th><th>${t("time")}</th><th class="r">${t("points")}</th><th>${t("fastest")}</th></tr>` +
+      tower.slice(0, 10).map((r, i) => `<tr><td class="num">${i + 1}</td><td><span class="drv"><span class="bar" style="background:${TEAM[r[4]]}"></span>${r[3]}</span></td><td>${r[15] === null ? "" : r[15] > 0 ? `<span class="gained up">▲${r[15]}</span>` : r[15] < 0 ? `<span class="gained down">▼${-r[15]}</span>` : ""}</td><td class="r num">${i + 1 + (r[15] || 0)}</td><td class="r num">57</td><td class="num">${i ? r[5].replace("LAP 34", "") : "1:34:23.754"}</td><td class="r num">${[25, 18, 15, 12, 10, 8, 6, 4, 2, 1][i]}</td><td class="t ${i === 1 ? "ob" : ""}">${r[8]}</td></tr>`).join("") + `</table>`;
+  } else if (S.tab === "lapChart") body = lapChart();
+  else if (S.tab === "strategy") body = strategy();
+  else body = `<div class="card-body" style="color:var(--secondary-text-color)">…</div>`;
+  return `<div class="toolbar"><button class="back" onclick="S.detail=false;render()">← ${t("back")}</button><h1 style="margin-left:8px">${S.lang === "it" ? "Gran Premio di Spagna" : "Spanish Grand Prix"} 2026</h1></div>
+    <div class="card"><div class="subtabs">${tabs.map((k) => `<button class="tab ${S.tab === k ? "active" : ""}" onclick="S.tab='${k}';render()">${t(k)}</button>`).join("")}</div><div style="overflow-x:auto">${body}</div></div>`;
+}
+
+function standingsPage() {
+  const drivers = [["Andrea Kimi Antonelli", "mercedes", 292, 8, 0], ["George Russell", "mercedes", 211, 2, 1], ["Charles Leclerc", "ferrari", 198, 2, -1], ["Lando Norris", "mclaren", 176, 1, 0], ["Max Verstappen", "redbull", 169, 1, 2], ["Lewis Hamilton", "ferrari", 160, 0, -1], ["Oscar Piastri", "mclaren", 141, 1, -1], ["Fernando Alonso", "aston", 60, 0, 0]];
+  const teams = [["Mercedes", "mercedes", 503, 10, 0], ["Ferrari", "ferrari", 358, 2, 0], ["McLaren", "mclaren", 317, 2, 0], ["Red Bull Racing", "redbull", 230, 1, 0], ["Aston Martin", "aston", 71, 0, 1], ["Williams", "williams", 64, 0, -1]];
+  const list = S.standings === "drivers" ? drivers : teams;
+  const max = list[0][2];
+  const rows = list.map(([n, team, pts, wins, ch], i) => `<tr><td class="num">${i + 1}</td><td>${ch > 0 ? `<span class="gained up">▲${ch}</span>` : ch < 0 ? `<span class="gained down">▼${-ch}</span>` : ""}</td><td><span class="drv"><span class="bar" style="background:${TEAM[team]}"></span>${n}</span></td><td style="width:40%"><div class="pts"><div class="fill" style="width:${(pts / max) * 100}%;--c:${TEAM[team]}"></div></div></td><td class="r num"><b>${pts}</b></td><td class="r num">${wins}</td><td class="r num">${i ? "−" + (max - pts) : ""}</td></tr>`).join("");
+  return `<div class="toolbar"><h1>${t("standings")}</h1>
+      <button class="chip ${S.standings === "drivers" ? "on" : ""}" onclick="S.standings='drivers';render()">${t("drivers")}</button>
+      <button class="chip ${S.standings === "constructors" ? "on" : ""}" onclick="S.standings='constructors';render()">${t("constructors")}</button>
+      <span class="spacer" style="flex:1"></span><select><option>2026</option></select><select><option>${t("after")} 15</option></select></div>
+    <div class="card"><table class="tbl"><tr><th>${t("pos")}</th><th>${t("change")}</th><th>${S.standings === "drivers" ? t("driver") : t("constructors")}</th><th></th><th class="r">${t("points")}</th><th class="r">${t("wins")}</th><th class="r">${t("behind")}</th></tr>${rows}</table>
+    ${S.noSpoiler ? `<div class="note">${t("capNote")}</div>` : ""}</div>`;
+}
+
+function render() {
+  document.documentElement.dataset.theme = S.theme;
+  document.documentElement.lang = S.lang;
+  const proto = document.getElementById("proto");
+  const btn = (key, val, label) => `<button class="${S[key] === val ? "on" : ""}" onclick="S['${key}']=${JSON.stringify(val)};render()">${label}</button>`;
+  proto.innerHTML = `<b>Prototype</b>` +
+    ["race", "qualifying", "sc", "idle", "syncing", "hidden", "stale", "lost"].map((v) => btn("live", v, v)).join("") +
+    `<span class="sep"></span>${btn("theme", "light", "light")}${btn("theme", "dark", "dark")}<span class="sep"></span>${btn("lang", "en", "EN")}${btn("lang", "it", "IT")}<span class="sep"></span>${btn("f1tv", true, "F1TV on")}${btn("f1tv", false, "F1TV off")}`;
+  document.getElementById("tabs").innerHTML = ["live", "calendar", "results", "standings"].map((p) => `<button class="tab ${S.page === p ? "active" : ""}" onclick="S.page='${p}';S.detail=false;render()">${t(p)}</button>`).join("");
+  const dc = document.getElementById("delayChip");
+  dc.className = "chip" + (S.delay ? " on" : "");
+  dc.innerHTML = `${svg(ICON.clock)}<span class="num">${S.delay ? "+" + S.delay + " s" : "0 s"}</span><span class="label">${t("delay")}</span>`;
+  dc.onclick = () => { S.pop = !S.pop; render(); };
+  const sc = document.getElementById("spoilerChip");
+  sc.className = "chip" + (S.noSpoiler ? " on" : "");
+  sc.innerHTML = `${svg(S.noSpoiler ? ICON.eyeOff : ICON.eye)}<span class="label">${S.noSpoiler ? t("noSpoiler") : t("spoilersShown")}</span>`;
+  sc.onclick = () => { S.noSpoiler = !S.noSpoiler; if (S.page === "live") S.live = S.noSpoiler ? "hidden" : "race"; render(); };
+  const pop = document.getElementById("pop");
+  pop.className = "card pop" + (S.pop ? " open" : "");
+  pop.innerHTML = `<h3>${t("delay")}</h3><p>${t("delaySub")}</p>
+    <div class="stepper"><button onclick="S.delay=Math.max(0,S.delay-1);render()">−</button><b class="num">${S.delay} s</b><button onclick="S.delay=Math.min(120,S.delay+1);render()">+</button></div>
+    <input type="range" min="0" max="120" value="${S.delay}" oninput="S.delay=+this.value;render()">`;
+  const pages = { live: livePage, calendar: calendarPage, results: resultsPage, standings: standingsPage };
+  document.getElementById("main").innerHTML = pages[S.page]();
+  document.getElementById("foot").textContent = t("disclaimer");
+}
+const params = new URLSearchParams(location.search);
+for (const [k, v] of params) S[k] = v === "true" ? true : v === "false" ? false : isNaN(+v) || v === "" ? v : +v;
+render();
+</script>
+</body>
+</html>

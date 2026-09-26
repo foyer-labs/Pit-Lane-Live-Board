@@ -405,8 +405,8 @@ radio clips.
   - a sprint badge;
   - every session with its start time in **Home Assistant's timezone**;
   - a state: done, live now, next, or upcoming.
-- The next session has a countdown. A done meeting links to its results; a live one
-  links to Live.
+- The next session has a countdown. A done meeting shows its podium (decision 28) and
+  links to its results; a live one links to Live.
 - Source: Jolpica's schedule. The archive's season index cross-checks session names and
   gives the archive path.
 
@@ -759,6 +759,14 @@ Decisions taken in chat with the owner.
   and no-spoiler's "before this weekend".
 27. **Test fixtures synthetic or tiny excerpts** (§18 Q, taken by me); real data only through the manual
   contract check.
+28. **The calendar shows each finished meeting's podium** (taken by me, while building
+  the prototype): a finished card with only a link looked empty, and the podium is the
+  first thing a fan looks for. It costs three Jolpica requests per season
+  (`results/1`, `/2`, `/3`), cached like the rest, and no-spoiler mode hides it for the
+  meetings in scope.
+29. **Weather and pit stops sit under the timing tower; map, race control and radio in
+  the side column** (taken by me, from the prototype's screenshots): the tower is
+  shorter than the side column, and the space under it was empty.
 
 ---
 
