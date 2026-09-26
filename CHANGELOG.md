@@ -8,4 +8,7 @@ under **Changed — read before updating**.
 
 ### Added
 - The specification, the README in English and Italian, the support, security and
-  contribution documents, and the issue forms. Nothing is installable yet.
+  contribution documents, and the issue forms.
+- The integration's skeleton: it can be added once (with the non-affiliation notice
+  and the data attribution), and it remembers the TV delay and no-spoiler settings
+  across restarts. It shows nothing yet.

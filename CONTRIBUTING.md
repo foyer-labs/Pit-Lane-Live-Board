@@ -35,8 +35,21 @@ is the source of truth. Read it, especially the invariants (§3) and the decisio
 
 ## Development environment
 
-Filled in by phase 0 of the specification: Python and Node versions, the pure suite, the
-Home Assistant suite, lint, the frontend build and the translation checks.
+- Python 3.13 or 3.14.
+- Pure suite, **without** Home Assistant installed (an environment with Home Assistant
+  auto-loads `pytest-asyncio` and changes how this suite runs):
+  ```bash
+  pip install pytest pytest-xdist hypothesis
+  pytest -n auto
+  ```
+- Home Assistant suite (Linux or WSL):
+  ```bash
+  pip install pytest-homeassistant-custom-component pytest-xdist
+  pytest -p pytest_homeassistant_custom_component -o asyncio_mode=auto -o asyncio_default_fixture_loop_scope=function -n auto tests/ha
+  ```
+- Lint: `ruff check .` and `ruff format --check .`
+- After any change to `strings.json`: `python scripts/sync_translations.py`, then add
+  the same keys to `translations/it.json`.
 
 ## Pull requests
 

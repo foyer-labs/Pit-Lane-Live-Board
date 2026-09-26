@@ -1,6 +1,6 @@
 # Pit Lane Live Board — Specification
 
-Draft 1 · 2026-09-26 · Foyer Labs
+Draft 2 · 2026-09-26 · Foyer Labs
 
 A Home Assistant custom integration, installed through HACS, that adds a **ready-made
 sidebar panel** for Formula 1 fans: the season calendar, every race since 1950 with its
@@ -714,50 +714,49 @@ Decisions taken in chat with the owner.
 8. **No replay mode.** Past sessions are results and static detail only.
 9. **Documentation:** README and guide complete in English **and** Italian, kept up to
    date with every change. All repository attributes set for a future HACS submission.
+10. **Autonomous mandate** (2026-09-26). The owner asked me to build every phase on my own, deciding doubts with the option I recommend, under one hard constraint: **the app must be usable for free, with no subscription to an external service**. F1TV stays strictly optional; if a phase ever needs a paid or registered external service, work stops and the owner decides. Decisions 11 onward were taken by me under this mandate; each says so.
+11. **Two branches from day one** (§18 A, taken by me) (`develop` and `main`, §16.2). Raccolta reached this
+  model only after releases; starting with it avoids the migration.
+12. **Minimum Home Assistant 2026.6.0**, as in Raccolta; CI on 2026.6 and the latest
+  stable.** (§18 B, taken by me) 
+13. **Every user can change the TV delay and no-spoiler mode; only admins manage F1TV.**
+  Delay and no-spoiler are household TV settings, while the token is a credential.** (§18 C, taken by me) 
+14. **Delay and no-spoiler are global, not per browser.** (§18 D, taken by me) Automations need one value,
+  and a per-browser delay would disagree with the lights.
+15. **No-spoiler also mutes the live entities and events** (§18 E, taken by me) (§9). Someone watching later
+  does not want the lights to turn red during dinner. Someone watching live with a delay
+  uses the delay, not no-spoiler.
+16. **Track outline derived from the archive**, not from MultiViewer's API, which has no
+  terms of use and no documentation.** (§18 F, taken by me) 
+17. **Team radio played straight from F1's URL** (§18 G, taken by me) by the browser, not proxied through
+  Home Assistant. It is simpler, and the mp3s need no auth. The cost is that the
+  browser contacts F1's servers directly.
+18. **No driver photos, team logos or F1 marks** (§18 H, taken by me) (copyright and trademark). TLA, number,
+  name and team colour are enough to recognise a driver.
+19. **A development-only session player** (§18 I, taken by me) (§13) to build and test the live page without
+  waiting for a race weekend. It never ships as a feature (decision 8).
+20. **Live connection only inside session windows** (§18 J, taken by me) (§6.1), not for the whole weekend.
+21. **Automation surface as in §10.2** (§18 K, taken by me): calendar, a few sensors, one event entity, a
+  switch and a number. No per-driver entities and no custom bus events.
+22. **CHANGELOG, CONTRIBUTING and SPEC in English only.** (§18 L, taken by me) The user-facing documents are
+  bilingual (§14).
+23. **No disclaimer acceptance tick.** (§18 M, taken by me) This is not a safety product; the
+  non-affiliation notice is shown in the config flow, the panel, the README and the
+  guide.
+24. **Push rates:** (§18 N, taken by me) timing at most every 500 ms, map every 250 ms with interpolation in
+  the browser.
+25. **Cache in `<config>/.cache/pit_lane_live_board/`, capped at 500 MB** (§18 O, taken by me), kept out of
+  backups (§11).
+26. **Standings "after round N"** (§18 P, taken by me) are included: the same call gives the history view
+  and no-spoiler's "before this weekend".
+27. **Test fixtures synthetic or tiny excerpts** (§18 Q, taken by me); real data only through the manual
+  contract check.
 
 ---
 
 ## 18. Choices awaiting confirmation
 
-Made while writing this draft, each with the reason. A phase that depends on one of them
-does not start until the owner confirms or changes it.
-
-- **A. Two branches from day one** (`develop` and `main`, §16.2). Raccolta reached this
-  model only after releases; starting with it avoids the migration.
-- **B. Minimum Home Assistant 2026.6.0**, as in Raccolta; CI on 2026.6 and the latest
-  stable.
-- **C. Every user can change the TV delay and no-spoiler mode; only admins manage F1TV.**
-  Delay and no-spoiler are household TV settings, while the token is a credential.
-- **D. Delay and no-spoiler are global, not per browser.** Automations need one value,
-  and a per-browser delay would disagree with the lights.
-- **E. No-spoiler also mutes the live entities and events** (§9). Someone watching later
-  does not want the lights to turn red during dinner. Someone watching live with a delay
-  uses the delay, not no-spoiler.
-- **F. Track outline derived from the archive**, not from MultiViewer's API, which has no
-  terms of use and no documentation.
-- **G. Team radio played straight from F1's URL** by the browser, not proxied through
-  Home Assistant. It is simpler, and the mp3s need no auth. The cost is that the
-  browser contacts F1's servers directly.
-- **H. No driver photos, team logos or F1 marks** (copyright and trademark). TLA, number,
-  name and team colour are enough to recognise a driver.
-- **I. A development-only session player** (§13) to build and test the live page without
-  waiting for a race weekend. It never ships as a feature (decision 8).
-- **J. Live connection only inside session windows** (§6.1), not for the whole weekend.
-- **K. Automation surface as in §10.2**: calendar, a few sensors, one event entity, a
-  switch and a number. No per-driver entities and no custom bus events.
-- **L. CHANGELOG, CONTRIBUTING and SPEC in English only.** The user-facing documents are
-  bilingual (§14).
-- **M. No disclaimer acceptance tick.** This is not a safety product; the
-  non-affiliation notice is shown in the config flow, the panel, the README and the
-  guide.
-- **N. Push rates:** timing at most every 500 ms, map every 250 ms with interpolation in
-  the browser.
-- **O. Cache in `<config>/.cache/pit_lane_live_board/`, capped at 500 MB**, kept out of
-  backups (§11).
-- **P. Standings "after round N"** are included: the same call gives the history view
-  and no-spoiler's "before this weekend".
-- **Q. Test fixtures synthetic or tiny excerpts**; real data only through the manual
-  contract check.
+None. Items A–Q of draft 1 became decisions 11–27 under the autonomous mandate (decision 10); the letters are kept in the references for traceability.
 
 ---
 
