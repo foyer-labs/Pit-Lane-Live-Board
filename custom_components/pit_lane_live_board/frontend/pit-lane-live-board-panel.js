@@ -2787,7 +2787,7 @@ var At = o`
 			let n = this.hass.states?.[t.entity_id];
 			return T`<li><button class="entity" @click=${() => this.moreInfo(t.entity_id)}>
               <span class="name">${n?.attributes.friendly_name ?? t.entity_id}<small>${t.entity_id}</small></span>
-              <span class="value">${t.disabled ? e("settings.disabled") : n?.state ?? "—"}</span>
+              <span class="value">${t.disabled ? e("settings.disabled") : n ? this.hass.formatEntityState?.(n) ?? n.state : "—"}</span>
             </button></li>`;
 		})}</ul>` : T`<div class="body muted">${e("common.loading")}</div>`}
       <div class="note">${e("settings.entitiesHelp")}</div>

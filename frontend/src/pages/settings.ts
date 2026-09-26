@@ -187,7 +187,11 @@ export class PlbSettings extends LitElement {
             const name = (state?.attributes.friendly_name as string | undefined) ?? e.entity_id;
             return html`<li><button class="entity" @click=${() => this.moreInfo(e.entity_id)}>
               <span class="name">${name}<small>${e.entity_id}</small></span>
-              <span class="value">${e.disabled ? t("settings.disabled") : (state?.state ?? "—")}</span>
+              <span class="value">${e.disabled
+                ? t("settings.disabled")
+                : state
+                  ? (this.hass.formatEntityState?.(state) ?? state.state)
+                  : "—"}</span>
             </button></li>`;
           })}</ul>`}
       <div class="note">${t("settings.entitiesHelp")}</div>

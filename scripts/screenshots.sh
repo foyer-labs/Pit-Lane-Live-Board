@@ -35,4 +35,6 @@ for lang in en it; do
   shot "standings$suffix" 1440 900 "page=standings&lang=$lang"
   shot "phone$suffix" 500 1000 "page=live&live=race&lang=$lang"
   shot "delay$suffix" 1440 520 "page=live&live=syncing&lang=$lang&delayOpen=true"
+  shot "final$suffix" 1440 1000 "page=live&live=final&playing=false&lang=$lang"
+  shot "settings$suffix" 1440 1250 "page=settings&live=race&lang=$lang"
 done

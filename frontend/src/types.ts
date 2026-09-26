@@ -7,6 +7,8 @@ export interface Hass {
   user?: { is_admin: boolean };
   themes?: { darkMode?: boolean };
   states?: Record<string, { state: string; attributes: Record<string, unknown> }>;
+  /** Home Assistant's own state formatting, in the user's language and units. */
+  formatEntityState?: (state: { state: string; attributes: Record<string, unknown> }) => string;
   callWS<T>(msg: Record<string, unknown>): Promise<T>;
   connection: {
     subscribeMessage<T>(callback: (msg: T) => void, msg: Record<string, unknown>): Promise<() => void>;
