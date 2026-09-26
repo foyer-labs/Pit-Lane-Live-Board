@@ -325,8 +325,10 @@ page states "reconnected at HH:MM"; nothing is interpolated.
 - For a circuit with no earlier session in the archive (a new venue), the outline is
   built live from positions after the first complete lap. Until then the map shows only
   the dots.
-- Rotation is chosen so the longest straight is horizontal. No corner numbers: they
-  need data we do not have.
+- The outline is rotated so the circuit's principal axis is horizontal, which fills
+  a wide panel best. No corner numbers: they need data we do not have.
+- The outline carries its own projection, so the hub projects every live car
+  position with the same transform before sending it.
 
 ---
 
