@@ -57,6 +57,9 @@ async def hub(hass: HomeAssistant, aioclient_mock, race_start, fake_client):
         entry.add_to_hass(hass)
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
+        # The first tick runs in the background: let it finish, so it never
+        # closes a session a test opens by hand.
+        await entry.runtime_data.hub.first_tick
         yield entry.runtime_data.hub
         await hass.config_entries.async_unload(entry.entry_id)
         await hass.async_block_till_done()

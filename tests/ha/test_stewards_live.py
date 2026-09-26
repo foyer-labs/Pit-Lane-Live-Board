@@ -51,6 +51,7 @@ async def entry(hass: HomeAssistant, aioclient_mock, race_start, fake_client):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
         hub = entry.runtime_data.hub
+        await hub.first_tick
         await hub.async_update_settings(hub.settings.with_live(True))
         yield entry
         await hass.config_entries.async_unload(entry.entry_id)

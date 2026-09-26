@@ -200,6 +200,7 @@ class Hub:
         self.live: LiveSession | None = None
         self.final: FinalView | None = None
         self._final_task: asyncio.Task[None] | None = None
+        self.first_tick: asyncio.Task[None] | None = None
         self._lock = asyncio.Lock()
         self._stopped = False
         self._done_sessions: set[str] = set()
@@ -227,7 +228,7 @@ class Hub:
         self._unsubs.append(
             async_track_time_interval(self.hass, self._async_f1tv_timer, F1TV_CHECK)
         )
-        self.entry.async_create_background_task(
+        self.first_tick = self.entry.async_create_background_task(
             self.hass, self._async_first_tick(), f"{DOMAIN} first tick"
         )
         self.entry.async_create_background_task(
