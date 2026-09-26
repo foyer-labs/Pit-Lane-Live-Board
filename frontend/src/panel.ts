@@ -1,5 +1,6 @@
 // The sidebar panel (SPEC §7): app bar with the four pages, the TV-delay control,
-// the no-spoiler switch, and the footer with the non-affiliation notice (INV-6).
+// the no-spoiler switch, live timing's state and the settings behind the gear, and
+// the footer with the non-affiliation notice (INV-6).
 import { LitElement, css, html, nothing } from "lit";
 import { api } from "./api";
 import { define } from "./define";
@@ -8,19 +9,24 @@ import { ICON, icon } from "./icons";
 import { failure } from "./parts";
 import { tokens } from "./styles";
 import type { Hass, Settings } from "./types";
+import { PlbAge, PlbCountdown } from "./clock";
 import { PlbCalendar } from "./pages/calendar";
 import { PlbLive } from "./pages/live";
+import { PlbLiveMap } from "./pages/live-map";
 import { PlbResults } from "./pages/results";
+import { PlbSettings } from "./pages/settings";
 import { PlbStandings } from "./pages/standings";
 
-export type Page = "live" | "calendar" | "results" | "standings";
+export type Page = "live" | "calendar" | "results" | "standings" | "settings";
+// The tabs; Settings opens from the gear, not a fifth tab.
 const PAGES: Page[] = ["live", "calendar", "results", "standings"];
+const ALL_PAGES: Page[] = [...PAGES, "settings"];
 const STORAGE_KEY = "pit-lane-live-board-page";
 
 function rememberedPage(): Page {
   try {
     const saved = localStorage.getItem(STORAGE_KEY) as Page | null;
-    return saved && PAGES.includes(saved) ? saved : "live";
+    return saved && ALL_PAGES.includes(saved) ? saved : "live";
   } catch {
     return "live";
   }
@@ -142,7 +148,13 @@ export class PitLaneLiveBoardPanel extends LitElement {
       if (this.pendingDelay === sent) this.pendingDelay = null;
       this.receive(settings);
     } catch {
+      // Not saved: show what the backend holds, not the value that failed.
       this.pendingDelay = null;
+      try {
+        this.receive(await api.settings(this.hass));
+      } catch {
+        /* the subscription corrects it when the connection is back */
+      }
     }
   }
 
@@ -180,6 +192,9 @@ export class PitLaneLiveBoardPanel extends LitElement {
     }
     const common = { hass: this.hass, settings: this.settings, seasons: this.seasons };
     switch (this.page) {
+      case "settings":
+        return html`<plb-settings .hass=${common.hass} .settings=${common.settings}
+          @plb-delay=${(e: CustomEvent<number>) => this.setDelay(e.detail)}></plb-settings>`;
       case "calendar":
         return html`<plb-calendar .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons}
           @plb-go=${(e: CustomEvent<GoTo>) => this.go(e.detail)}></plb-calendar>`;
@@ -212,6 +227,10 @@ export class PitLaneLiveBoardPanel extends LitElement {
           )}
         </nav>
         <span class="spacer"></span>
+        ${s && !s.live
+          ? html`<button class="chip paused" @click=${() => this.go({ page: "settings" })} title=${t("settings.pausedHelp")}>
+              ${icon(ICON.pause, 16)}<span class="label">${s.auto_start ? t("live.pausedAuto") : t("live.pausedShort")}</span></button>`
+          : nothing}
         ${f1tv
           ? html`<span class="chip small ${f1tv === "active" ? "" : "warn"}" title=${t(`f1tv.${f1tv}`)}>F1TV</span>`
           : nothing}
@@ -226,6 +245,8 @@ export class PitLaneLiveBoardPanel extends LitElement {
           ${icon(s?.no_spoiler ? ICON.eyeOff : ICON.eye, 18)}
           <span class="label">${s?.no_spoiler ? t("spoiler.on") : t("spoiler.off")}</span>
         </button>
+        <button class="icon-btn gear ${this.page === "settings" ? "active" : ""}" @click=${() => this.go({ page: "settings" })}
+          aria-label=${t("settings.title")} title=${t("settings.title")}>${icon(ICON.cog, 22)}</button>
       </header>
       ${this.delayOpen && s ? this.renderPopover(s) : nothing}
       <main>${this.renderPage()}</main>
@@ -274,6 +295,8 @@ export class PitLaneLiveBoardPanel extends LitElement {
       .appbar .chip { color: inherit; }
       .appbar .chip.on { color: var(--primary-color); }
       .chip.warn { color: var(--warning-color, #ffa600); }
+      .chip.paused { border-style: dashed; color: var(--secondary-text-color); }
+      .gear.active { color: var(--primary-color); }
       main { padding: var(--plb-gap); max-width: 1480px; margin: 0 auto; }
       footer {
         max-width: 1480px; margin: 8px auto 0; padding: 0 var(--plb-gap) 24px;
@@ -289,6 +312,10 @@ export class PitLaneLiveBoardPanel extends LitElement {
       }
       .stepper b { font-size: 22px; font-weight: 500; min-width: 110px; text-align: center; }
       input[type="range"] { width: 100%; accent-color: var(--primary-color); }
+      @media (max-width: 1180px) {
+        .appbar .chip .label { display: none; }
+        .appbar { gap: 8px; }
+      }
       @media (max-width: 640px) {
         .appbar { flex-wrap: wrap; gap: 6px; padding: 8px 8px 0; }
         .tabs { order: 3; width: 100%; margin: 0; overflow-x: auto; }
@@ -305,4 +332,8 @@ define("plb-calendar", PlbCalendar);
 define("plb-results", PlbResults);
 define("plb-standings", PlbStandings);
 define("plb-live", PlbLive);
+define("plb-live-map", PlbLiveMap);
+define("plb-settings", PlbSettings);
+define("plb-countdown", PlbCountdown);
+define("plb-age", PlbAge);
 define("pit-lane-live-board-panel", PitLaneLiveBoardPanel);

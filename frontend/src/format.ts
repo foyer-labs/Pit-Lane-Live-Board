@@ -1,4 +1,7 @@
 // Dates and times in Home Assistant's timezone and the user's language.
+//
+// Intl formatters are expensive to build and the Live page formats many times a
+// second at its busiest: each one is built once per language and shape, and kept.
 import { language } from "./i18n";
 import type { Hass } from "./types";
 
@@ -6,53 +9,84 @@ function locale(hass: Hass): string {
   return language(hass) === "it" ? "it-IT" : "en-GB";
 }
 
+const dateFormats = new Map<string, Intl.DateTimeFormat>();
+const numberFormats = new Map<string, Intl.NumberFormat>();
+
+function dateFormat(hass: Hass, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale(hass)}|${JSON.stringify(options)}`;
+  let format = dateFormats.get(key);
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale(hass), options);
+    dateFormats.set(key, format);
+  }
+  return format;
+}
+
+function numberFormat(hass: Hass, digits: number): Intl.NumberFormat {
+  const key = `${locale(hass)}|${digits}`;
+  let format = numberFormats.get(key);
+  if (!format) {
+    format = new Intl.NumberFormat(locale(hass), { maximumFractionDigits: digits });
+    numberFormats.set(key, format);
+  }
+  return format;
+}
+
+function zone(hass: Hass): string {
+  return hass.config.time_zone;
+}
+
 export function sessionTime(hass: Hass, iso: string | null, day: string): string {
   if (!iso) {
-    return new Date(`${day}T12:00:00Z`).toLocaleDateString(locale(hass), {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      timeZone: "UTC",
-    });
+    return dateFormat(hass, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(
+      new Date(`${day}T12:00:00Z`),
+    );
   }
-  return new Date(iso).toLocaleString(locale(hass), {
-    weekday: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: hass.config.time_zone,
-  });
+  return dateFormat(hass, { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: zone(hass) }).format(
+    new Date(iso),
+  );
 }
 
 export function longDate(hass: Hass, iso: string | null): string {
   if (!iso) return "";
-  const date = iso.length === 10 ? new Date(`${iso}T12:00:00Z`) : new Date(iso);
-  return date.toLocaleDateString(locale(hass), {
+  const dateOnly = iso.length === 10;
+  const date = dateOnly ? new Date(`${iso}T12:00:00Z`) : new Date(iso);
+  return dateFormat(hass, {
     day: "numeric",
     month: "short",
     year: "numeric",
-    timeZone: iso.length === 10 ? "UTC" : hass.config.time_zone,
-  });
+    timeZone: dateOnly ? "UTC" : zone(hass),
+  }).format(date);
 }
 
+/** A weekend's days. Dates without a time are the circuit's local days, shown as
+ *  they are whatever Home Assistant's timezone. */
 export function dayRange(hass: Hass, first: string, last: string): string {
-  const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", timeZone: "UTC" };
+  const format = dateFormat(hass, { day: "numeric", month: "short", timeZone: "UTC" });
   const a = new Date(`${first}T12:00:00Z`);
   const b = new Date(`${last}T12:00:00Z`);
   if (a.getUTCMonth() === b.getUTCMonth()) {
-    return `${a.getUTCDate()}–${b.toLocaleDateString(locale(hass), options)}`;
+    return `${a.getUTCDate()}–${format.format(b)}`;
   }
-  return `${a.toLocaleDateString(locale(hass), options)} – ${b.toLocaleDateString(locale(hass), options)}`;
+  return `${format.format(a)} – ${format.format(b)}`;
+}
+
+function parseUtc(iso: string): Date {
+  return new Date(/[zZ]|[+-]\d\d:\d\d$/.test(iso) ? iso : `${iso}Z`);
 }
 
 export function clockTime(hass: Hass, iso: string | null): string {
   if (!iso) return "";
-  const date = new Date(/[zZ]|[+-]\d\d:\d\d$/.test(iso) ? iso : `${iso}Z`);
-  return date.toLocaleTimeString(locale(hass), {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    timeZone: hass.config.time_zone,
-  });
+  return dateFormat(hass, { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: zone(hass) }).format(
+    parseUtc(iso),
+  );
+}
+
+export function shortTime(hass: Hass, iso: string | null): string {
+  if (!iso) return "";
+  return dateFormat(hass, { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: zone(hass) }).format(
+    parseUtc(iso),
+  );
 }
 
 /** "2 d 14 h 06 m", "14 h 06 m", "06 m 12 s". */
@@ -81,5 +115,18 @@ export function sessionClock(seconds: number | null): string {
 
 export function number(hass: Hass, value: number | null, digits = 1): string {
   if (value === null || value === undefined) return "—";
-  return value.toLocaleString(locale(hass), { maximumFractionDigits: digits });
+  return numberFormat(hass, digits).format(value);
+}
+
+/** Home Assistant hands every element a new `hass` on each state change in the
+ *  house; most pages only care about the language, the timezone and the user. */
+export function hassChanged(value?: Hass, old?: Hass): boolean {
+  return (
+    !old ||
+    !value ||
+    value.language !== old.language ||
+    value.locale?.language !== old.locale?.language ||
+    value.config?.time_zone !== old.config?.time_zone ||
+    value.user?.is_admin !== old.user?.is_admin
+  );
 }

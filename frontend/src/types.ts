@@ -6,6 +6,9 @@ export interface Hass {
   config: { time_zone: string };
   user?: { is_admin: boolean };
   themes?: { darkMode?: boolean };
+  states?: Record<string, { state: string; attributes: Record<string, unknown> }>;
+  /** Home Assistant's own state formatting, in the user's language and units. */
+  formatEntityState?: (state: { state: string; attributes: Record<string, unknown> }) => string;
   callWS<T>(msg: Record<string, unknown>): Promise<T>;
   connection: {
     subscribeMessage<T>(callback: (msg: T) => void, msg: Record<string, unknown>): Promise<() => void>;
@@ -15,11 +18,21 @@ export interface Hass {
 export interface Settings {
   tv_delay: number;
   no_spoiler: boolean;
+  live: boolean;
+  auto_start: boolean;
+  running: boolean;
   revealed: string[];
   season: number;
   first_season: number;
   is_admin: boolean;
   f1tv: { status: string; expires: string | null; product: string | null } | null;
+}
+
+export interface LinkedEntity {
+  entity_id: string;
+  key: string | null;
+  domain: string;
+  disabled: boolean;
 }
 
 export interface Session {
@@ -144,6 +157,7 @@ export interface Row {
   grid: number | null;
   gained: number | null;
   status: string;
+  penalty?: number | null;
   qualifying?: { part_bests: (string | null)[]; best: string | null; gap: string | null; cutoff: boolean };
 }
 
@@ -182,9 +196,58 @@ export interface NextSession extends Session {
   country: string | null;
 }
 
+export interface Car {
+  number: string;
+  tla: string;
+}
+
+export interface Decision {
+  kind: string;
+  status?: string;
+  cars: Car[];
+  seconds: number | null;
+  places: number | null;
+  turn: number | null;
+  reason: string | null;
+  lap: number | null;
+  utc: string | null;
+  served?: boolean;
+  index?: number;
+}
+
+export interface Stewards {
+  safety_car: "deployed" | "ending" | null;
+  virtual_safety_car: "deployed" | "ending" | null;
+  red_flag: boolean;
+  yellow_sectors: { sector: number; flag: "yellow" | "double_yellow" }[];
+  yellow: boolean;
+  double_yellow: boolean;
+  penalties: Decision[];
+  investigations: Decision[];
+  decided: Decision[];
+  track_limits: { number: string; tla: string; deleted: number; black_and_white: boolean }[];
+}
+
+export type LiveState =
+  | "idle"
+  | "paused"
+  | "connecting"
+  | "syncing"
+  | "live"
+  | "stale"
+  | "lost"
+  | "final"
+  | "hidden";
+
+/** What the backend sends: complete when `full`, else only what changed. */
 export interface LiveView {
-  state: "idle" | "connecting" | "syncing" | "live" | "stale" | "lost" | "hidden";
+  full: boolean;
+  state: LiveState;
   delay: number;
+  paused: boolean;
+  auto_start: boolean;
+  ended: string | null;
+  stewards?: Stewards;
   next_session: NextSession | null;
   header?: LiveHeader | null;
   data_age?: number | null;
@@ -205,8 +268,16 @@ export interface LiveView {
   map_reason?: "available" | "no_data" | "not_configured" | "token_problem";
 }
 
+export interface Outline {
+  points: [number, number][];
+  width: number;
+  height: number;
+}
+
+/** The outline travels only when `full`; then only the cars. */
 export interface MapView {
-  outline: { points: [number, number][]; width: number; height: number } | null;
+  full: boolean;
+  outline?: Outline | null;
   cars: { number: string; x: number; y: number; on_track: boolean }[];
   utc: string | null;
 }

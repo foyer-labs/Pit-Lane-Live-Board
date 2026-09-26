@@ -264,11 +264,25 @@ One per config entry. It owns:
 - the caches.
 
 It throttles pushes to the panel: timing at most every 500 ms, the map every 250 ms,
-and only while someone watches it.
+and only while someone watches it. One 0.25 s loop per live session releases the
+delayed messages (at most 2,000 per step, so a lowered delay's backlog never blocks
+the event loop), measures health and publishes when due (decision 45):
+
+- the page's view is made of sections (header, tower, race control, stewards, radio,
+  weather, pits), each rebuilt only when a topic it reads changed (the state's
+  versions), encoded once for every open page; after the first, complete message a
+  page receives only the sections that changed (`full: false`);
+- the map's outline travels once per revision, then only the projected cars;
+- the entities read one snapshot computed by the hub, and are told to write only when
+  it changed.
 
 ### 5.5 Resource budget
 
 Targets on a Raspberry Pi 4:
+- paused (the default, decision 42): no connection to F1's live feed and nothing live
+  written to disk; the only writes are settings the user changes, the window
+  auto-start has seen (once per session), and, when a page opens Live after a
+  session, that session's final state downloaded once from the archive and cached;
 - idle outside session windows: no connection and no timers except the schedule;
 - live: under 5% CPU and under 150 MB of memory for the integration.
 
@@ -347,7 +361,9 @@ The navigation shows four pages: **Live**, **Calendar**, **Results**, **Standing
 The header carries:
 - the TV delay control (§8);
 - the no-spoiler switch (§9);
-- a small F1TV status chip for admins.
+- a small F1TV status chip for admins;
+- a dashed "Paused" chip while live timing is paused, opening Settings;
+- a gear opening Settings (§7.5): not a fifth tab (decision 44).
 
 The footer carries the attribution and non-affiliation line.
 
@@ -362,8 +378,10 @@ the panel (phase 3).
 **Header strip:**
 - meeting and session name;
 - lap `n/N` for races, or the remaining clock for timed sessions;
-- the track status banner (green, yellow, SC, VSC, VSC ending, red, chequered);
-- a "data age" indicator.
+- a "data age" indicator while live; after a session, the next session and its
+  countdown in the same place (decision 43).
+
+**Flags & stewards** (§7.1.1), between the strip and the tower.
 
 **Timing tower**, one row per driver:
 - position and positions gained or lost (race and sprint);
@@ -401,6 +419,45 @@ the panel (phase 3).
 Selecting a driver highlights them everywhere: the tower row, the map dot and their
 radio clips.
 
+#### 7.1.1 Flags & stewards (decision 40)
+
+Race control is the only source of penalties, investigations, sector flags and the
+safety car's phases; `core/stewards.py` reads each message once into a book:
+
+- **decisions:** time penalty, drive-through, stop and go, grid penalty, penalty
+  served, disqualified, noted, under investigation, investigated after the race, no
+  further action, warning, black and white flag, lap deleted; with the cars, seconds,
+  places, turn, reason and lap;
+- **penalties** stay listed, marked served when race control says so; an unserved time
+  penalty shows as `+5s` next to the driver in the tower;
+- **incidents** open while noted or under investigation, closed by a decision about
+  the same cars and reason;
+- **track limits:** laps deleted and black and white flags per driver;
+- **flags:** yellow and double yellow per sector until cleared; the safety car and the
+  VSC with their "ending" phase. The track status stays F1's authority; the messages
+  add the sectors and the phases.
+
+The card has four columns: track (status, sector chips, safety car phase), penalties,
+investigations, track limits. It collapses to one line when all is calm, and carries a
+yellow or red edge under the safety car or a red flag. On a phone it is one row of
+chips that opens the columns (decision 46).
+
+Recognising decisions is text parsing, best effort: checked against four real races
+(Canada 2024, Britain 2025, Italy and Spain 2026) with no steward message left
+unclassified. The guide says so.
+
+#### 7.1.2 States of the page
+
+`paused` (live timing is off and there is nothing to show), `idle` (on, outside a
+session), `connecting`, `syncing` (§8), `live`, `stale` and `lost` (§6.3), `final`
+(decision 43) and `hidden` (§9).
+
+After a session the page shows its **final state**, frozen: a grey "FINAL" pill,
+"Ended 17:00 · data frozen", no map. It is the last live state kept in memory when the
+session was followed, else the archive's end-of-session keyframes (every public topic
+plus the pit lane stream), downloaded once when a page opens Live and cached. No-spoiler
+mode hides it like the live session.
+
 ### 7.2 Calendar
 
 - The season schedule (any season, current by default). One card per meeting:
@@ -433,6 +490,20 @@ radio clips.
 
 - The first opening of a 2018+ race downloads its archive files once (a few MB), shows
   progress, and caches the derived detail. Later openings are instant.
+
+### 7.5 Settings (decision 44)
+
+Behind the gear in the header:
+
+- **Live timing:** a large play/pause button, the state in words ("Paused: nothing
+  connects to F1 and nothing live is written to disk"), and "Start automatically at each
+  session";
+- **TV delay:** the same control as the header's;
+- **F1TV** (administrators only): status and expiry, a password field to paste a token,
+  save, and remove with a confirmation. The backend validates the token as the options
+  flow does; the answer carries the status only (INV-3);
+- **Entities:** the integration's entities with their state; a click opens Home
+  Assistant's more-info dialog.
 
 ### 7.4 Standings
 
@@ -501,15 +572,24 @@ For watching a session later.
 | `sensor.…_next_session` | timestamp | Start of the next session; attributes: meeting, session, circuit, round. |
 | `sensor.…_session_status` | enum | `inactive`, `started`, `aborted`, `finished`, `finalised`. |
 | `sensor.…_track_status` | enum | `clear`, `yellow`, `safety_car`, `virtual_safety_car`, `vsc_ending`, `red_flag`, `chequered`. |
-| `sensor.…_lap` | measurement | Current lap. Attribute `total_laps`. Races and sprints only. |
+| `sensor.…_lap` | number | Current lap. Attribute `total_laps`. Races and sprints only. No state class: a lap count is not worth long-term statistics. |
 | `binary_sensor.…_session_live` | running | On inside an active session. |
+| `binary_sensor.…_safety_car` | binary | On while the safety car is out; attribute `ending` in its last lap. |
+| `binary_sensor.…_virtual_safety_car` | binary | Same for the VSC. |
+| `binary_sensor.…_red_flag` | binary | On under a red flag. |
+| `binary_sensor.…_yellow_flag` | binary | On with a yellow anywhere; attributes `sectors`, `double`. |
+| `sensor.…_penalties` | count | Penalties given this session; attribute `penalties` (kept out of the recorder). |
+| `sensor.…_investigations` | count | Incidents noted or under investigation; attribute `investigations` (unrecorded). |
+| `sensor.…_race_control_message` | text | The latest race control message, as F1 wrote it. |
 | `event.…_race_control` | event | `green_flag`, `yellow_flag`, `safety_car`, `virtual_safety_car`, `vsc_ending`, `red_flag`, `chequered_flag`, `session_started`, `session_ended`. |
+| `event.…_stewards` | event | One per decision (§7.1.1), with drivers, numbers, seconds, places, reason, turn, lap and the message. |
+| `switch.…_live_timing` | switch | Play and pause (decision 42). |
 | `switch.…_no_spoiler` | switch | §9. |
 | `number.…_tv_delay` | number (s) | §8. |
 | `sensor.…_f1tv` | diagnostic enum | `not_configured`, `active`, `expiring`, `expired`, `invalid`. |
 
 - Every live entity and event is released through the TV delay.
-- Every live entity goes `unavailable` per §6.3.
+- Every live entity goes `unavailable` per §6.3, and while live timing is paused.
 - No per-driver entities: 20 drivers × many fields would flood the registry, and the
   panel is the place for them (decision 1).
 
@@ -518,11 +598,18 @@ For watching a session later.
 `core/events.py` compares consecutive released states and emits at most one event per
 transition. A reconnect never re-fires an event already fired for the same message.
 
+The stewards event fires once per decision whose race control message lies past the
+persisted mark `rcm_seen`: joining a session midway, what race control already said is
+the baseline, and a reconnect or a restart replays nothing. Marks are written at most
+every 30 s and only while live timing runs, and flushed on unload: only after a crash
+can the events of the last 30 s fire again.
+
 ### 10.4 Repairs and diagnostics
 
 - **Repair issues:**
   - "F1TV needs a new token" when the login session ends or renewal fails for 24 h;
-  - "Live timing unreachable" after 3 failed session windows in a row.
+  - "Live timing unreachable" after 3 failed session windows in a row. The count is
+    persisted, so it survives restarts; a pause or an unload never counts.
 - **Diagnostics:**
   - source reachability;
   - last errors;
@@ -540,16 +627,18 @@ Every command requires an authenticated Home Assistant user.
   - `results/season` (season);
   - `results/detail` (season, round, tab);
   - `standings/get` (season, round);
-  - `live/subscribe`: the timing tower view model, side panels and status, pushed on
-    change and throttled;
-  - `map/subscribe`: positions, only while visible;
-  - `settings/get`.
+  - `live/subscribe`: the whole view first, then only the sections that changed
+    (`full: false`), pushed on change and throttled; opening it outside a session loads
+    the final view (§7.1.2);
+  - `map/subscribe`: the outline once, then the cars; the panel subscribes only while
+    the map is on screen and the tab visible;
+  - `settings/get`, `settings/subscribe`;
+  - `entities`: the integration's entities, for Settings.
 - **Settings** (any user; they are household TV settings, §18 C):
-  - `settings/set_delay`;
-  - `settings/set_no_spoiler`;
+  - `settings/set` (`tv_delay`, `no_spoiler`, `live`, `auto_start`);
   - `spoiler/reveal` (session).
-- **Admin only:** none. F1TV is configured in the options flow, which is admin-only in
-  Home Assistant.
+- **Admin only:** `f1tv/set` (token, validated, never returned) and `f1tv/remove`. The
+  options flow still works too.
 
 ---
 
@@ -557,8 +646,11 @@ Every command requires an authenticated Home Assistant user.
 
 - **Config entry:** the F1TV token (data) and "show in sidebar" (options).
 - **`Store`** (`.storage/pit_lane_live_board`): the TV delay, no-spoiler state and
-  per-session reveals, the last fired event per topic (§10.3), and the next renewal
-  time. Versioned schema, migrated forward.
+  per-session reveals, live timing on/off and auto-start, the last fired event per
+  topic and the stewards mark (§10.3), and the count of failed windows. Versioned
+  schema, migrated forward; a newer major version is refused rather than misread.
+  Settings save when changed; marks at most every 30 s while live; everything is
+  flushed on unload.
 - **Cache:** `<config>/.cache/pit_lane_live_board/`, disposable. Deleting it costs
   downloads, never data. Home Assistant's backups exclude `.cache/*` (verified in
   `homeassistant/components/backup/const.py`, 2026.6).
@@ -810,6 +902,37 @@ Decisions taken in chat with the owner.
   a refused F1TV token stopped the whole feed instead of only the map; open pages kept
   listening to the old hub after a reload; settings changed elsewhere never reached an
   open panel. Settings are now pushed to the panel (`settings/subscribe`).
+
+40. **Flags and stewards get their own card and entities** (asked by the owner after
+  0.1.0, designed by me): see §7.1.1 and §10.2. Automations were the reason: a red
+  flag, a safety car or a penalty to a favourite driver are good triggers.
+41. **Three live topics are no longer subscribed** (taken by me, 0.2 review):
+  `TopThree`, `TimingStats` and `SessionData` fed nothing the page shows; dropping
+  them saves parsing and memory on every message.
+42. **Live timing starts paused** (asked by the owner, 0.2): nothing connects to F1 and
+  nothing live is written to disk until someone presses play in Settings, turns on the
+  `live_timing` switch, or enables "Start automatically at each session", which turns
+  it on once per session window (a pause pressed during a session holds). The reason
+  is a Home Assistant on an SD card. The changelog says it first: an update from 0.1
+  starts paused.
+43. **The Live page after a session** (asked by the owner, 0.2): §7.1.2. The next
+  session sits in the strip's right slot, where the data age is during a session (UI
+  review): no extra block above or below.
+44. **Settings behind a gear** (asked by the owner, 0.2; placement from the UI review):
+  §7.5. A fifth tab would crowd the phone's tab row for a page visited rarely.
+45. **A performance review of 0.1** (asked by the owner, 0.2): four review agents
+  (live backend, Home Assistant integration, history, panel). What changed: the view in
+  sections sent as deltas and encoded once; entity writes only on change; one live loop
+  with a capped release; the map outline once and the map subscribed only while seen;
+  race control parsed once per message; the finalised check once per batch; history
+  from memory with parallel downloads, a TimingData prefilter, `LapSeries` for the lap
+  chart, an outline per circuit from the latest qualifying; cache ages that follow a
+  settled round; a token-bucket limiter keeping 20 requests an hour for the calendar;
+  qualifying tabs only from 1994; the current weekend's rounds from the calendar; a
+  sector 3 that arrives after the lap closes (qualifying) assigned to that lap; the
+  panel kept across a reload; the start-up never waiting on the network.
+46. **On a phone the stewards card is one row of chips** (UI review, 0.2): the four
+  columns would push the tower below the fold during a race.
 
 ---
 

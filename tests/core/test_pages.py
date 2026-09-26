@@ -8,7 +8,8 @@ from .test_schedule import MEETINGS, at
 
 
 def test_tabs_follow_what_exists():
-    assert pages.tabs_for(1950, False) == ["race", "qualifying"]
+    assert pages.tabs_for(1950, False) == ["race"]  # no qualifying before 1994
+    assert pages.tabs_for(1994, False) == ["race", "qualifying"]
     assert pages.tabs_for(2000, False) == ["race", "qualifying", "lap_chart"]
     assert pages.tabs_for(2015, True) == [
         "race",

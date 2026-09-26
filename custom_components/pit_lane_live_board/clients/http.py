@@ -53,14 +53,21 @@ class InFlight:
 class RateLimiter:
     """A token bucket plus an hourly budget, both on our side of the wire.
 
-    Jolpica allows 4 requests a second and 500 an hour, and says both will go
-    down; we stay at half of each (SPEC §4.1).
+    Jolpica allows bursts of 4 requests a second and 500 an hour, and says both
+    will go down. We allow bursts of 3 refilled at 2 a second, and 200 an hour, of
+    which the last `reserve` are kept for the calendar: browsing old seasons can
+    never leave the live windows without a schedule (SPEC §4.1).
     """
 
-    def __init__(self, per_second: float, per_hour: int) -> None:
-        self._interval = 1.0 / per_second
+    def __init__(
+        self, per_second: float, per_hour: int, burst: int = 3, reserve: int = 20
+    ) -> None:
+        self._rate = per_second
+        self._burst = float(burst)
+        self._tokens = float(burst)
+        self._refilled = time.monotonic()
         self._per_hour = per_hour
-        self._next = 0.0
+        self._reserve = reserve
         self._hour: deque[float] = deque()
         self._lock = asyncio.Lock()
 
@@ -73,14 +80,22 @@ class RateLimiter:
         while self._hour and self._hour[0] < cutoff:
             self._hour.popleft()
 
-    async def acquire(self) -> None:
+    def _refill(self) -> None:
+        now = time.monotonic()
+        self._tokens = min(
+            self._burst, self._tokens + (now - self._refilled) * self._rate
+        )
+        self._refilled = now
+
+    async def acquire(self, priority: bool = False) -> None:
         async with self._lock:
             self._forget()
-            if len(self._hour) >= self._per_hour:
+            left = self._per_hour - len(self._hour)
+            if left <= 0 or (left <= self._reserve and not priority):
                 raise BudgetExhausted
-            now = time.monotonic()
-            if self._next > now:
-                await asyncio.sleep(self._next - now)
-                now = time.monotonic()
-            self._next = now + self._interval
-            self._hour.append(now)
+            self._refill()
+            if self._tokens < 1:
+                await asyncio.sleep((1 - self._tokens) / self._rate)
+                self._refill()
+            self._tokens -= 1
+            self._hour.append(time.monotonic())

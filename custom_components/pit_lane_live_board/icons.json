@@ -27,21 +27,54 @@
       },
       "f1tv": {
         "default": "mdi:television-play"
+      },
+      "penalties": {
+        "default": "mdi:gavel"
+      },
+      "investigations": {
+        "default": "mdi:magnify"
+      },
+      "race_control_message": {
+        "default": "mdi:message-alert-outline"
       }
     },
     "binary_sensor": {
       "session_live": {
         "default": "mdi:flag-checkered"
+      },
+      "safety_car": {
+        "default": "mdi:car-emergency"
+      },
+      "virtual_safety_car": {
+        "default": "mdi:car-clock"
+      },
+      "red_flag": {
+        "default": "mdi:flag-variant"
+      },
+      "yellow_flag": {
+        "default": "mdi:flag-outline",
+        "state": {
+          "on": "mdi:flag"
+        }
       }
     },
     "event": {
       "race_control": {
         "default": "mdi:bullhorn-outline"
+      },
+      "stewards": {
+        "default": "mdi:gavel"
       }
     },
     "switch": {
       "no_spoiler": {
         "default": "mdi:eye-off-outline"
+      },
+      "live_timing": {
+        "default": "mdi:play-circle-outline",
+        "state": {
+          "off": "mdi:pause-circle-outline"
+        }
       }
     },
     "number": {

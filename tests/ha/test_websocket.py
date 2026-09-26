@@ -73,7 +73,12 @@ async def test_panel_is_registered_for_everyone(hass: HomeAssistant, setup):
     panel = hass.data["frontend_panels"][URL_PATH]
     assert panel.require_admin is False
     assert panel.sidebar_title == "Live Board"
+    # A reload keeps the panel, so open pages keep their place; removal takes it.
     await hass.config_entries.async_unload(setup.entry_id)
+    assert URL_PATH in hass.data["frontend_panels"]
+    from custom_components.pit_lane_live_board import async_remove_entry
+
+    await async_remove_entry(hass, setup)
     assert URL_PATH not in hass.data["frontend_panels"]
 
 
@@ -240,7 +245,7 @@ async def test_live_subscription_starts_idle(hass, setup, hass_ws_client):
     await ws.send_json_auto_id({"type": f"{P}live/subscribe"})
     assert (await ws.receive_json())["success"]
     event = await ws.receive_json()
-    assert event["event"]["state"] == "idle"
+    assert event["event"]["state"] == "paused" and event["event"]["full"] is True
     assert event["event"]["next_session"]["meeting"] == "Test Grand Prix"
 
 
@@ -266,3 +271,54 @@ async def test_no_spoiler_fails_closed_without_a_calendar(hass, setup, hass_ws_c
         {"type": f"{P}results/detail", "season": hub.season, "round": 3, "tab": "race"}
     )
     assert (await ws.receive_json())["result"]["hidden"] is True
+
+
+def _jwt(**claims) -> str:
+    import base64
+    import json
+
+    part = base64.urlsafe_b64encode(json.dumps(claims).encode()).decode().rstrip("=")
+    return f"eyJhbGciOiJSUzI1NiJ9.{part}.sig"
+
+
+async def test_play_and_auto_start_from_the_page(hass, setup, hass_ws_client):
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id(
+        {"type": f"{P}settings/set", "live": True, "auto_start": True}
+    )
+    result = (await ws.receive_json())["result"]
+    assert result["live"] is True and result["auto_start"] is True
+    assert setup.runtime_data.hub.settings.live is True
+
+
+async def test_the_token_is_set_by_admins_and_never_sent_back(
+    hass: HomeAssistant, setup, hass_ws_client, hass_admin_user
+):
+    good = _jwt(
+        exp=int((datetime.now(UTC) + timedelta(days=4)).timestamp()), SessionId="s"
+    )
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": f"{P}f1tv/set", "token": "nonsense"})
+    reply = await ws.receive_json()
+    assert not reply["success"] and reply["error"]["code"] == "invalid_token"
+    await ws.send_json_auto_id({"type": f"{P}f1tv/set", "token": good})
+    reply = await ws.receive_json()
+    assert reply["result"]["f1tv"]["status"] == "active"
+    assert good not in str(reply)  # INV-3
+    assert setup.data["f1tv_token"] == good
+    await ws.send_json_auto_id({"type": f"{P}f1tv/remove"})
+    assert (await ws.receive_json())["result"]["f1tv"]["status"] == "not_configured"
+
+    hass_admin_user.groups = []
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": f"{P}f1tv/set", "token": good})
+    reply = await ws.receive_json()
+    assert not reply["success"] and reply["error"]["code"] == "unauthorized"
+
+
+async def test_the_entities_are_listed(hass, setup, hass_ws_client):
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": f"{P}entities"})
+    entities = (await ws.receive_json())["result"]["entities"]
+    keys = {e["key"] for e in entities}
+    assert {"live_timing", "safety_car", "penalties", "stewards", "tv_delay"} <= keys

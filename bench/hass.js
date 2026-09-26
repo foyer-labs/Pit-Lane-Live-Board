@@ -1,8 +1,9 @@
 // The bench's fake `hass`: answers the panel's WebSocket commands with the payloads
 // scripts/bench_data.py computed from real data through the backend's own code.
 //
-// Parameters (query string): page, live (race|qualifying|stale|idle|hidden|syncing|
-// connecting), lang (en|it), theme (light|dark), delay, spoiler, admin, f1tv.
+// Parameters (query string): page, live (race|qualifying|stale|final|paused|idle|
+// hidden|syncing|connecting), lang (en|it), theme (light|dark), delay, spoiler,
+// admin, f1tv, playing (true|false), auto (true|false).
 const params = new URLSearchParams(location.search);
 const NOW = Date.parse(params.get("now") ?? "2026-09-13T14:00:00Z");
 
@@ -56,6 +57,9 @@ export function createHass() {
   const settings = {
     tv_delay: Number(params.get("delay") ?? 45),
     no_spoiler: params.get("spoiler") === "true",
+    live: params.get("playing") !== "false",
+    auto_start: params.get("auto") === "true",
+    running: ["race", "qualifying", "stale"].includes(params.get("live") ?? "race"),
     revealed: [],
     season: 2026,
     first_season: 1950,
@@ -69,6 +73,7 @@ export function createHass() {
     language: params.get("lang") ?? "en",
     locale: { language: params.get("lang") ?? "en" },
     config: { time_zone: "Europe/Rome" },
+    states: {},
     user: { is_admin: admin },
     async callWS(msg) {
       const type = msg.type.replace(P, "");
@@ -78,8 +83,21 @@ export function createHass() {
         case "settings/set":
           if ("tv_delay" in msg) settings.tv_delay = msg.tv_delay;
           if ("no_spoiler" in msg) settings.no_spoiler = msg.no_spoiler;
+          if ("live" in msg) settings.live = msg.live;
+          if ("auto_start" in msg) settings.auto_start = msg.auto_start;
           pushSettings();
           return { ...settings };
+        case "f1tv/set":
+          if (!msg.token.startsWith("eyJ")) throw { code: "invalid_token", message: "token_invalid" };
+          settings.f1tv = { status: "active", expires: "2026-10-16T10:00:00+00:00", product: "F1 TV Pro" };
+          pushSettings();
+          return { ...settings };
+        case "f1tv/remove":
+          settings.f1tv = { status: "not_configured", expires: null, product: null };
+          pushSettings();
+          return { ...settings };
+        case "entities":
+          return data("entities");
         case "spoiler/reveal":
           return { ...settings, revealed: [...settings.revealed, msg.session] };
         case "seasons":
@@ -106,11 +124,15 @@ export function createHass() {
         } else if (type === "live/subscribe") {
           const live = params.get("live") ?? "race";
           const view = ["syncing", "connecting"].includes(live)
-            ? { state: live, delay: settings.tv_delay, next_session: null }
+            ? { full: true, state: live, delay: settings.tv_delay, next_session: null }
             : await data(`live_${live}`);
-          callback({ ...view, delay: settings.tv_delay });
+          callback({ ...view, delay: settings.tv_delay, paused: !settings.live, auto_start: settings.auto_start });
         } else if (type === "map/subscribe") {
-          callback(params.get("f1tv") === "not_configured" ? null : await data("map"));
+          callback(
+            params.get("f1tv") === "not_configured"
+              ? { full: true, outline: null, cars: [], utc: null }
+              : await data("map"),
+          );
         }
         return () => {};
       },

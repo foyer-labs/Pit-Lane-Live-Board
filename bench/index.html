@@ -22,7 +22,9 @@
   const panel = document.createElement("pit-lane-live-board-panel");
   panel.narrow = innerWidth < 870;
   document.body.append(panel);
-  panel.hass = createHass();
+  const hass = createHass();
+  try { hass.states = await (await fetch("./data/states.json", { cache: "no-store" })).json(); } catch {}
+  panel.hass = hass;
   if (params.get("round")) {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     for (let i = 0; i < 50; i++) {

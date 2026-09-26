@@ -36,6 +36,7 @@ class SessionsCalendar(LiveBoardEntity, CalendarEntity):
     def __init__(self, entry: LiveBoardConfigEntry, key: str) -> None:
         super().__init__(entry, key)
         self._names: dict[str, str] = {}
+        self._round = "Round {round}"
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
@@ -48,6 +49,9 @@ class SessionsCalendar(LiveBoardEntity, CalendarEntity):
             for key, value in translations.items()
             if key.startswith(prefix)
         }
+        self._round = translations.get(
+            f"component.{DOMAIN}.selector.calendar.options.round", "Round {round}"
+        )
 
     def _event(self, meeting: Meeting, session: Session) -> CalendarEvent:
         name = self._names.get(session.kind, session.kind.replace("_", " ").title())
@@ -66,7 +70,7 @@ class SessionsCalendar(LiveBoardEntity, CalendarEntity):
             start=session.start,
             end=session.end,
             summary=f"{meeting.name} — {name}",
-            description=f"Round {meeting.round}",
+            description=self._round.replace("{round}", str(meeting.round)),
             location=where or None,
             uid=session.key,
         )

@@ -31,8 +31,11 @@ the results and standings after it. Free, with no account.
   best lap, the three sectors in purple and green, the tyre each driver is on and how
   many laps it has done, pit stops, and places gained or lost since the start.
 - **Qualifying done right.** Q1, Q2 and Q3 with the knockout line, best laps and gaps.
-- **Race control and weather.** Flags, safety car, virtual safety car, red flags,
-  penalties and every steward message; air and track temperature, wind and rain.
+- **Flags and stewards at a glance.** The track status, yellow sectors, the safety car
+  and its last lap, every penalty (a `+5s` next to the driver until it is served),
+  incidents under investigation and deleted laps, in one card above the tower.
+- **Race control and weather.** Every message from race control, filtered by flags or
+  penalties; air and track temperature, wind and rain.
 - **Team radio.** The clips F1 publishes during the session, with a play button.
 - **The live track map** — with an F1TV subscription. Every car on the circuit, in its
   team colour. Everything else works without an account.
@@ -45,9 +48,15 @@ the results and standings after it. Free, with no account.
 - **Every race since 1950.** Results, qualifying and sprints for any season; lap charts,
   tyre strategies, lap times, pit stops, race control and weather for the modern era.
 - **Both championships.** Drivers and constructors, for any season, after any round.
-- **Automations.** A calendar of sessions, the track status and a race-control event:
-  the lights turn yellow with the safety car and your phone tells you the race starts
-  in 15 minutes.
+- **After the flag.** Between sessions the Live page keeps the final classification,
+  the stewards' decisions and the pit stops, with a countdown to the next session.
+- **Automations.** A calendar of sessions, the track status, safety car, VSC, red and
+  yellow flag sensors, penalties and investigations, and events for race control and
+  every stewards' decision: the lights turn yellow with the safety car, your phone
+  tells you your driver got a penalty or that the race starts in 15 minutes.
+- **Easy on a Raspberry Pi.** Live timing starts paused: nothing connects to F1 and
+  nothing is written to disk until you press play, or let it start by itself at each
+  session.
 - **English and Italian**, light and dark, on a phone or a wall tablet.
 
 <p align="center">
@@ -61,9 +70,12 @@ You need Home Assistant 2026.6 or later and HACS.
 1. In HACS, add this repository as a *Custom repository* (category *Integration*),
    download *Pit Lane Live Board* and restart Home Assistant.
 2. *Settings → Devices & services → Add integration → Pit Lane Live Board.*
-3. Open **Live Board** in the sidebar.
+3. Open **Live Board** in the sidebar, open **Settings** (the gear) and press play, or
+   turn on *Start automatically at each session*. Calendar, results and standings work
+   without it.
 
-For the live track map, an administrator pastes an F1TV token under *Configure*; the
+For the live track map, an administrator pastes an F1TV token in the panel's
+**Settings**; the
 **[guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md)**
 shows where to find it, how to read the timing tower, how to set the TV delay, and
 ready-made automations.

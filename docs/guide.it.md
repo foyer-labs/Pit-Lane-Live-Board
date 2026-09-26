@@ -7,8 +7,10 @@ calendario, ogni gara dal 1950 e i due campionati. Questa guida copre tutto, in 
 leggi le prime due sezioni e sei a posto; torna sulle altre quando ti servono.
 
 - [Installazione](#installazione)
+- [Impostazioni e tempi live](#impostazioni-e-tempi-live)
 - [Le quattro pagine](#le-quattro-pagine)
 - [Leggere la classifica live](#leggere-la-classifica-live)
+- [Bandiere e commissari](#bandiere-e-commissari)
 - [Ritardo TV](#ritardo-tv)
 - [Modalità senza spoiler](#modalità-senza-spoiler)
 - [F1TV e la mappa live](#f1tv-e-la-mappa-live)
@@ -32,20 +34,58 @@ aggiunge solo la mappa live della pista.
 3. *Impostazioni → Dispositivi e servizi → Aggiungi integrazione → Pit Lane Live
    Board.* Non c'è niente da compilare: leggi l'avviso e conferma.
 4. **Live Board** compare nella barra laterale, per tutti gli utenti di casa.
+5. Apri le **Impostazioni** del pannello (l'ingranaggio in alto a destra) e premi
+   **play**, oppure attiva *Avvia automaticamente a ogni sessione*. I tempi live partono
+   in pausa: vedi la sezione successiva.
 
 Per rimuoverlo: elimina l'integrazione in *Dispositivi e servizi*, poi toglilo da HACS.
 La cache (in `.cache/pit_lane_live_board` nella cartella di configurazione) si può
 cancellare in qualsiasi momento; non finisce nei backup.
 
+## Impostazioni e tempi live
+
+![La pagina Impostazioni](screenshots/settings.it.png)
+
+L'ingranaggio in alto a destra nel pannello apre le **Impostazioni**:
+
+- **Tempi live.** Il pulsante grande li accende e li spegne. **In pausa**, niente si
+  collega alla F1 e niente di live viene scritto su disco — utile su un Raspberry Pi con
+  una scheda SD — e le entità live non sono disponibili. **Attivi**, l'integrazione si
+  collega da sola da 30 minuti prima di ogni sessione e si stacca pochi minuti dopo la
+  fine; fuori dalle sessioni controlla solo il calendario. Lo stesso interruttore è
+  l'entità **Tempi live**.
+- **Avvia automaticamente a ogni sessione.** I tempi live si accendono da soli quando si
+  apre la finestra di ogni sessione. Se li metti in pausa durante una sessione, restano
+  in pausa fino alla successiva.
+- **Ritardo TV**, lo stesso controllo dell'orologio in alto (vedi [Ritardo
+  TV](#ritardo-tv)).
+- **F1TV** (solo amministratori): stato e scadenza del token, un campo per incollarne
+  uno nuovo e *Rimuovi* (vedi [F1TV](#f1tv-e-la-mappa-live)).
+- **Entità**: tutte le entità dell'integrazione con il loro stato; cliccane una per la
+  sua cronologia e le sue impostazioni.
+
+Mentre i tempi live sono in pausa, in alto compare l'etichetta tratteggiata **In
+pausa**, che apre le Impostazioni. Calendario, risultati e classifiche non ne dipendono.
+
 ## Le quattro pagine
 
 ![La pagina Live durante una gara](screenshots/live.it.png)
 
-**Live.** Durante una sessione: la striscia della sessione (giro o tempo rimanente,
-stato della pista), la classifica con i tempi, la direzione gara, i team radio, il
-meteo, i pit stop e — con F1TV — la mappa della pista. Tra una sessione e l'altra: la
-prossima sessione con il conto alla rovescia. La pagina si collega al live timing della
-F1 da 30 minuti prima di ogni sessione e si stacca pochi minuti dopo la fine.
+**Live.** Durante una sessione: la striscia della sessione (giro o tempo rimanente, e
+quanto sono vecchi i dati), [bandiere e commissari](#bandiere-e-commissari), la
+classifica con i tempi, la direzione gara, i team radio, il meteo, i pit stop e — con
+F1TV — la mappa della pista.
+
+![La pagina Live dopo la gara](screenshots/final.it.png)
+
+Dopo una sessione la pagina ne conserva lo **stato finale**, fermo: la classifica, le
+decisioni dei commissari, la direzione gara, i team radio e i pit stop, con l'etichetta
+*FINALE*, l'ora in cui è terminata e, a destra, il conto alla rovescia per la sessione
+successiva. Se durante la sessione i tempi live erano in pausa, lo stato finale arriva
+dall'archivio della F1 la prima volta che apri la pagina (viene pubblicato circa mezz'ora
+dopo la sessione). Prima della prima sessione dell'anno, o se non c'è niente da
+mostrare, la pagina mostra la prossima sessione con il conto alla rovescia e, se i
+tempi live sono in pausa, un pulsante play.
 
 ![Qualifiche, tema scuro](screenshots/qualifying.it.png)
 
@@ -66,7 +106,8 @@ compare solo quando i dati esistono:
 
 | Scheda | Da |
 |---|---|
-| Gara, Qualifiche | 1950 (tempi di qualifica da metà anni '90) |
+| Gara | 1950 |
+| Qualifiche | 1994 |
 | Sprint | 2021 |
 | Posizioni giro per giro | 1996 |
 | Pit stop | 2011 |
@@ -102,10 +143,10 @@ I colori seguono la convenzione della F1: **viola** è il più veloce della sess
 **verde** è il miglior personale del pilota. Etichette: `BOX` in corsia box, `USCITA`
 mentre ne esce, `RIT` ritirato, `FERMO` fermo in pista, `FUORI` eliminato in qualifica.
 
+Un `+5s` rosso dopo il numero di un pilota è una penalità in tempo non ancora scontata.
+
 Clicca una riga per seguire un pilota: la riga, il suo punto sulla mappa e i suoi team
-radio vengono evidenziati. La direzione gara si filtra per bandiere o per penalità; le
-penalità sono riconosciute dal testo dei commissari, quindi il filtro fa del suo
-meglio.
+radio vengono evidenziati. La direzione gara si filtra per bandiere o per penalità.
 
 Quando il flusso tace, un avviso lo dice dopo 30 secondi e la pagina diventa grigia
 dopo 60: niente che non sia live viene mai mostrato come live.
@@ -113,6 +154,26 @@ dopo 60: niente che non sia live viene mai mostrato come live.
 ![La versione da telefono](screenshots/phone.it.png)
 
 Sul telefono la classifica tiene posizione, pilota, distacco, ultimo giro e gomma.
+
+## Bandiere e commissari
+
+La scheda tra la striscia della sessione e la classifica legge la direzione gara per te:
+
+| Colonna | Cosa mostra |
+|---|---|
+| Pista | Lo stato della pista, i settori in giallo (`S7`) o doppio giallo (`S10 ×2`) e la fase della safety car o della VSC, compreso *rientra in questo giro*. |
+| Penalità | Tutte le penalità della sessione, dalla più recente: `+5s`, `DT` (drive-through), `SG` (stop and go), penalità in griglia, `DSQ`. Una penalità scontata diventa grigia con un ✓. |
+| Investigazioni | Incidenti *annotati*, *sotto investigazione* o da esaminare *dopo la gara*, con le auto e la curva. Escono dall'elenco quando i commissari decidono. |
+| Limiti della pista | Giri cancellati per pilota, e ⚑ per una bandiera bianconera. |
+
+Quando è tutto tranquillo la scheda è una riga sola; con la safety car o una bandiera
+rossa prende un bordo colorato. Sul telefono è una riga di etichette: toccala per aprire
+le colonne.
+
+La F1 non ha un flusso strutturato per le penalità: vengono lette dai messaggi dei
+commissari. La lettura è stata verificata su quattro gare intere senza errori, ma una
+formulazione nuova potrebbe sfuggire; la direzione gara mostra sempre il messaggio
+originale.
 
 ## Ritardo TV
 
@@ -157,14 +218,15 @@ Un amministratore aggiunge il token una volta:
 2. Apri gli strumenti per sviluppatori del browser (F12) → *Applicazione*
    (*Archiviazione* in Firefox) → *Cookie* → `https://f1tv.formula1.com`.
 3. Copia il **valore** del cookie `loginSession`.
-4. In Home Assistant: *Impostazioni → Dispositivi e servizi → Pit Lane Live Board →
-   Configura*, incollalo in *Token F1TV* e conferma.
+4. Nel pannello: **Impostazioni** (l'ingranaggio) → *F1TV*, incollalo e premi *Salva*.
+   (Oppure in Home Assistant: *Impostazioni → Dispositivi e servizi → Pit Lane Live
+   Board → Configura*.)
 
 Va bene anche il solo token o un'intestazione `Bearer …`. Il token non viene più
 mostrato. Si rinnova da solo (ogni pochi giorni); circa una volta al mese la F1 chiude
 l'accesso da cui proviene, e un avviso in *Impostazioni → Riparazioni* te ne chiede uno
-nuovo — nel frattempo tutto tranne la mappa continua a funzionare. Da *Configura* lo
-puoi anche rimuovere.
+nuovo — nel frattempo tutto tranne la mappa continua a funzionare. *Rimuovi il token*
+nelle Impostazioni (o in *Configura*) lo toglie.
 
 Dove viene conservato: in `.storage/core.config_entries` di Home Assistant, in chiaro,
 come il token di ogni altra integrazione. Non viene mai mandato alla pagina, alle
@@ -188,13 +250,25 @@ nella pagina del dispositivo):
 | Stato della pista | `clear`, `yellow`, `safety_car`, `virtual_safety_car`, `vsc_ending`, `red_flag`, `chequered`. |
 | Giro | Giro in corso; attributo `total_laps`. |
 | Sessione in corso | Acceso mentre una sessione è in corso. |
+| Safety car | Acceso mentre la safety car è in pista; attributo `ending` nel suo ultimo giro. |
+| Virtual safety car | Lo stesso per la virtual safety car. |
+| Bandiera rossa | Acceso con bandiera rossa. |
+| Bandiera gialla | Acceso con una gialla ovunque; attributi `sectors` e `double`. |
+| Penalità | Penalità date nella sessione; attributo `penalties` (pilota, tipo, secondi, motivo, giro, scontata). |
+| Investigazioni | Incidenti annotati o sotto investigazione; attributo `investigations`. |
+| Messaggio della direzione gara | L'ultimo messaggio della direzione gara, in inglese come lo scrive la F1. |
 | Direzione gara (evento) | `green_flag`, `yellow_flag`, `safety_car`, `virtual_safety_car`, `vsc_ending`, `red_flag`, `chequered_flag`, `session_started`, `session_ended`. |
+| Commissari (evento) | Un evento per ogni decisione dei commissari: `time_penalty`, `drive_through`, `stop_go`, `grid_penalty`, `penalty_served`, `disqualified`, `noted`, `investigation`, `investigation_after_race`, `no_further_action`, `warning`, `black_and_white_flag`, `lap_deleted`; attributi `drivers`, `numbers`, `seconds`, `places`, `reason`, `turn`, `lap`, `message`. |
+| Tempi live | Tempi live attivi (play) o in pausa. |
 | Modalità senza spoiler | Interruttore. |
 | Ritardo TV | Secondi di ritardo. |
 | F1TV | Stato di F1TV (diagnostica). |
 
 Le entità live seguono il ritardo TV, diventano non disponibili quando il flusso si
-perde e tacciono in modalità senza spoiler.
+perde o i tempi live sono in pausa, e tacciono in modalità senza spoiler. Scrivono un
+nuovo stato solo quando il valore cambia, quindi una gara aggiunge qualche centinaio di
+righe al registro, non migliaia; gli elenchi di penalità e investigazioni restano fuori
+dal registro.
 
 Negli esempi qui sotto gli id sono quelli di un'installazione in inglese: sostituiscili
 con i tuoi.
@@ -261,7 +335,60 @@ actions:
       message: Bandiera rossa!
 ```
 
+**Una notifica quando il tuo pilota viene penalizzato**, dall'evento dei commissari:
+
+```yaml
+alias: Penalità per Leclerc
+triggers:
+  - trigger: state
+    entity_id: event.pit_lane_live_board_stewards
+conditions:
+  - "{{ trigger.to_state.attributes.event_type in ['time_penalty', 'drive_through', 'stop_go', 'grid_penalty'] }}"
+  - "{{ 'LEC' in trigger.to_state.attributes.drivers }}"
+actions:
+  - action: notify.mobile_app_mio_telefono
+    data:
+      message: >-
+        {{ trigger.to_state.attributes.drivers | join(', ') }}: penalità
+        {{ trigger.to_state.attributes.seconds ~ ' s ' if trigger.to_state.attributes.seconds else '' }}
+        ({{ trigger.to_state.attributes.reason | lower }})
+```
+
+**Luci arancioni per tutto il periodo di safety car**, dal suo sensore binario:
+
+```yaml
+alias: Luci safety car
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.pit_lane_live_board_safety_car
+    to: ["on", "off"]
+actions:
+  - action: light.turn_on
+    target: { entity_id: light.soggiorno }
+    data:
+      color_name: "{{ 'orange' if trigger.to_state.state == 'on' else 'white' }}"
+```
+
+**Tempi live solo per la gara**, se preferisci tenerli in pausa il resto del weekend:
+
+```yaml
+alias: Tempi live per la gara
+triggers:
+  - trigger: calendar
+    event: start
+    offset: "-0:30:0"
+    entity_id: calendar.pit_lane_live_board_sessions
+conditions:
+  - "{{ trigger.calendar_event.summary.endswith('Gara') }}"
+actions:
+  - action: switch.turn_on
+    target: { entity_id: switch.pit_lane_live_board_live_timing }
+```
+
 ## Risoluzione dei problemi
+
+**La pagina Live dice "I tempi live sono in pausa".** Premi play nella pagina o nelle
+Impostazioni, oppure attiva *Avvia automaticamente a ogni sessione*.
 
 **La pagina Live dice "Nessuna sessione in corso" durante una sessione.** La
 connessione si apre 30 minuti prima dell'orario previsto: controlla l'orario nella
@@ -307,8 +434,10 @@ allinearti al tuo schermo.
 dettaglio di una gara dal 2018 scarica qualche megabyte una volta sola. Tutto il resto
 è piccolo e in cache.
 
-**Funziona su un Raspberry Pi?** Sì: nessuna libreria pesante, e fuori dalle finestre
-di sessione controlla solo il calendario.
+**Funziona su un Raspberry Pi?** Sì: nessuna libreria pesante; fuori dalle finestre di
+sessione controlla solo il calendario, e mentre i tempi live sono in pausa non scrive
+niente di live sulla scheda SD. Durante una sessione la pagina riceve solo ciò che
+cambia.
 
 **Perché niente foto dei piloti o loghi delle squadre?** Appartengono alla F1 e alle
 squadre. I piloti sono indicati con la sigla di tre lettere, il numero, il nome e il

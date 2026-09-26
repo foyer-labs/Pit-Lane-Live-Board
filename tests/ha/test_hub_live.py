@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime, timedelta
+import json
 import time
 from unittest.mock import patch
 
@@ -56,15 +57,21 @@ async def hub(hass: HomeAssistant, aioclient_mock, race_start, fake_client):
         entry.add_to_hass(hass)
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
+        # The first tick runs in the background: let it finish, so it never
+        # closes a session a test opens by hand.
+        await entry.runtime_data.hub.first_tick
         yield entry.runtime_data.hub
         await hass.config_entries.async_unload(entry.entry_id)
         await hass.async_block_till_done()
 
 
-async def test_idle_outside_windows(hub):
+async def test_paused_by_default_then_idle_outside_windows(hub):
+    """Decision 42: nothing connects until someone presses play."""
     view = hub.live_view()
-    assert view["state"] == "idle"
+    assert view["state"] == "paused" and view["paused"] is True
     assert view["next_session"]["meeting"] == "Test Grand Prix"
+    await hub.async_update_settings(hub.settings.with_live(True))
+    assert hub.live_view()["state"] == "idle"
     assert FakeClient.instances == []
 
 
@@ -161,9 +168,41 @@ async def test_the_window_opens_and_closes(hass: HomeAssistant, hub):
 
     hub.meetings = parse_schedule(schedule_payload(now + timedelta(minutes=10)))
     await hub._async_tick(now)
+    assert hub.live is None  # paused: the window opens, nothing connects
+    await hub.store.async_save(hub.settings.with_live(True))
+    await hub._async_tick(now)
     assert hub.live is not None and hub.live.session.kind == "race"
     await hub._async_tick(now + timedelta(hours=8))
     assert hub.live is None
+
+
+async def test_pause_closes_the_connection(hass: HomeAssistant, hub):
+    now = datetime.now(UTC)
+    from custom_components.pit_lane_live_board.core.schedule import parse_schedule
+
+    hub.meetings = parse_schedule(schedule_payload(now + timedelta(minutes=10)))
+    await hub.async_update_settings(hub.settings.with_live(True))
+    await hub._async_tick(now)
+    assert hub.live is not None
+    await hub.async_update_settings(hub.settings.with_live(False))
+    assert hub.live is None
+    assert hub.store.failed_windows == 0  # a pause is not a failed window
+
+
+async def test_auto_start_turns_live_timing_on_once_per_window(
+    hass: HomeAssistant, hub
+):
+    now = datetime.now(UTC)
+    from custom_components.pit_lane_live_board.core.schedule import parse_schedule
+
+    hub.meetings = parse_schedule(schedule_payload(now + timedelta(minutes=10)))
+    await hub.store.async_save(hub.settings.with_auto_start(True))
+    await hub._async_tick(now)
+    assert hub.settings.live is True and hub.live is not None
+    # Paused by hand during the session: auto-start does not undo it.
+    await hub.async_update_settings(hub.settings.with_live(False))
+    await hub._async_tick(now)
+    assert hub.settings.live is False and hub.live is None
 
 
 async def test_failed_windows_raise_a_repair(hass: HomeAssistant, hub):
@@ -171,6 +210,7 @@ async def test_failed_windows_raise_a_repair(hass: HomeAssistant, hub):
     from custom_components.pit_lane_live_board.core.schedule import parse_schedule
 
     hub.meetings = parse_schedule(schedule_payload(now + timedelta(minutes=10)))
+    await hub.store.async_save(hub.settings.with_live(True))
     with patch.object(FakeClient, "run", new=lambda self: asyncio.Event().wait()):
         for _ in range(FAILED_WINDOWS_FOR_REPAIR):
             await hub._async_tick(now)
@@ -209,13 +249,17 @@ async def test_the_map_projects_positions_and_respects_no_spoiler(hub):
     )
     await settle()
     assert hub.archive.outline.await_args.args[0] == 99  # the circuit key
-    view = hub.map_view()
-    assert view["outline"]["width"] == 1000.0
+    view = json.loads(hub.map_payload(broadcast=False, full=True))
+    assert view["full"] is True and view["outline"]["width"] == 1000.0
     (car,) = view["cars"]
-    assert (car["x"], car["y"]) == outline.project(x, y)
+    assert [car["x"], car["y"]] == list(outline.project(x, y))
     assert hub.live_view()["map_available"] is True
+    # The outline travels once; then only the cars.
+    json.loads(hub.map_payload(broadcast=True))
+    assert "outline" not in json.loads(hub.map_payload(broadcast=True))
     await hub.async_update_settings(hub.settings.with_no_spoiler(True))
-    assert hub.map_view() is None
+    hidden = json.loads(hub.map_payload(broadcast=False))
+    assert hidden["outline"] is None and hidden["cars"] == []
 
 
 async def test_a_reconnect_keeps_the_pit_log(hub):
@@ -272,3 +316,65 @@ async def test_the_page_says_how_old_its_data_is_while_quiet(hub):
     first = hub.live_view()["data_age"]
     await settle(1.2)
     assert hub.live_view()["data_age"] >= first + 1
+
+
+async def test_a_pause_holds_when_live_timing_was_already_on(hass: HomeAssistant, hub):
+    now = datetime.now(UTC)
+    from custom_components.pit_lane_live_board.core.schedule import parse_schedule
+
+    hub.meetings = parse_schedule(schedule_payload(now + timedelta(minutes=10)))
+    await hub.store.async_save(hub.settings.with_auto_start(True).with_live(True))
+    await hub._async_tick(now)
+    assert hub.live is not None
+    await hub.async_update_settings(hub.settings.with_live(False))
+    await hub._async_tick(now)
+    assert hub.settings.live is False and hub.live is None
+    assert hub.store.auto_window == hub.meetings[0].race.key  # survives a restart
+
+
+async def test_a_reconnect_sends_every_section_again(hass: HomeAssistant, hub):
+    from custom_components.pit_lane_live_board.hub import listen_live
+
+    received: list[dict] = []
+    unsub = listen_live(hass, lambda payload: received.append(json.loads(payload)))
+    await hub._async_start_live(None, None)
+    client = FakeClient.instances[-1]
+    client.keyframes(keyframes())
+    await settle()
+    frames = keyframes()
+    frames["RaceControlMessages"] = {
+        "Messages": [
+            {"Utc": "t", "Lap": 3, "Category": "Other", "Message": "NEW MESSAGE"}
+        ]
+    }
+    client.keyframes(frames)  # after a drop: versions restart at 1
+    await settle()
+    assert received[-1]["full"] is True
+    assert received[-1]["race_control"][0]["message"] == "NEW MESSAGE"
+    unsub()
+
+
+async def test_the_final_view_is_never_replaced_by_an_older_session(
+    hass: HomeAssistant, hub
+):
+    from unittest.mock import AsyncMock
+
+    from custom_components.pit_lane_live_board.core.schedule import parse_schedule
+
+    hub.meetings = parse_schedule(
+        schedule_payload(datetime.now(UTC) - timedelta(hours=5))
+    )
+    race = hub.meetings[0].race
+    await hub._async_start_live(hub.meetings[0], race)
+    FakeClient.instances[-1].keyframes(keyframes())
+    await settle()
+    await hub._async_stop_live(counts_as_window=False)
+    hub.archive.final_state = AsyncMock(return_value=None)
+    # A race that ended early: its final is newer than the last session whose
+    # scheduled end has passed; the older one must not replace it.
+    hub.final.key = "newer-session"
+    hub.final.start = race.start + timedelta(hours=1)
+    hub.ensure_final()
+    await hass.async_block_till_done()
+    assert hub.final.key == "newer-session"
+    hub.archive.final_state.assert_not_awaited()

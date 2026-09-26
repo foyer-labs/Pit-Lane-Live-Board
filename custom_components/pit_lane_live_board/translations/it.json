@@ -31,6 +31,11 @@
         "qualifying": "Qualifiche",
         "race": "Gara"
       }
+    },
+    "calendar": {
+      "options": {
+        "round": "Tappa {round}"
+      }
     }
   },
   "options": {
@@ -110,11 +115,77 @@
             "name": "Scadenza"
           }
         }
+      },
+      "penalties": {
+        "name": "Penalità",
+        "state_attributes": {
+          "penalties": {
+            "name": "Penalità"
+          }
+        }
+      },
+      "investigations": {
+        "name": "Investigazioni",
+        "state_attributes": {
+          "investigations": {
+            "name": "Investigazioni"
+          }
+        }
+      },
+      "race_control_message": {
+        "name": "Messaggio della direzione gara",
+        "state_attributes": {
+          "category": {
+            "name": "Categoria"
+          },
+          "flag": {
+            "name": "Bandiera"
+          },
+          "sector": {
+            "name": "Settore"
+          },
+          "lap": {
+            "name": "Giro"
+          },
+          "utc": {
+            "name": "Ora"
+          }
+        }
       }
     },
     "binary_sensor": {
       "session_live": {
         "name": "Sessione in corso"
+      },
+      "safety_car": {
+        "name": "Safety car",
+        "state_attributes": {
+          "ending": {
+            "name": "Rientra in questo giro"
+          }
+        }
+      },
+      "virtual_safety_car": {
+        "name": "Virtual safety car",
+        "state_attributes": {
+          "ending": {
+            "name": "In chiusura"
+          }
+        }
+      },
+      "red_flag": {
+        "name": "Bandiera rossa"
+      },
+      "yellow_flag": {
+        "name": "Bandiera gialla",
+        "state_attributes": {
+          "sectors": {
+            "name": "Settori"
+          },
+          "double": {
+            "name": "Doppia gialla"
+          }
+        }
       }
     },
     "event": {
@@ -135,11 +206,36 @@
             }
           }
         }
+      },
+      "stewards": {
+        "name": "Commissari",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "time_penalty": "Penalità in tempo",
+              "drive_through": "Drive-through",
+              "stop_go": "Stop and go",
+              "grid_penalty": "Penalità in griglia",
+              "penalty_served": "Penalità scontata",
+              "disqualified": "Squalifica",
+              "noted": "Incidente annotato",
+              "investigation": "Sotto investigazione",
+              "investigation_after_race": "Investigazione dopo la gara",
+              "no_further_action": "Nessuna ulteriore azione",
+              "warning": "Ammonizione",
+              "black_and_white_flag": "Bandiera bianconera",
+              "lap_deleted": "Tempo sul giro cancellato"
+            }
+          }
+        }
       }
     },
     "switch": {
       "no_spoiler": {
         "name": "Modalità senza spoiler"
+      },
+      "live_timing": {
+        "name": "Tempi live"
       }
     },
     "number": {

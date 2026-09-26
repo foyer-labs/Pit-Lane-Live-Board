@@ -159,7 +159,7 @@ def main() -> None:
         for w in parse_season_races(jolpica(f"{SEASON}/results/1"))
         if w["round"] <= ROUND
     ]
-    write("rounds", pages.season_rounds(SEASON, meetings, winners, hidden))
+    write("rounds", pages.season_rounds(SEASON, meetings, winners, hidden, NOW))
     write("seasons", {"seasons": list(range(SEASON, 1949, -1))})
 
     results = parse_results(jolpica(f"{SEASON}/{ROUND}/results"))
@@ -280,6 +280,23 @@ def main() -> None:
         live_view.build(state=None, health="lost", map_available=False, **common),
     )
     write(
+        "live_paused",
+        live_view.build(
+            state=None, health="lost", map_available=False, paused=True, **common
+        ),
+    )
+    final_state = replay(RACE, 10**9)
+    write(
+        "live_final",
+        live_view.build(
+            state=final_state,
+            health="ok",
+            map_available=False,
+            final=True,
+            **{**common, "data_age": None, "now": NOW + timedelta(hours=1)},
+        ),
+    )
+    write(
         "live_hidden",
         live_view.build(
             state=race_state,
@@ -305,8 +322,48 @@ def main() -> None:
     ]
     write(
         "map",
-        {"outline": outline.to_dict(), "cars": cars, "utc": race_state.positions_utc},
+        {
+            "full": True,
+            "outline": outline.to_dict(),
+            "cars": cars,
+            "utc": race_state.positions_utc,
+        },
     )
+    print("Entities")
+    entities = [
+        ("binary_sensor", "safety_car", "Safety car", "off"),
+        ("binary_sensor", "virtual_safety_car", "Virtual safety car", "off"),
+        ("binary_sensor", "red_flag", "Red flag", "off"),
+        ("binary_sensor", "yellow_flag", "Yellow flag", "on"),
+        ("binary_sensor", "session_live", "Session running", "on"),
+        ("calendar", "sessions", "Sessions", "off"),
+        ("event", "race_control", "Race control", "2026-09-13T13:41:07+00:00"),
+        ("event", "stewards", "Stewards", "2026-09-13T13:52:30+00:00"),
+        ("number", "tv_delay", "TV delay", "45"),
+        ("sensor", "f1tv", "F1TV", "active"),
+        ("sensor", "investigations", "Investigations", "1"),
+        ("sensor", "lap", "Lap", "34"),
+        ("sensor", "next_session", "Next session", "2026-09-26T13:30:00+00:00"),
+        ("sensor", "penalties", "Penalties", "2"),
+        ("sensor", "race_control_message", "Race control message", "DRS ENABLED"),
+        ("sensor", "session_status", "Session status", "started"),
+        ("sensor", "track_status", "Track status", "clear"),
+        ("switch", "live_timing", "Live timing", "on"),
+        ("switch", "no_spoiler", "No-spoiler mode", "off"),
+    ]
+    listed = []
+    states = {}
+    for domain, key, name, state in entities:
+        entity_id = f"{domain}.pit_lane_live_board_{key}"
+        listed.append(
+            {"entity_id": entity_id, "key": key, "domain": domain, "disabled": False}
+        )
+        states[entity_id] = {
+            "state": state,
+            "attributes": {"friendly_name": f"Pit Lane Live Board {name}"},
+        }
+    write("entities", {"entities": listed})
+    write("states", states)
     print(f"Done: {OUT}")
 
 

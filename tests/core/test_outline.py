@@ -106,3 +106,16 @@ def test_samples_from_a_decoded_message():
     )
     assert position_samples(message) == [("4", 1.0, 2.0, True), ("4", 3.0, 4.0, False)]
     assert position_samples(None) == []
+
+
+def test_the_cap_keeps_the_shape():
+    from custom_components.pit_lane_live_board.core.outline import provisional
+
+    many = ellipse_laps(laps=20)
+    outline = build_outline(many)
+    assert outline is not None and len(outline.points) == POINTS
+    first = provisional(many[:50])
+    x, y = first.project(many[10][1], many[10][2])
+    assert 0 <= x <= first.width and 0 <= y <= first.height
+    assert first.points == ()
+    assert provisional([]) is None
