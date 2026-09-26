@@ -161,7 +161,7 @@
     "pitLane": "corsia box",
     "noPits": "Ancora nessun pit stop.",
     "map": "Mappa della pista",
-    "mapLocked": "La mappa live richiede un abbonamento F1TV. Un amministratore può aggiungere il token in Impostazioni → Dispositivi e servizi → Pit Lane Live Board → Configura.",
+    "mapLocked": "La mappa live richiede un abbonamento F1TV. Un amministratore può aggiungere un token nelle Impostazioni di questo pannello (l'icona a ingranaggio).",
     "mapNoData": "Nessun dato di posizione dalla F1 per questa sessione.",
     "mapDrawing": "Disegno del circuito dalle posizioni delle auto…",
     "status": {
@@ -174,10 +174,17 @@
       "chequered": "BANDIERA A SCACCHI"
     },
     "mapNotEnabled": "La mappa live della pista non è attiva in questo Home Assistant.",
-    "mapToken": "La F1 non ha accettato il token F1TV, quindi niente mappa. Un nuovo token va in Impostazioni → Dispositivi e servizi → Pit Lane Live Board → Configura.",
+    "mapToken": "F1 non ha accettato il token F1TV, quindi la mappa non c'è. Un amministratore può aggiungerne uno nuovo nelle Impostazioni di questo pannello (l'icona a ingranaggio).",
     "play": "Ascolta il team radio di {driver} delle {time}",
     "pause": "Ferma il team radio di {driver}",
-    "windSpeed": "{n} m/s"
+    "windSpeed": "{n} m/s",
+    "paused": "I tempi live sono in pausa",
+    "pausedShort": "In pausa",
+    "pausedAuto": "In pausa · auto",
+    "autoStart": "Partono da soli alla prossima sessione.",
+    "final": "FINALE",
+    "ended": "Terminata {time} · dati fermi",
+    "nextShort": "Prossima"
   },
   "f1tv": {
     "active": "F1TV attivo",
@@ -193,5 +200,82 @@
     "intermediate": "Intermedia",
     "wet": "Da bagnato",
     "unknown": "Sconosciuta"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "live": "Tempi live",
+    "on": "Attivi",
+    "off": "In pausa",
+    "start": "Avvia i tempi live",
+    "pause": "Metti in pausa i tempi live",
+    "running": "Collegato ai tempi live di F1 per la sessione in corso.",
+    "waiting": "Pronto: si collega da solo quando inizia una sessione.",
+    "pausedHelp": "In pausa: niente si collega a F1 e niente di live viene scritto su disco.",
+    "autoStart": "Avvia automaticamente a ogni sessione",
+    "autoStartHelp": "I tempi live si attivano da soli quando sta per iniziare una sessione. Se li metti in pausa durante una sessione, restano in pausa fino alla successiva.",
+    "adminOnly": "solo amministratori",
+    "f1tvHelp": "F1TV serve solo per la mappa live del circuito; tutto il resto funziona senza account.",
+    "expires": "scade il {date}",
+    "tokenPaste": "Incolla il token F1TV",
+    "tokenReplace": "Incolla un nuovo token per sostituire quello attuale",
+    "save": "Salva",
+    "tokenSteps": "Accedi a f1tv.formula1.com, apri gli strumenti per sviluppatori del browser → Applicazione (Archiviazione in Firefox) → Cookie e copia il valore di loginSession. Viene rinnovato in automatico e dopo il salvataggio non viene più mostrato.",
+    "remove": "Rimuovi il token",
+    "removeConfirm": "Rimuovere il token F1TV? La mappa live si ferma finché non ne aggiungi uno nuovo.",
+    "cancel": "Annulla",
+    "entities": "Entità",
+    "entitiesHelp": "Usale in automazioni e dashboard: bandiere, safety car, penalità e decisioni dei commissari hanno le loro entità. Seguono il ritardo TV e la modalità senza spoiler.",
+    "disabled": "disattivata",
+    "errors": {
+      "token_invalid": "Non sembra un token F1TV. Incolla l'intero valore del cookie loginSession.",
+      "token_expired": "Questo token è scaduto o scade entro pochi minuti. Accedi di nuovo a F1TV e copiane uno nuovo.",
+      "token_no_subscription": "Questo account F1TV non ha un abbonamento attivo.",
+      "token_missing": "Incolla un token."
+    }
+  },
+  "stewards": {
+    "title": "Bandiere e commissari",
+    "track": "Pista",
+    "penalties": "Penalità",
+    "investigations": "Investigazioni",
+    "trackLimits": "Limiti della pista",
+    "none": "Nessuna",
+    "calm": "Nessuna penalità né investigazione",
+    "showAll": "Mostra altre {n}",
+    "served": "scontata",
+    "unserved": "Penalità in tempo non ancora scontata",
+    "turn": "Curva {n}",
+    "deleted": "{n} cancellati",
+    "yellow": "Bandiera gialla",
+    "double_yellow": "Doppia bandiera gialla",
+    "sc": {
+      "deployed": "Safety car in pista",
+      "ending": "Safety car rientra in questo giro"
+    },
+    "vsc": {
+      "deployed": "Virtual safety car attiva",
+      "ending": "Virtual safety car in chiusura"
+    },
+    "short": {
+      "drive_through": "DT",
+      "stop_go": "SG",
+      "grid": "{n} griglia",
+      "disqualified": "DSQ"
+    },
+    "kind": {
+      "time_penalty": "Penalità in tempo",
+      "drive_through": "Drive-through",
+      "stop_go": "Stop and go",
+      "grid_penalty": "Penalità in griglia",
+      "penalty_served": "Penalità scontata",
+      "disqualified": "Squalifica",
+      "noted": "Annotato",
+      "investigation": "Sotto investigazione",
+      "investigation_after_race": "Dopo la gara",
+      "no_further_action": "Nessuna azione",
+      "warning": "Ammonizione",
+      "black_and_white_flag": "Bandiera bianconera",
+      "lap_deleted": "Giro cancellato"
+    }
   }
 }

@@ -161,7 +161,7 @@
     "pitLane": "pit lane",
     "noPits": "No pit stops yet.",
     "map": "Track map",
-    "mapLocked": "The live map needs an F1TV subscription. An administrator can add a token under Settings → Devices & services → Pit Lane Live Board → Configure.",
+    "mapLocked": "The live map needs an F1TV subscription. An administrator can add a token in this panel's Settings (the gear icon).",
     "mapNoData": "No position data from F1 for this session.",
     "mapDrawing": "Drawing the circuit from the cars' positions…",
     "status": {
@@ -174,10 +174,17 @@
       "chequered": "CHEQUERED FLAG"
     },
     "mapNotEnabled": "The live track map is not enabled in this Home Assistant.",
-    "mapToken": "F1 did not accept the F1TV token, so there is no map. A new token goes under Settings → Devices & services → Pit Lane Live Board → Configure.",
+    "mapToken": "F1 did not accept the F1TV token, so there is no map. An administrator can add a new one in this panel's Settings (the gear icon).",
     "play": "Play {driver}'s team radio at {time}",
     "pause": "Stop {driver}'s team radio",
-    "windSpeed": "{n} m/s"
+    "windSpeed": "{n} m/s",
+    "paused": "Live timing is paused",
+    "pausedShort": "Paused",
+    "pausedAuto": "Paused · auto",
+    "autoStart": "It starts by itself at the next session.",
+    "final": "FINAL",
+    "ended": "Ended {time} · data frozen",
+    "nextShort": "Next"
   },
   "f1tv": {
     "active": "F1TV active",
@@ -193,5 +200,82 @@
     "intermediate": "Intermediate",
     "wet": "Wet",
     "unknown": "Unknown"
+  },
+  "settings": {
+    "title": "Settings",
+    "live": "Live timing",
+    "on": "On",
+    "off": "Paused",
+    "start": "Start live timing",
+    "pause": "Pause live timing",
+    "running": "Connected to F1's live timing for the session under way.",
+    "waiting": "Ready: it connects by itself when a session starts.",
+    "pausedHelp": "Paused: nothing connects to F1 and nothing live is written to disk.",
+    "autoStart": "Start automatically at each session",
+    "autoStartHelp": "Live timing turns itself on when a session is about to start. Pausing it during a session holds until the next one.",
+    "adminOnly": "administrators only",
+    "f1tvHelp": "Only the live track map needs F1TV; everything else works without an account.",
+    "expires": "expires {date}",
+    "tokenPaste": "Paste the F1TV token",
+    "tokenReplace": "Paste a new token to replace the current one",
+    "save": "Save",
+    "tokenSteps": "Sign in at f1tv.formula1.com, open the browser's developer tools → Application (Storage in Firefox) → Cookies, and copy the value of loginSession. It is renewed automatically; it is never shown again after saving.",
+    "remove": "Remove the token",
+    "removeConfirm": "Remove the F1TV token? The live map stops until a new one is added.",
+    "cancel": "Cancel",
+    "entities": "Entities",
+    "entitiesHelp": "Use them in automations and dashboards: flags, safety car, penalties and the stewards' decisions have their own entities. They follow the TV delay and no-spoiler mode.",
+    "disabled": "disabled",
+    "errors": {
+      "token_invalid": "That does not look like an F1TV token. Paste the whole value of the loginSession cookie.",
+      "token_expired": "This token has expired or expires within minutes. Sign in to F1TV again and copy a fresh one.",
+      "token_no_subscription": "This F1TV account has no active subscription.",
+      "token_missing": "Paste a token."
+    }
+  },
+  "stewards": {
+    "title": "Flags & stewards",
+    "track": "Track",
+    "penalties": "Penalties",
+    "investigations": "Investigations",
+    "trackLimits": "Track limits",
+    "none": "None",
+    "calm": "No penalties or investigations",
+    "showAll": "Show {n} more",
+    "served": "served",
+    "unserved": "Time penalty not served yet",
+    "turn": "Turn {n}",
+    "deleted": "{n} deleted",
+    "yellow": "Yellow flag",
+    "double_yellow": "Double yellow flag",
+    "sc": {
+      "deployed": "Safety car deployed",
+      "ending": "Safety car in this lap"
+    },
+    "vsc": {
+      "deployed": "Virtual safety car deployed",
+      "ending": "Virtual safety car ending"
+    },
+    "short": {
+      "drive_through": "DT",
+      "stop_go": "SG",
+      "grid": "{n} grid",
+      "disqualified": "DSQ"
+    },
+    "kind": {
+      "time_penalty": "Time penalty",
+      "drive_through": "Drive-through",
+      "stop_go": "Stop and go",
+      "grid_penalty": "Grid penalty",
+      "penalty_served": "Penalty served",
+      "disqualified": "Disqualified",
+      "noted": "Noted",
+      "investigation": "Under investigation",
+      "investigation_after_race": "After the race",
+      "no_further_action": "No further action",
+      "warning": "Warning",
+      "black_and_white_flag": "Black and white flag",
+      "lap_deleted": "Lap deleted"
+    }
   }
 }

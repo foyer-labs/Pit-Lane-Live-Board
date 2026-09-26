@@ -2,6 +2,7 @@
 import type {
   CalendarPage,
   Hass,
+  LinkedEntity,
   LiveView,
   MapView,
   Round,
@@ -14,8 +15,14 @@ const P = "pit_lane_live_board";
 
 export const api = {
   settings: (hass: Hass) => hass.callWS<Settings>({ type: `${P}/settings/get` }),
-  setSettings: (hass: Hass, values: { tv_delay?: number; no_spoiler?: boolean }) =>
-    hass.callWS<Settings>({ type: `${P}/settings/set`, ...values }),
+  setSettings: (
+    hass: Hass,
+    values: { tv_delay?: number; no_spoiler?: boolean; live?: boolean; auto_start?: boolean },
+  ) => hass.callWS<Settings>({ type: `${P}/settings/set`, ...values }),
+  // Admins only; the answer carries the token's status, never the token (INV-3).
+  setToken: (hass: Hass, token: string) => hass.callWS<Settings>({ type: `${P}/f1tv/set`, token }),
+  removeToken: (hass: Hass) => hass.callWS<Settings>({ type: `${P}/f1tv/remove` }),
+  entities: (hass: Hass) => hass.callWS<{ entities: LinkedEntity[] }>({ type: `${P}/entities` }),
   reveal: (hass: Hass, session: string) =>
     hass.callWS<Settings>({ type: `${P}/spoiler/reveal`, session }),
   seasons: (hass: Hass) => hass.callWS<{ seasons: number[] }>({ type: `${P}/seasons` }),
@@ -31,6 +38,6 @@ export const api = {
     hass.connection.subscribeMessage<Settings>(callback, { type: `${P}/settings/subscribe` }),
   subscribeLive: (hass: Hass, callback: (view: LiveView) => void) =>
     hass.connection.subscribeMessage<LiveView>(callback, { type: `${P}/live/subscribe` }),
-  subscribeMap: (hass: Hass, callback: (view: MapView | null) => void) =>
-    hass.connection.subscribeMessage<MapView | null>(callback, { type: `${P}/map/subscribe` }),
+  subscribeMap: (hass: Hass, callback: (view: MapView) => void) =>
+    hass.connection.subscribeMessage<MapView>(callback, { type: `${P}/map/subscribe` }),
 };

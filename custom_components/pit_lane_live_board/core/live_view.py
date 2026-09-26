@@ -171,26 +171,35 @@ def build(
     data_age: float | None,
     map_available: bool,
     map_reason: str = "not_configured",
+    paused: bool = False,
+    auto_start: bool = False,
+    final: bool = False,
 ) -> dict[str, Any]:
-    """One complete payload in a single call (tests, the bench)."""
+    """One complete payload in a single call (tests, the bench), shaped like the
+    hub's first message to a page."""
     common = {
         "delay": delay,
         "next_session": next_session,
         "data_age": data_age,
         "map_available": map_available,
         "map_reason": map_reason,
+        "ended": now.isoformat() if final else None,
     }
+
+    def done(view: dict[str, Any]) -> dict[str, Any]:
+        return {**view, "full": True, "paused": paused, "auto_start": auto_start}
+
     if hidden:
         view = assemble(state_name="hidden", sections=None, **common)
         view["header"] = hidden_header(state, now)
-        return view
+        return done(view)
     if state is None:
-        return assemble(state_name="idle", sections=None, **common)
+        name = "paused" if paused else "idle"
+        return done(assemble(state_name=name, sections=None, **common))
     if syncing:
-        return assemble(state_name="syncing", sections=None, **common)
+        return done(assemble(state_name="syncing", sections=None, **common))
     if not state.topics:
-        return assemble(state_name="connecting", sections=None, **common)
+        return done(assemble(state_name="connecting", sections=None, **common))
     sections = LiveViewBuilder().sections(state, now)
-    return assemble(
-        state_name="live" if health == "ok" else health, sections=sections, **common
-    )
+    name = "final" if final else "live" if health == "ok" else health
+    return done(assemble(state_name=name, sections=sections, **common))
