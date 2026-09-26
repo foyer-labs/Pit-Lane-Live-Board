@@ -21,3 +21,8 @@ MIT-licensed; any code ported from them keeps its copyright notice next to it.
   https://github.com/theOehrly/Fast-F1
 - F1 Sensor, Copyright (c) Nicxe and contributors
   https://github.com/Nicxe/f1_sensor
+
+The panel bundles:
+- Lit, Copyright 2017 Google LLC, BSD-3-Clause (https://lit.dev)
+- icon paths from Material Design Icons, Pictogrammers, Apache-2.0
+  (https://pictogrammers.com)
