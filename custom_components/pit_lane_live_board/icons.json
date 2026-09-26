@@ -1,0 +1,53 @@
+{
+  "entity": {
+    "calendar": {
+      "sessions": {
+        "default": "mdi:calendar-clock"
+      }
+    },
+    "sensor": {
+      "next_session": {
+        "default": "mdi:timer-outline"
+      },
+      "session_status": {
+        "default": "mdi:flag-outline"
+      },
+      "track_status": {
+        "default": "mdi:flag",
+        "state": {
+          "clear": "mdi:flag-outline",
+          "chequered": "mdi:flag-checkered",
+          "red_flag": "mdi:flag-variant",
+          "safety_car": "mdi:car-emergency",
+          "virtual_safety_car": "mdi:car-emergency"
+        }
+      },
+      "lap": {
+        "default": "mdi:counter"
+      },
+      "f1tv": {
+        "default": "mdi:television-play"
+      }
+    },
+    "binary_sensor": {
+      "session_live": {
+        "default": "mdi:flag-checkered"
+      }
+    },
+    "event": {
+      "race_control": {
+        "default": "mdi:bullhorn-outline"
+      }
+    },
+    "switch": {
+      "no_spoiler": {
+        "default": "mdi:eye-off-outline"
+      }
+    },
+    "number": {
+      "tv_delay": {
+        "default": "mdi:television-classic"
+      }
+    }
+  }
+}

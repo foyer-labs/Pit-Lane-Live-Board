@@ -35,8 +35,31 @@ is the source of truth. Read it, especially the invariants (§3) and the decisio
 
 ## Development environment
 
-Filled in by phase 0 of the specification: Python and Node versions, the pure suite, the
-Home Assistant suite, lint, the frontend build and the translation checks.
+- Python 3.13 or 3.14.
+- Pure suite, **without** Home Assistant installed (an environment with Home Assistant
+  auto-loads `pytest-asyncio` and changes how this suite runs):
+  ```bash
+  pip install pytest pytest-xdist hypothesis
+  pytest -n auto
+  ```
+- Home Assistant suite (Linux or WSL):
+  ```bash
+  pip install pytest-homeassistant-custom-component pytest-xdist
+  pytest -p pytest_homeassistant_custom_component -o asyncio_mode=auto -o asyncio_default_fixture_loop_scope=function -n auto tests/ha
+  ```
+- Lint: `ruff check .` and `ruff format --check .`
+- After any change to `strings.json`: `python scripts/sync_translations.py`, then add
+  the same keys to `translations/it.json`.
+- Frontend (Lit + TypeScript, Node 24): `cd frontend && npm ci && npm run build`. The
+  built panel in `custom_components/pit_lane_live_board/frontend/` is committed and CI
+  checks it matches the sources. Panel strings live in `frontend/src/i18n/{en,it}.json`.
+- The bench: `python scripts/bench_data.py` once (it builds git-ignored data from the
+  real sources), then serve the repository root (`python -m http.server 8777`) and open
+  `/bench/?page=live`. `bash scripts/screenshots.sh` recaptures `docs/screenshots/`.
+- `python scripts/dev_session.py <archive session path>` replays an archived session
+  as a fake live feed; start Home Assistant with `PIT_LANE_DEV_LIVE_URL` pointing at it.
+- `python scripts/contract_check.py` checks the real sources still speak the expected
+  formats (manual, not in CI).
 
 ## Pull requests
 

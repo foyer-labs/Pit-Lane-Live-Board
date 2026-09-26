@@ -8,8 +8,8 @@ reply, a fix or a timeline.
 
 ## Before asking
 
-- Read the guide, especially *Troubleshooting* and the FAQ (available with the first
-  release).
+- Read the [guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md),
+  especially *Troubleshooting* and the FAQ.
 - Look in *Settings → Repairs* for a Pit Lane Live Board notice.
 - Remember that the live data comes from unofficial F1 feeds: when F1 changes them,
   things can stop working for everyone at once. Search the
