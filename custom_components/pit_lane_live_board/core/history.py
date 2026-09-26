@@ -32,8 +32,13 @@ class LapCollector:
     """Replays `TimingData` deltas and records each completed lap per driver.
 
     A lap completes when `NumberOfLaps` rises. The sector values seen since the
-    previous lap belong to it; F1 sends sector 3 in the same message that closes
-    the lap, so sectors are applied before the lap count.
+    previous lap belong to it; F1 usually sends sector 3 in the same message that
+    closes the lap, so sectors are applied before the lap count. In qualifying it
+    often comes a moment later instead: a sector 3 arriving before the new lap has a
+    sector 1 or 2 belongs to the lap just closed.
+
+    Only the fields read here are merged: segments and speed traps are most of the
+    stream and nothing uses them.
     """
 
     def __init__(self) -> None:
@@ -41,6 +46,7 @@ class LapCollector:
         self._lines: dict[str, Any] = {}
         self._sectors: dict[str, list[str | None]] = {}
         self._flags: dict[str, dict[str, bool]] = {}
+        self._closed: dict[str, dict[str, Any]] = {}
 
     def feed(self, payload: Any) -> None:
         lines = payload.get("Lines") if isinstance(payload, dict) else None
@@ -51,6 +57,7 @@ class LapCollector:
                 self._feed_line(str(number), delta)
 
     def _feed_line(self, number: str, delta: dict[str, Any]) -> None:
+        delta = _prune(delta)
         before = self._lines.get(number, {})
         # merge() updates `before` in place: read what it said first.
         seen_before = bool(before)
@@ -64,7 +71,18 @@ class LapCollector:
         raw_sectors = delta.get("Sectors")
         for index, sector in _indexed(raw_sectors):
             if index < 3 and isinstance(sector, dict) and text(sector.get("Value")):
-                sectors[index] = text(sector.get("Value"))
+                value = text(sector.get("Value"))
+                closed = self._closed.get(number)
+                if (
+                    index == 2
+                    and sectors[0] is None
+                    and sectors[1] is None
+                    and closed is not None
+                    and closed["sectors"][2] is None
+                ):
+                    closed["sectors"][2] = value
+                else:
+                    sectors[index] = value
 
         # Only a change counts, and only once the car has a lap count: before the
         # start the cars go in and out of the pit lane to reach the grid, and that
@@ -80,17 +98,62 @@ class LapCollector:
         if laps_now is None or laps_now == laps_before or laps_now < 1:
             return
         last = line.get("LastLapTime")
-        self.laps.setdefault(number, []).append(
-            {
-                "lap": laps_now,
-                "time": text(last.get("Value")) if isinstance(last, dict) else None,
-                "sectors": list(sectors),
-                "pit_in": flags["pit_in"],
-                "pit_out": flags["pit_out"],
-            }
-        )
+        lap = {
+            "lap": laps_now,
+            "time": text(last.get("Value")) if isinstance(last, dict) else None,
+            "sectors": list(sectors),
+            "pit_in": flags["pit_in"],
+            "pit_out": flags["pit_out"],
+        }
+        self.laps.setdefault(number, []).append(lap)
+        self._closed[number] = lap
         self._sectors[number] = [None, None, None]
         self._flags[number] = {"pit_in": False, "pit_out": False}
+
+
+_READ = {"NumberOfLaps", "LastLapTime", "InPit", "PitOut", "Sectors"}
+
+
+def _prune(delta: dict[str, Any]) -> dict[str, Any]:
+    """Only the fields the collector reads; sectors without their segments."""
+    out = {k: v for k, v in delta.items() if k in _READ}
+    sectors = out.get("Sectors")
+    if isinstance(sectors, dict):
+        out["Sectors"] = {
+            k: {kk: vv for kk, vv in v.items() if kk != "Segments"}
+            if isinstance(v, dict)
+            else v
+            for k, v in sectors.items()
+        }
+    elif isinstance(sectors, list):
+        out["Sectors"] = [
+            {kk: vv for kk, vv in v.items() if kk != "Segments"}
+            if isinstance(v, dict)
+            else v
+            for v in sectors
+        ]
+    return out
+
+
+def lap_positions(
+    lap_series: Any, laps: dict[str, list[Any]]
+) -> dict[str, list[int | None]]:
+    """Position at the grid (index 0) and at the end of each lap, per racing number,
+    from the archive's `LapSeries`. A retired car's last entry is its classified
+    slot, not a lap: it is cut to the laps the car completed."""
+    out: dict[str, list[int | None]] = {}
+    if not isinstance(lap_series, dict):
+        return out
+    for number, entry in lap_series.items():
+        positions = entry.get("LapPosition") if isinstance(entry, dict) else None
+        values = [to_int(p) for p in _items(positions)]
+        if not values:
+            continue
+        completed = len(laps.get(str(number), []))
+        if completed and len(values) > completed + 1:
+            values = values[: completed + 1]
+        out[str(number)] = values
+    return out
 
 
 def _indexed(value: Any) -> list[tuple[int, Any]]:
@@ -274,6 +337,7 @@ def build_detail(
     rcm_keyframe: Any,
     weather_stream: Iterable[Any],
     pit_stream: Iterable[Any],
+    lap_series: Any = None,
 ) -> dict[str, Any]:
     """The compact detail of one archived session, ready to cache and to send."""
     collector = LapCollector()
@@ -293,4 +357,5 @@ def build_detail(
         "race_control": race_control({"RaceControlMessages": rcm_keyframe}),
         "weather": weather_summary(weather_stream),
         "pit_lane": pit_lane_times(pit_stream),
+        "lap_positions": lap_positions(lap_series, collector.laps),
     }

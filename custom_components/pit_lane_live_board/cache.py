@@ -32,6 +32,8 @@ class DiskCache:
     def __init__(self, root: Path, cap: int = CACHE_CAP_BYTES) -> None:
         self.root = root
         self.cap = cap
+        # Measured once, then kept as a running total (see write_bytes).
+        self._size: int | None = None
 
     def path(self, key: str, suffix: str) -> Path:
         return self.root / f"{_safe(key)}{suffix}"
@@ -69,27 +71,45 @@ class DiskCache:
     def write_bytes(self, key: str, suffix: str, data: bytes) -> Path:
         self.root.mkdir(parents=True, exist_ok=True)
         path = self.path(key, suffix)
+        try:
+            replaced = path.stat().st_size
+        except OSError:
+            replaced = 0
         # A unique temporary name: two writers of the same key never share it.
         temporary = path.with_suffix(f"{path.suffix}.{uuid.uuid4().hex[:8]}.part")
         temporary.write_bytes(data)
         temporary.replace(path)
-        self.evict()
+        # A running total: the directory is scanned once, then only past the cap.
+        if self._size is None:
+            self._size = self.size()
+        else:
+            self._size += len(data) - replaced
+        if self._size > self.cap:
+            self.evict()
         return path
 
-    def size(self) -> int:
+    def _files(self) -> list[Path]:
+        """The cache's files, without another writer's temporary file."""
         try:
-            return sum(p.stat().st_size for p in self.root.iterdir() if p.is_file())
+            return [
+                p for p in self.root.iterdir() if p.is_file() and p.suffix != ".part"
+            ]
         except OSError:
-            return 0
+            return []
+
+    def size(self) -> int:
+        total = 0
+        for p in self._files():
+            try:
+                total += p.stat().st_size
+            except OSError:
+                continue
+        return total
 
     def evict(self) -> None:
         """Remove the least recently used files until the cache fits its cap."""
-        try:
-            files = [p for p in self.root.iterdir() if p.is_file()]
-        except OSError:
-            return
         stats = []
-        for p in files:
+        for p in self._files():
             try:
                 stats.append((p, p.stat()))
             except OSError:
@@ -103,6 +123,7 @@ class DiskCache:
                 total -= stat.st_size
             except OSError:
                 continue
+        self._size = total
 
     def clear(self) -> None:
         try:

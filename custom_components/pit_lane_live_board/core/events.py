@@ -14,7 +14,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from .panels import race_control
 from .session import session_status, track_status
 from .values import to_int
 
@@ -45,9 +44,18 @@ def _session_key(topics: dict[str, Any]) -> int | None:
 
 
 def _last_chequered(topics: dict[str, Any]) -> str:
-    for message in race_control(topics):  # newest first
-        if str(message.get("flag") or "").upper() == "CHEQUERED":
-            return message.get("utc") or "seen"
+    """The raw messages, newest first, compared on the flag alone: this runs at
+    every publish and must not build the whole race control view."""
+    rcm = topics.get("RaceControlMessages")
+    messages = rcm.get("Messages") if isinstance(rcm, dict) else None
+    if isinstance(messages, dict):
+        messages = list(messages.values())
+    for message in reversed(messages if isinstance(messages, list) else []):
+        if (
+            isinstance(message, dict)
+            and str(message.get("Flag") or "").upper() == "CHEQUERED"
+        ):
+            return str(message.get("Utc") or "seen")
     return ""
 
 

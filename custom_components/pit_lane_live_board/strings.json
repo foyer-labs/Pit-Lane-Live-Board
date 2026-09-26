@@ -31,6 +31,11 @@
         "qualifying": "Qualifying",
         "race": "Race"
       }
+    },
+    "calendar": {
+      "options": {
+        "round": "Round {round}"
+      }
     }
   },
   "options": {
@@ -110,11 +115,77 @@
             "name": "Expires"
           }
         }
+      },
+      "penalties": {
+        "name": "Penalties",
+        "state_attributes": {
+          "penalties": {
+            "name": "Penalties"
+          }
+        }
+      },
+      "investigations": {
+        "name": "Investigations",
+        "state_attributes": {
+          "investigations": {
+            "name": "Investigations"
+          }
+        }
+      },
+      "race_control_message": {
+        "name": "Race control message",
+        "state_attributes": {
+          "category": {
+            "name": "Category"
+          },
+          "flag": {
+            "name": "Flag"
+          },
+          "sector": {
+            "name": "Sector"
+          },
+          "lap": {
+            "name": "Lap"
+          },
+          "utc": {
+            "name": "Time"
+          }
+        }
       }
     },
     "binary_sensor": {
       "session_live": {
         "name": "Session running"
+      },
+      "safety_car": {
+        "name": "Safety car",
+        "state_attributes": {
+          "ending": {
+            "name": "In this lap"
+          }
+        }
+      },
+      "virtual_safety_car": {
+        "name": "Virtual safety car",
+        "state_attributes": {
+          "ending": {
+            "name": "Ending"
+          }
+        }
+      },
+      "red_flag": {
+        "name": "Red flag"
+      },
+      "yellow_flag": {
+        "name": "Yellow flag",
+        "state_attributes": {
+          "sectors": {
+            "name": "Sectors"
+          },
+          "double": {
+            "name": "Double yellow"
+          }
+        }
       }
     },
     "event": {
@@ -135,11 +206,36 @@
             }
           }
         }
+      },
+      "stewards": {
+        "name": "Stewards",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "time_penalty": "Time penalty",
+              "drive_through": "Drive-through penalty",
+              "stop_go": "Stop and go penalty",
+              "grid_penalty": "Grid penalty",
+              "penalty_served": "Penalty served",
+              "disqualified": "Disqualified",
+              "noted": "Incident noted",
+              "investigation": "Under investigation",
+              "investigation_after_race": "Investigated after the race",
+              "no_further_action": "No further action",
+              "warning": "Warning",
+              "black_and_white_flag": "Black and white flag",
+              "lap_deleted": "Lap time deleted"
+            }
+          }
+        }
       }
     },
     "switch": {
       "no_spoiler": {
         "name": "No-spoiler mode"
+      },
+      "live_timing": {
+        "name": "Live timing"
       }
     },
     "number": {

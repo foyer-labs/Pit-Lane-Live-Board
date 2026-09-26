@@ -2,6 +2,10 @@
 
 The TV delay and no-spoiler mode are one value per installation (decision 14):
 automations and every open page must agree with the same TV.
+
+Live timing starts **paused** (decision 42): until someone presses play, nothing
+connects to F1 and nothing live is written, which matters on a Raspberry Pi with an
+SD card. `auto_start` turns live timing on by itself when a session window opens.
 """
 
 from __future__ import annotations
@@ -30,6 +34,8 @@ class Settings:
     no_spoiler: bool = False
     # Session keys the user revealed while no-spoiler mode is on (SPEC §9).
     revealed: frozenset[str] = field(default_factory=frozenset)
+    live: bool = False
+    auto_start: bool = False
 
     def with_delay(self, value: Any) -> Settings:
         return replace(self, tv_delay=clamp_delay(value))
@@ -42,11 +48,19 @@ class Settings:
     def with_revealed(self, session_key: str) -> Settings:
         return replace(self, revealed=self.revealed | {str(session_key)})
 
+    def with_live(self, on: bool) -> Settings:
+        return replace(self, live=bool(on))
+
+    def with_auto_start(self, on: bool) -> Settings:
+        return replace(self, auto_start=bool(on))
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "tv_delay": self.tv_delay,
             "no_spoiler": self.no_spoiler,
             "revealed": sorted(self.revealed),
+            "live": self.live,
+            "auto_start": self.auto_start,
         }
 
     @classmethod
@@ -61,4 +75,6 @@ class Settings:
             revealed=frozenset(str(k) for k in revealed if isinstance(k, (str, int)))
             if isinstance(revealed, list)
             else frozenset(),
+            live=data.get("live") is True,
+            auto_start=data.get("auto_start") is True,
         )

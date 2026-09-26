@@ -32,9 +32,12 @@ prima, risultati e classifiche dopo. Gratis e senza account.
   quanti giri la usa, i pit stop, le posizioni guadagnate o perse dalla partenza.
 - **Qualifiche come si deve.** Q1, Q2 e Q3 con la linea di eliminazione, migliori giri e
   distacchi.
-- **Direzione gara e meteo.** Bandiere, safety car, virtual safety car, bandiere rosse,
-  penalità e tutti i messaggi dei commissari; temperatura dell'aria e dell'asfalto, vento
-  e pioggia.
+- **Bandiere e commissari a colpo d'occhio.** Lo stato della pista, i settori in giallo,
+  la safety car e il suo ultimo giro, ogni penalità (un `+5s` accanto al pilota finché non
+  la sconta), gli incidenti sotto investigazione e i giri cancellati, in un'unica scheda
+  sopra la classifica.
+- **Direzione gara e meteo.** Tutti i messaggi della direzione gara, filtrabili per
+  bandiere o penalità; temperatura dell'aria e dell'asfalto, vento e pioggia.
 - **Team radio.** I messaggi che la F1 pubblica durante la sessione, con un pulsante per
   ascoltarli.
 - **La mappa della pista in diretta**, con un abbonamento F1TV. Tutte le auto sul
@@ -49,9 +52,17 @@ prima, risultati e classifiche dopo. Gratis e senza account.
   moderna anche posizioni giro per giro, strategie gomme, tempi sul giro, pit stop,
   direzione gara e meteo.
 - **I due campionati.** Piloti e costruttori, di qualunque stagione, dopo qualunque gara.
-- **Automazioni.** Un calendario delle sessioni, lo stato della pista e un evento della
-  direzione gara: le luci diventano gialle con la safety car e il telefono ti avvisa che
-  la gara parte tra 15 minuti.
+- **Dopo la bandiera a scacchi.** Tra una sessione e l'altra la pagina Live conserva la
+  classifica finale, le decisioni dei commissari e i pit stop, con il conto alla rovescia
+  per la sessione successiva.
+- **Automazioni.** Un calendario delle sessioni, lo stato della pista, sensori per
+  safety car, VSC, bandiera rossa e gialla, penalità e investigazioni, ed eventi per la
+  direzione gara e per ogni decisione dei commissari: le luci diventano gialle con la
+  safety car, il telefono ti avvisa che il tuo pilota è stato penalizzato o che la gara
+  parte tra 15 minuti.
+- **Leggero anche su un Raspberry Pi.** I tempi live partono in pausa: niente si collega
+  a F1 e niente viene scritto su disco finché non premi play, o finché non li lasci
+  partire da soli a ogni sessione.
 - **Italiano e inglese**, tema chiaro e scuro, sul telefono o su un tablet a parete.
 
 <p align="center">
@@ -65,9 +76,12 @@ Ti servono Home Assistant 2026.6 o successivo e HACS.
 1. In HACS aggiungi questo repository come *Repository personalizzato* (categoria
    *Integrazione*), scarica *Pit Lane Live Board* e riavvia Home Assistant.
 2. *Impostazioni → Dispositivi e servizi → Aggiungi integrazione → Pit Lane Live Board.*
-3. Apri **Live Board** nella barra laterale.
+3. Apri **Live Board** nella barra laterale, apri le **Impostazioni** (l'ingranaggio) e
+   premi play, oppure attiva *Avvia automaticamente a ogni sessione*. Calendario,
+   risultati e classifiche funzionano anche senza.
 
-Per la mappa live, un amministratore incolla un token F1TV in *Configura*; la
+Per la mappa live, un amministratore incolla un token F1TV nelle **Impostazioni** del
+pannello; la
 **[guida](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.it.md)**
 spiega dove trovarlo, come leggere la classifica live, come impostare il ritardo TV, e
 propone automazioni pronte.

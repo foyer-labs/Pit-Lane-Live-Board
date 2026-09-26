@@ -1,8 +1,19 @@
 """The hub: one per config entry (SPEC §5.4, §6).
 
-It owns the calendar, the live session (connection, TV-delay buffer, merged state)
-and the F1TV token's lifecycle. Pure decisions are delegated to core/; this module
-does the timing and the I/O.
+It owns the calendar, the live session (connection, TV-delay buffer, merged state),
+the last session's final state, the F1TV token's lifecycle, and what the entities
+show. Pure decisions are delegated to core/; this module does the timing and the I/O.
+
+A Raspberry Pi shapes the live path (SPEC §5.5):
+
+* one 0.25 s loop releases messages, measures health and publishes when due;
+* the page's view is sections rebuilt only when a topic they read changed, encoded
+  once for every open page; after the first message only changed sections travel;
+* the map's outline travels once, then only the cars;
+* entities are told to write only when something they show changed.
+
+Live timing starts paused (decision 42): nothing connects and nothing live is
+written until someone presses play, or `auto_start` does as a session window opens.
 
 The panel's live and map listeners live in `hass.data`, not in the hub: a reloaded
 entry gets a new hub, and the open pages keep receiving from it.
@@ -27,6 +38,7 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.json import json_bytes
 from homeassistant.util import dt as dt_util
 
 from .cache import DiskCache
@@ -46,9 +58,10 @@ from .core import live_view
 from .core.delay import DelayBuffer
 from .core.events import derive
 from .core.f1tv_token import TokenStatus, evaluate
-from .core.live_state import LiveState
+from .core.live_state import POSITION_TOPIC, LiveState, Sample
+from .core.live_view import LiveViewBuilder
 from .core.liveness import feed_health
-from .core.outline import Outline, build_outline
+from .core.outline import Outline, build_outline, provisional
 from .core.panels import header
 from .core.schedule import (
     Meeting,
@@ -61,14 +74,16 @@ from .core.schedule import (
 )
 from .core.session import session_kind, session_status
 from .core.settings import Settings
-from .core.spoiler import live_hidden
+from .core.spoiler import hidden_sessions, live_hidden
+from .core.stewards import PENALTIES
 from .core.values import to_int
 from .store import SettingsStore
 
 _LOGGER = logging.getLogger(__name__)
 
-SIGNAL_LIVE = f"{DOMAIN}_live"  # entities: the released live state changed
+SIGNAL_LIVE = f"{DOMAIN}_live"  # live entities: what they show changed
 SIGNAL_EVENT = f"{DOMAIN}_event"  # the race-control event entity: (event type)
+SIGNAL_STEWARDS = f"{DOMAIN}_stewards"  # the stewards event entity: (decision)
 SIGNAL_SETTINGS = f"{DOMAIN}_settings"
 SIGNAL_CALENDAR = f"{DOMAIN}_calendar"
 
@@ -76,35 +91,43 @@ TICK = timedelta(seconds=30)
 CALENDAR_REFRESH = timedelta(hours=6)
 CALENDAR_RETRY = 120.0  # while there is no calendar at all
 F1TV_CHECK = timedelta(hours=1)
-RELEASE_EVERY = 0.25
+LOOP_EVERY = 0.25
 PUBLISH_EVERY = 0.5
 MAP_EVERY = 0.25
 STALE_REPUBLISH = 1.0
+RELEASE_CHUNK = 2000  # a lowered delay's backlog is applied over a few steps
 CLOSE_AFTER_FINAL = timedelta(minutes=5)
+SETTLED_AFTER = timedelta(hours=48)
 FAILED_WINDOWS_FOR_REPAIR = 3
-LIVE_OUTLINE_SAMPLES = 60_000
+LIVE_OUTLINE_SAMPLES = 20_000
 LIVE_OUTLINE_RETRY = 30.0
+DEV_WINDOW = "dev"
 
 ISSUE_F1TV = "f1tv_new_token"
 ISSUE_LIVE = "live_unreachable"
 
 _LIVE_LISTENERS = f"{DOMAIN}_live_listeners"
 _MAP_LISTENERS = f"{DOMAIN}_map_listeners"
+# Topics that change nothing the page's sections show.
+_QUIET_TOPICS = frozenset({POSITION_TOPIC, "Heartbeat"})
+
+type Listener = Callable[[bytes], None]
 
 
-def _listeners(hass: HomeAssistant, key: str) -> set[Callable[[], None]]:
+def _listeners(hass: HomeAssistant, key: str) -> set[Listener]:
     return hass.data.setdefault(key, set())
 
 
 @callback
-def listen_live(hass: HomeAssistant, listener: Callable[[], None]) -> CALLBACK_TYPE:
+def listen_live(hass: HomeAssistant, listener: Listener) -> CALLBACK_TYPE:
+    """A page on the Live tab: it receives each view, encoded once for all."""
     listeners = _listeners(hass, _LIVE_LISTENERS)
     listeners.add(listener)
     return lambda: listeners.discard(listener)
 
 
 @callback
-def listen_map(hass: HomeAssistant, listener: Callable[[], None]) -> CALLBACK_TYPE:
+def listen_map(hass: HomeAssistant, listener: Listener) -> CALLBACK_TYPE:
     listeners = _listeners(hass, _MAP_LISTENERS)
     listeners.add(listener)
     return lambda: listeners.discard(listener)
@@ -119,20 +142,35 @@ class LiveSession:
     client: LiveTimingClient
     buffer: DelayBuffer[tuple[Any, ...]]
     state: LiveState = field(default_factory=LiveState)
+    builder: LiveViewBuilder = field(default_factory=LiveViewBuilder)
     started: float = field(default_factory=time.monotonic)
     task: asyncio.Task[None] | None = None
-    loops: list[asyncio.Task[None]] = field(default_factory=list)
+    loop: asyncio.Task[None] | None = None
     dirty: bool = True
     map_dirty: bool = False
     health: str = "lost"
     last_push: float = 0.0
+    last_map: float = 0.0
     finalised_at: datetime | None = None
+    finalised_seen: tuple[int, ...] = ()
     ever_connected: bool = False
     outline: Outline | None = None
-    outline_circuit: int | None = None
+    outline_rev: int = 0
     outline_task: asyncio.Task[None] | None = None
-    live_samples: list[tuple[str, float, float, bool]] = field(default_factory=list)
+    archive_outline: asyncio.Task[None] | None = None
+    live_samples: list[Sample] = field(default_factory=list)
     next_outline_try: float = 0.0
+
+
+@dataclass
+class FinalView:
+    """The last session's final state, shown between sessions (SPEC §7.1)."""
+
+    key: str | None
+    state: LiveState
+    ended: datetime | None
+    start: datetime | None = None  # when its session started: newer never loses
+    builder: LiveViewBuilder = field(default_factory=LiveViewBuilder)
 
 
 class Hub:
@@ -151,26 +189,34 @@ class Hub:
         self.cache = DiskCache(Path(hass.config.path(CACHE_DIR)))
         run = hass.async_add_executor_job
         self.jolpica = JolpicaClient(session, self.cache, run)
+        self.jolpica.settled = self._round_settled
         self.archive = ArchiveClient(session, self.cache, run)
-        self._client_factory = client_factory or LiveTimingClient
+        self._client_factory = client_factory
         self.dev_url = os.environ.get(ENV_DEV_LIVE_URL)
         self.meetings: list[Meeting] = []
         self.season = dt_util.utcnow().year
         self.calendar_error: str | None = None
         self._calendar_tried = 0.0
         self.live: LiveSession | None = None
+        self.final: FinalView | None = None
+        self._final_task: asyncio.Task[None] | None = None
+        self.first_tick: asyncio.Task[None] | None = None
         self._lock = asyncio.Lock()
+        self._stopped = False
         self._done_sessions: set[str] = set()
-        self._failed_windows = 0
         self._unsubs: list[CALLBACK_TYPE] = []
         self._token_refused = False
         self.f1tv = self._evaluate_token()
         self._renewing = False
+        self._sent: dict[str, Any] = {}
+        self._map_rev_sent = -1
+        self.entity_state: dict[str, Any] = self._entity_snapshot()
 
     # Lifecycle.
 
     async def async_start(self) -> None:
-        await self.async_refresh_calendar()
+        """Timers, and the calendar in the background: Home Assistant's start-up
+        never waits on the network."""
         self._unsubs.append(
             async_track_time_interval(self.hass, self._async_tick, TICK)
         )
@@ -182,23 +228,33 @@ class Hub:
         self._unsubs.append(
             async_track_time_interval(self.hass, self._async_f1tv_timer, F1TV_CHECK)
         )
-        self.hass.async_create_background_task(
-            self._async_tick(dt_util.utcnow()), f"{DOMAIN} first tick"
+        self.first_tick = self.entry.async_create_background_task(
+            self.hass, self._async_first_tick(), f"{DOMAIN} first tick"
         )
-        self.hass.async_create_background_task(
-            self._async_check_f1tv(), f"{DOMAIN} F1TV check"
+        self.entry.async_create_background_task(
+            self.hass, self._async_check_f1tv(), f"{DOMAIN} F1TV check"
         )
 
+    async def _async_first_tick(self) -> None:
+        await self.async_refresh_calendar()
+        await self._async_tick(dt_util.utcnow())
+
     async def async_stop(self) -> None:
+        self._stopped = True
         for unsub in self._unsubs:
             unsub()
         self._unsubs.clear()
+        if self._final_task is not None:
+            self._final_task.cancel()
         async with self._lock:
             await self._async_stop_live(counts_as_window=False)
+        await self.store.async_flush()
 
     # Calendar.
 
     async def async_refresh_calendar(self, fresh: bool = False) -> None:
+        if self._stopped:
+            return
         self.season = dt_util.utcnow().year
         self._calendar_tried = time.monotonic()
         try:
@@ -209,10 +265,10 @@ class Hub:
             return
         meetings = parse_schedule(payload)
         self.calendar_error = None if meetings else "empty"
-        if meetings:
+        if meetings and not self._stopped:
             self.meetings = meetings
             async_dispatcher_send(self.hass, SIGNAL_CALENDAR)
-            self._notify_live()
+            self.publish_full()
 
     async def async_meetings(self, season: int) -> list[Meeting]:
         if season == self.season and self.meetings:
@@ -221,6 +277,16 @@ class Hub:
 
     async def _async_calendar_timer(self, _now: datetime) -> None:
         await self.async_refresh_calendar()
+
+    def _round_settled(self, season: int, rnd: int) -> bool:
+        """A round of the current season whose race ended two days ago: its results
+        no longer change, and are cached like a past season's."""
+        if season != self.season:
+            return False
+        meeting = next((m for m in self.meetings if m.round == rnd), None)
+        race = meeting.race if meeting else None
+        end = race.end if race else None
+        return end is not None and end + SETTLED_AFTER < dt_util.utcnow()
 
     def next_session(self) -> tuple[Meeting, Session] | None:
         return next_session(self.meetings, dt_util.utcnow())
@@ -246,18 +312,24 @@ class Hub:
         return self.store.settings
 
     async def async_update_settings(self, settings: Settings) -> None:
+        playing = settings.live != self.settings.live
         await self.store.async_save(settings)
         if self.live is not None:
             self.live.buffer.set_delay(settings.tv_delay)
             self.live.dirty = True
         async_dispatcher_send(self.hass, SIGNAL_SETTINGS)
-        async_dispatcher_send(self.hass, SIGNAL_LIVE)
-        self._notify_live()
-        self._notify_map()
+        self._update_entities()
+        self.publish_full()
+        self._notify_map(self.map_payload(broadcast=True, full=True))
+        if playing:
+            # Play and pause take effect now, not at the next tick.
+            await self._async_tick(dt_util.utcnow())
 
     # The live window.
 
     async def _async_tick(self, now: datetime) -> None:
+        if self._stopped:
+            return
         if (
             not self.meetings
             and time.monotonic() - self._calendar_tried >= CALENDAR_RETRY
@@ -266,38 +338,54 @@ class Hub:
             # can open, so try again soon rather than in six hours.
             await self.async_refresh_calendar()
         async with self._lock:
-            await self._async_tick_locked(now)
+            if not self._stopped:
+                await self._async_tick_locked(now)
+        self._update_entities()
+
+    def _window(self, now: datetime) -> tuple[Meeting | None, Session | None] | None:
+        if self.dev_url:
+            return (None, None)
+        return live_window(self.meetings, now, frozenset(self._done_sessions))
 
     async def _async_tick_locked(self, now: datetime) -> None:
-        if self.dev_url:
-            if self.live is None:
-                await self._async_start_live(None, None)
-            return
         live = self.live
+        if (
+            live is not None
+            and live.finalised_at is not None
+            and live.session is not None
+            and now - live.finalised_at >= CLOSE_AFTER_FINAL
+        ):
+            self._done_sessions.add(live.session.key)
+        window = self._window(now)
+        key = (window[1].key if window[1] else DEV_WINDOW) if window else None
+        if key is not None and key != self.store.auto_window:
+            # Auto-start acts once per window, as it opens, whether or not live
+            # timing is already on: a pause pressed during the session holds, and
+            # the window is remembered across restarts.
+            self.store.auto_window = key
+            if self.settings.auto_start and not self.settings.live:
+                await self.store.async_save(self.settings.with_live(True))
+                async_dispatcher_send(self.hass, SIGNAL_SETTINGS)
+                self.publish_full()
+            else:
+                await self.store.async_save()
+        wanted = window if self.settings.live else None
         if live is not None:
-            finished = live.finalised_at is not None and (
-                now - live.finalised_at >= CLOSE_AFTER_FINAL
-            )
-            if finished and live.session is not None:
-                self._done_sessions.add(live.session.key)
-        window = live_window(self.meetings, now, frozenset(self._done_sessions))
-        if live is not None:
-            same = (
-                window is not None
-                and live.session is not None
-                and (window[1].key == live.session.key)
-            )
-            if same:
+            if wanted is not None and _same_window(live, wanted):
                 return
-            await self._async_stop_live(counts_as_window=True)
-        if window is not None:
-            await self._async_start_live(*window)
+            # A window that ended counts towards the repair; a pause does not.
+            await self._async_stop_live(counts_as_window=self.settings.live)
+        if wanted is not None:
+            await self._async_start_live(*wanted)
 
     async def _async_start_live(
         self, meeting: Meeting | None, session: Session | None
     ) -> None:
+        if self._stopped:
+            return
         buffer: DelayBuffer[tuple[Any, ...]] = DelayBuffer(self.settings.tv_delay)
-        client = self._client_factory(
+        factory = self._client_factory or LiveTimingClient
+        client = factory(
             self.session,
             self.dev_url or LIVE_BASE,
             lambda keyframes: buffer.push(time.monotonic(), ("keyframes", keyframes)),
@@ -309,49 +397,71 @@ class Hub:
         )
         live = LiveSession(meeting, session, client, buffer)
         self.live = live
-        live.task = self.hass.async_create_background_task(
-            client.run(), f"{DOMAIN} live timing"
+        live.task = self.entry.async_create_background_task(
+            self.hass, client.run(), f"{DOMAIN} live timing"
         )
-        live.loops = [
-            self.hass.async_create_background_task(
-                self._async_release_loop(live), f"{DOMAIN} release"
-            ),
-            self.hass.async_create_background_task(
-                self._async_publish_loop(live), f"{DOMAIN} publish"
-            ),
-        ]
+        live.loop = self.entry.async_create_background_task(
+            self.hass, self._async_loop(live), f"{DOMAIN} live loop"
+        )
+        self.publish_full()
+        async_dispatcher_send(self.hass, SIGNAL_SETTINGS)  # Settings: "running"
         _LOGGER.debug("Live window open for %s", session.key if session else "dev")
 
     async def _async_stop_live(self, *, counts_as_window: bool) -> None:
-        """Close the live connection. Only a window that ran its course without a
-        single connection counts towards the "unreachable" repair, not one cut
-        short by an unload or a token change."""
+        """Close the live connection; its last state becomes the final view.
+
+        Only a window that ran its course without a single connection counts
+        towards the "unreachable" repair, not one cut short by a pause, an unload
+        or a token change.
+        """
         live, self.live = self.live, None
         if live is None:
             return
+        # The loop first, before any await: it must not publish a view without
+        # its session in between.
+        if live.loop is not None:
+            live.loop.cancel()
         if live.ever_connected or live.client.connected:
-            self._failed_windows = 0
             ir.async_delete_issue(self.hass, DOMAIN, ISSUE_LIVE)
+            if self.store.failed_windows:
+                self.store.failed_windows = 0
+                await self.store.async_save()
         elif counts_as_window and live.session is not None:
-            self._failed_windows += 1
-            if self._failed_windows >= FAILED_WINDOWS_FOR_REPAIR:
+            self.store.failed_windows += 1
+            await self.store.async_save()
+            if self.store.failed_windows >= FAILED_WINDOWS_FOR_REPAIR:
                 ir.async_create_issue(
                     self.hass,
                     DOMAIN,
                     ISSUE_LIVE,
                     is_fixable=False,
+                    is_persistent=True,
                     severity=ir.IssueSeverity.WARNING,
                     translation_key=ISSUE_LIVE,
                 )
-        tasks = [t for t in (live.task, live.outline_task, *live.loops) if t]
+        tasks = [
+            t
+            for t in (live.task, live.outline_task, live.archive_outline, live.loop)
+            if t
+        ]
         for task in tasks:
             task.cancel()
         for task in tasks:
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await task
-        async_dispatcher_send(self.hass, SIGNAL_LIVE)
-        self._notify_live()
-        self._notify_map()
+        if live.state.topics:
+            self.final = FinalView(
+                live.session.key if live.session else None,
+                live.state,
+                live.finalised_at or dt_util.utcnow(),
+                live.session.start if live.session else dt_util.utcnow(),
+            )
+        if self._stopped:
+            return
+        async_dispatcher_send(self.hass, SIGNAL_SETTINGS)  # Settings: "running"
+        self._update_entities()
+        self.publish_full()
+        self._notify_map(self.map_payload(broadcast=True, full=True))
 
     def _live_token(self) -> str | None:
         """Evaluated at each connection, not trusted from the hourly check."""
@@ -378,63 +488,83 @@ class Hub:
         self._raise_f1tv_issue()
         async_dispatcher_send(self.hass, SIGNAL_SETTINGS)
 
-    # Releasing and publishing.
+    # The live loop.
 
     def _health(self, live: LiveSession, now: float) -> tuple[str, float]:
         """`(health, data age)` of what the page shows (INV-2).
 
-        What is shown is the last released message, which was received at
-        `last_released`; it reached the page `delay` seconds later. So the page's
-        data is `now - (last_released + delay)` old: a gap in the feed shows up when
-        its last message is released, not when it was received.
+        What is shown is the last released message, received at `last_released`;
+        it reached the page `delay` seconds later, so a gap in the feed shows up
+        when its last message is released, not when it was received.
         """
         received = live.buffer.last_released
         base = (received if received is not None else live.started) + live.buffer.delay
-        age = max(0.0, now - base)
-        return feed_health(base, now), age
+        return feed_health(base, now), max(0.0, now - base)
 
-    async def _async_release_loop(self, live: LiveSession) -> None:
+    async def _async_loop(self, live: LiveSession) -> None:
         while True:
-            await asyncio.sleep(RELEASE_EVERY)
+            await asyncio.sleep(LOOP_EVERY)
             try:
-                self._release(live)
+                self._step(live)
             except Exception:
-                _LOGGER.exception("Live release failed; the loop goes on")
+                _LOGGER.exception("A live step failed; the loop goes on")
 
-    def _release(self, live: LiveSession) -> None:
+    def _step(self, live: LiveSession) -> None:
         now = time.monotonic()
-        for item in live.buffer.release(now):
+        released = live.buffer.release(now, RELEASE_CHUNK)
+        for item in released:
             self._apply(live, item)
+        if released:
+            self._after_batch(live)
         if live.client.connected:
             live.ever_connected = True
         health, _ = self._health(live, now)
         if health != live.health:
             live.health = health
             live.dirty = True
-            async_dispatcher_send(self.hass, SIGNAL_LIVE)
         elif health != "ok" and now - live.last_push >= STALE_REPUBLISH:
-            # While the feed is quiet the page's data age keeps growing.
-            live.dirty = True
+            live.dirty = True  # while the feed is quiet the data age keeps growing
+        if live.map_dirty and now - live.last_map >= MAP_EVERY:
+            live.map_dirty = False
+            live.last_map = now
+            self._notify_map(self.map_payload(broadcast=True))
+        if live.dirty and now - live.last_push >= PUBLISH_EVERY:
+            live.dirty = False
+            live.last_push = now
+            self._fire_events(live)
+            self._update_entities()
+            self._send_view(full=False)
 
     def _apply(self, live: LiveSession, item: tuple[Any, ...]) -> None:
         if item[0] == "keyframes":
             previous = live.state
             live.state = LiveState()
-            live.state.apply_keyframes(item[1])
-            if _session_key(previous.topics) == _session_key(live.state.topics):
+            samples = live.state.apply_keyframes(item[1])
+            if previous.topics and _session_key(previous.topics) == _session_key(
+                live.state.topics
+            ):
                 # A reconnect to the same session: F1 deletes pit times soon after
-                # sending them, so the log cannot come back; keep it, and keep the
-                # cars on the map until new positions arrive.
-                live.state.pit_log = previous.pit_log
-                live.state.positions = previous.positions or live.state.positions
+                # sending them, and positions come back only when cars move.
+                live.state.carry_over(previous)
+            # Versions restart with the new state: what the pages hold can no
+            # longer be compared with them, so the next view goes out complete.
+            self._sent = {}
+            live.dirty = True
         else:
             _, topic, delta, utc = item
-            live.state.apply(topic, delta, utc)
-            if topic == "Position.z":
-                live.map_dirty = True
-                self._collect_outline_samples(live)
-        live.dirty = True
-        self._check_finalised(live)
+            samples = live.state.apply(topic, delta, utc)
+            if topic not in _QUIET_TOPICS:
+                live.dirty = True
+        if samples:
+            live.map_dirty = True
+            self._collect_outline_samples(live, samples)
+
+    def _after_batch(self, live: LiveSession) -> None:
+        """Once per released batch, not per message."""
+        seen = live.state.version("SessionInfo", "SessionStatus")
+        if seen != live.finalised_seen:
+            live.finalised_seen = seen
+            self._check_finalised(live)
         self._ensure_outline(live)
 
     def _check_finalised(self, live: LiveSession) -> None:
@@ -458,42 +588,85 @@ class Hub:
         else:
             live.finalised_at = None
 
-    async def _async_publish_loop(self, live: LiveSession) -> None:
-        last_map = 0.0
-        while True:
-            await asyncio.sleep(PUBLISH_EVERY / 2)
-            try:
-                now = time.monotonic()
-                if live.map_dirty and now - last_map >= MAP_EVERY:
-                    live.map_dirty = False
-                    last_map = now
-                    self._notify_map()
-                if not live.dirty:
-                    continue
-                live.dirty = False
-                live.last_push = now
-                self._fire_events(live)
-                async_dispatcher_send(self.hass, SIGNAL_LIVE)
-                self._notify_live()
-            except Exception:
-                _LOGGER.exception("Live publish failed; the loop goes on")
-            await asyncio.sleep(PUBLISH_EVERY / 2)
+    # Automation events and entities.
 
     def _fire_events(self, live: LiveSession) -> None:
-        """Automation events.
+        """Race control transitions and stewards' decisions.
 
         The marks always follow the released state, so nothing that happened while
-        events were withheld fires later; events are only withheld, never from
-        stale state (INV-2) nor while no-spoiler mode hides the session (decision
-        15).
+        events were withheld fires later; events are withheld from stale state
+        (INV-2) and while no-spoiler mode hides the session (decision 15).
         """
         events, marks = derive(self.store.marks, live.state.topics)
+        live.builder.sync(live.state)
+        book = live.builder.book  # a reconnect's keyframes start a new book
+        decisions = book.take_new()
+        new_decisions: list[dict[str, Any]] = []
+        if "session_key" in marks:
+            # First sight of a session (a start mid-race): what is there is the
+            # baseline, not news.
+            first_new = int(marks.get("rcm_seen", book.seen))
+            new_decisions = [d for d in decisions if d["index"] >= first_new]
+            marks = {**marks, "rcm_seen": max(first_new, book.seen)}
         if marks != self.store.marks:
             self.store.save_marks(marks)
         if live.health != "ok" or live_hidden(self.settings):
             return
         for event in events:
             async_dispatcher_send(self.hass, SIGNAL_EVENT, event)
+        for record in new_decisions:
+            async_dispatcher_send(self.hass, SIGNAL_STEWARDS, record)
+
+    def _update_entities(self) -> None:
+        """Entities write only when what they show changed: a race writes a few
+        hundred states, not two a second each."""
+        snapshot = self._entity_snapshot()
+        if snapshot != self.entity_state:
+            self.entity_state = snapshot
+            async_dispatcher_send(self.hass, SIGNAL_LIVE)
+
+    def _entity_snapshot(self) -> dict[str, Any]:
+        live = self.live
+        running = bool(
+            live and session_status(live.state.get("SessionStatus")) == "started"
+        )
+        base: dict[str, Any] = {
+            "paused": not self.settings.live,
+            "connected": live is not None,
+            # Whether a session is running is not a spoiler (decision 15).
+            "running": running,
+            "available": live is None
+            or live.health != "lost"
+            or not live.ever_connected,
+            "shown": False,
+        }
+        if live is None or live_hidden(self.settings) or live.buffer.syncing():
+            return base
+        if not live.state.topics:
+            return base
+        sections = live.builder.sections(live.state, dt_util.utcnow())
+        head = sections["header"][1]
+        stewards = sections["stewards"][1]
+        messages = sections["race_control"][1]
+        return {
+            **base,
+            "shown": True,
+            "session_status": head["status"],
+            "track": head["track_status"],
+            "lap": head["lap"],
+            "total_laps": head["total_laps"],
+            "safety_car": stewards["safety_car"],
+            "virtual_safety_car": stewards["virtual_safety_car"],
+            "red_flag": stewards["red_flag"],
+            "yellow": stewards["yellow"],
+            "double_yellow": stewards["double_yellow"],
+            "yellow_sectors": [s["sector"] for s in stewards["yellow_sectors"]],
+            "penalties": [
+                _brief(p) for p in stewards["penalties"] if p["kind"] in PENALTIES
+            ],
+            "investigations": [_brief(i) for i in stewards["investigations"]],
+            "last_message": messages[0] if messages else None,
+        }
 
     # The live view.
 
@@ -508,31 +681,99 @@ class Hub:
             return "not_configured"
         return "token_problem"
 
-    def live_view(self) -> dict[str, Any]:
+    def _view_parts(
+        self,
+    ) -> tuple[dict[str, Any], dict[str, tuple[Any, Any]] | None]:
+        """`(meta, sections)`: what the Live page shows now. The meta always
+        travels; the sections only when they changed."""
+        now = dt_util.utcnow()
         live = self.live
-        health, age = (
-            (live.health, self._health(live, time.monotonic())[1])
-            if live
-            else ("lost", None)
-        )
-        view = live_view.build(
-            state=live.state if live else None,
-            now=dt_util.utcnow() - timedelta(seconds=self.settings.tv_delay),
-            health=health,
-            syncing=bool(live and live.buffer.syncing()),
-            hidden=live_hidden(self.settings) and live is not None,
-            delay=self.settings.tv_delay,
-            next_session=self.next_session_dict(),
-            data_age=age,
-            map_available=bool(live and live.state.positions),
-        )
-        view["map_reason"] = self.map_reason()
+        meta: dict[str, Any] = {
+            "delay": self.settings.tv_delay,
+            "next_session": self.next_session_dict(),
+            "paused": not self.settings.live,
+            "auto_start": self.settings.auto_start,
+            "map_available": bool(live and live.state.positions),
+            "map_reason": self.map_reason(),
+            "data_age": None,
+            "ended": None,
+        }
+        if live is not None:
+            if live_hidden(self.settings):
+                return {
+                    **meta,
+                    "state": "hidden",
+                    "header": live_view.hidden_header(live.state, now),
+                }, None
+            if live.buffer.syncing():
+                return {**meta, "state": "syncing"}, None
+            if not live.state.topics:
+                return {**meta, "state": "connecting"}, None
+            health, age = self._health(live, time.monotonic())
+            meta["data_age"] = round(age, 1)
+            shown = now - timedelta(seconds=self.settings.tv_delay)
+            state = "live" if health == "ok" else health
+            return {**meta, "state": state}, live.builder.sections(live.state, shown)
+        final = self.final
+        if final is not None:
+            if self.settings.no_spoiler and (
+                final.key is None
+                or not self.meetings
+                or final.key in hidden_sessions(self.settings, self.meetings, now)
+            ):
+                return {
+                    **meta,
+                    "state": "hidden",
+                    "header": live_view.hidden_header(final.state, now),
+                }, None
+            ended = final.ended or now
+            meta["ended"] = ended.isoformat()
+            return {**meta, "state": "final"}, final.builder.sections(
+                final.state, ended
+            )
+        return {**meta, "state": "idle" if self.settings.live else "paused"}, None
+
+    def live_view(self) -> dict[str, Any]:
+        """The complete view: for a page that has just subscribed, and tests."""
+        meta, sections = self._view_parts()
+        view = {**meta, "full": True}
+        for name, (_, value) in (sections or {}).items():
+            view[name] = value
         return view
 
-    def map_view(self) -> dict[str, Any] | None:
+    def _send_view(self, *, full: bool) -> None:
+        """Encode once for every open page; after a full view, only what changed."""
+        if not _listeners(self.hass, _LIVE_LISTENERS):
+            self._sent = {}
+            return
+        meta, sections = self._view_parts()
+        sent = self._sent
+        if full or sections is None or meta["state"] != sent.get("state"):
+            view = {**meta, "full": True}
+            self._sent = {"state": meta["state"]}
+            for name, (key, value) in (sections or {}).items():
+                view[name] = value
+                self._sent[name] = key
+        else:
+            view = {**meta, "full": False}
+            for name, (key, value) in sections.items():
+                if sent.get(name) != key:
+                    view[name] = value
+                    sent[name] = key
+        self._notify(_LIVE_LISTENERS, json_bytes(view))
+
+    def publish_full(self) -> None:
+        """Everything again: settings, pause, a window, the final view changed."""
+        self._send_view(full=True)
+
+    def map_payload(self, *, broadcast: bool, full: bool = False) -> bytes:
+        """The cars, projected once for every open page; the outline only when it
+        is new to them (`broadcast`) or to the one page that just subscribed."""
         live = self.live
         if live is None or live_hidden(self.settings) or live.health == "lost":
-            return None
+            if broadcast:
+                self._map_rev_sent = -1
+            return json_bytes({"full": True, "outline": None, "cars": [], "utc": None})
         outline = live.outline
         cars = []
         if outline is not None:
@@ -541,75 +782,146 @@ class Hub:
                 cars.append(
                     {"number": number, "x": x, "y": y, "on_track": pos.on_track}
                 )
-        return {
-            "outline": outline.to_dict() if outline else None,
-            "cars": cars,
-            "utc": live.state.positions_utc,
-        }
+        message: dict[str, Any] = {"cars": cars, "utc": live.state.positions_utc}
+        if full or live.outline_rev != self._map_rev_sent:
+            message["full"] = True
+            message["outline"] = outline.to_dict() if outline else None
+            if broadcast:
+                self._map_rev_sent = live.outline_rev
+        else:
+            message["full"] = False
+        return json_bytes(message)
 
     # Track outline (SPEC §6.5).
 
     def _ensure_outline(self, live: LiveSession) -> None:
-        if not live.client.authenticated or live.outline_task is not None:
+        if not live.client.authenticated or live.archive_outline is not None:
             return
-        info = header(live.state.topics, dt_util.utcnow())
-        circuit = info.get("circuit_key")
+        circuit = header(live.state.topics, dt_util.utcnow()).get("circuit_key")
         if circuit is None:
             return
-        live.outline_circuit = circuit
-        live.outline_task = self.hass.async_create_background_task(
-            self._async_load_outline(live, circuit), f"{DOMAIN} outline"
+        live.archive_outline = self.entry.async_create_background_task(
+            self.hass, self._async_load_outline(live, circuit), f"{DOMAIN} outline"
         )
 
     async def _async_load_outline(self, live: LiveSession, circuit: int) -> None:
         try:
-            live.outline = await self.archive.outline(circuit, dt_util.utcnow())
+            outline = await self.archive.outline(circuit, dt_util.utcnow())
         except (SourceError, OSError) as err:
             _LOGGER.debug("No archived outline for circuit %s: %s", circuit, err)
-        live.map_dirty = True
-
-    def _collect_outline_samples(self, live: LiveSession) -> None:
-        """A new circuit has no archived session: draw it from live positions,
-        trying again every 30 s until one lap closes."""
-        if live.outline is not None or (
-            live.outline_task is not None and not live.outline_task.done()
-        ):
             return
-        for number, pos in live.state.positions.items():
-            live.live_samples.append((number, pos.x, pos.y, pos.on_track))
+        if outline is not None and outline.points:
+            self._set_outline(live, outline)
+
+    def _set_outline(self, live: LiveSession, outline: Outline) -> None:
+        live.outline = outline
+        live.outline_rev += 1
+        live.map_dirty = True
+        if outline.points:
+            live.live_samples = []  # no longer needed
+
+    def _collect_outline_samples(
+        self, live: LiveSession, samples: list[Sample]
+    ) -> None:
+        """A circuit with no archived session is drawn from live positions, tried
+        again every 30 s until a lap closes; meanwhile the cars show on a
+        provisional projection."""
+        if live.outline is not None and live.outline.points:
+            return
+        live.live_samples.extend(samples)
         if len(live.live_samples) > LIVE_OUTLINE_SAMPLES:
             del live.live_samples[: len(live.live_samples) - LIVE_OUTLINE_SAMPLES]
+        if live.outline is None and (first := provisional(live.live_samples)):
+            self._set_outline(live, first)
+        # Drawn from live positions only once the archive has no outline to give.
+        archive = live.archive_outline
+        if archive is None or not archive.done():
+            return
+        if live.outline_task is not None and not live.outline_task.done():
+            return
         now = time.monotonic()
         if now < live.next_outline_try:
             return
         live.next_outline_try = now + LIVE_OUTLINE_RETRY
-        live.outline_task = self.hass.async_create_background_task(
+        live.outline_task = self.entry.async_create_background_task(
+            self.hass,
             self._async_live_outline(live, list(live.live_samples)),
             f"{DOMAIN} live outline",
         )
 
     async def _async_live_outline(
-        self, live: LiveSession, samples: list[tuple[str, float, float, bool]]
+        self, live: LiveSession, samples: list[Sample]
     ) -> None:
         outline = await self.hass.async_add_executor_job(build_outline, samples)
         if outline is not None:
-            live.outline = outline
-            live.map_dirty = True
+            self._set_outline(live, outline)
+
+    # The final view (SPEC §7.1).
+
+    def last_finished_session(self) -> Session | None:
+        now = dt_util.utcnow()
+        done = [
+            s
+            for m in self.meetings
+            for s in m.sessions
+            if s.start is not None
+            and (end := s.end) is not None
+            and end + CLOSE_AFTER_FINAL <= now
+        ]
+        return max(done, key=lambda s: s.start or now) if done else None
+
+    @callback
+    def ensure_final(self) -> None:
+        """A page opened the Live tab outside a session: make sure the last
+        session's final state is there, from memory if it was followed live, else
+        from F1's archive (downloaded once, cached)."""
+        if self.live is not None or self._stopped:
+            return
+        session = self.last_finished_session()
+        if session is None or (self.final and self.final.key == session.key):
+            return
+        final = self.final
+        if final is not None and (
+            final.start is None
+            or (session.start is not None and session.start <= final.start)
+        ):
+            # What is shown is as recent or more (a race that ended early, a
+            # pause during a session): never swap it for an older session.
+            return
+        if self._final_task is not None and not self._final_task.done():
+            return
+        self._final_task = self.entry.async_create_background_task(
+            self.hass, self._async_load_final(session), f"{DOMAIN} final view"
+        )
+
+    async def _async_load_final(self, session: Session) -> None:
+        try:
+            final = await self.archive.final_state(self.meetings, session)
+        except (SourceError, OSError) as err:
+            _LOGGER.debug("No final state for %s yet: %s", session.key, err)
+            return
+        if not final or self._stopped or self.live is not None:
+            return
+        state = LiveState()
+        state.apply_keyframes(final.get("topics") or {})
+        for payload in final.get("pit_stream") or []:
+            state.apply("PitLaneTimeCollection", payload)
+        if not state.topics:
+            return
+        self.final = FinalView(session.key, state, session.end, session.start)
+        self.publish_full()
 
     # The panel's listeners.
 
-    def _notify(self, key: str) -> None:
+    def _notify(self, key: str, payload: bytes) -> None:
         for listener in list(_listeners(self.hass, key)):
             try:
-                listener()
+                listener(payload)
             except Exception:
                 _LOGGER.exception("A live listener failed")
 
-    def _notify_live(self) -> None:
-        self._notify(_LIVE_LISTENERS)
-
-    def _notify_map(self) -> None:
-        self._notify(_MAP_LISTENERS)
+    def _notify_map(self, payload: bytes) -> None:
+        self._notify(_MAP_LISTENERS, payload)
 
     # F1TV (SPEC §4.5).
 
@@ -620,7 +932,7 @@ class Hub:
         await self._async_check_f1tv()
 
     async def _async_check_f1tv(self) -> None:
-        if self._token_refused:
+        if self._token_refused or self._stopped:
             return
         self.f1tv = self._evaluate_token()
         token = self.entry.data.get(DATA_F1TV_TOKEN)
@@ -656,18 +968,28 @@ class Hub:
             translation_key=ISSUE_F1TV,
         )
 
+    async def async_set_token(self, token: str | None) -> None:
+        """Save or remove the token (Settings page, options flow); INV-3: it is
+        stored in the config entry and never sent back."""
+        data = {k: v for k, v in self.entry.data.items() if k != DATA_F1TV_TOKEN}
+        if token:
+            data[DATA_F1TV_TOKEN] = token
+        self.hass.config_entries.async_update_entry(self.entry, data=data)
+        await self.async_token_changed()
+
     async def async_token_changed(self) -> None:
-        """The options flow saved or removed a token."""
+        """A token was saved or removed: re-evaluate, and reconnect so the new
+        token (or its absence) takes effect."""
         self._token_refused = False
         self.f1tv = self._evaluate_token()
         ir.async_delete_issue(self.hass, DOMAIN, ISSUE_F1TV)
         async with self._lock:
-            if self.live is not None:
-                # Reconnect so the new token (or its absence) takes effect.
+            if self.live is not None and not self._stopped:
                 meeting, session = self.live.meeting, self.live.session
                 await self._async_stop_live(counts_as_window=False)
                 await self._async_start_live(meeting, session)
         async_dispatcher_send(self.hass, SIGNAL_SETTINGS)
+        self.publish_full()
 
     # Diagnostics (INV-3: never the token).
 
@@ -685,8 +1007,9 @@ class Hub:
             "cache_bytes": await self.hass.async_add_executor_job(self.cache.size),
             "f1tv": self.f1tv.to_dict(),
             "settings": self.settings.to_dict(),
-            "failed_windows": self._failed_windows,
+            "failed_windows": self.store.failed_windows,
             "done_sessions": sorted(self._done_sessions),
+            "final": self.final.key if self.final else None,
             "dev_override": bool(self.dev_url),
             "live": None
             if live is None
@@ -702,6 +1025,28 @@ class Hub:
             },
             "now": datetime.now(UTC).isoformat(),
         }
+
+
+def _same_window(
+    live: LiveSession, wanted: tuple[Meeting | None, Session | None]
+) -> bool:
+    if wanted[1] is None:
+        return live.session is None
+    return live.session is not None and live.session.key == wanted[1].key
+
+
+def _brief(record: dict[str, Any]) -> dict[str, Any]:
+    """A decision as an entity attribute: small and stable."""
+    return {
+        "kind": record["kind"],
+        "status": record.get("status"),
+        "drivers": [c["tla"] for c in record["cars"]],
+        "numbers": [c["number"] for c in record["cars"]],
+        "seconds": record.get("seconds"),
+        "reason": record.get("reason"),
+        "lap": record.get("lap"),
+        "served": record.get("served"),
+    }
 
 
 def _session_key(topics: dict[str, Any]) -> int | None:
