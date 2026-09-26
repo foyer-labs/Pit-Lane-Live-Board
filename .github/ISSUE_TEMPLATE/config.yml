@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support / Aiuto
+    url: https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/SUPPORT.md
+    about: How to ask for help, in English or Italian. Come chiedere aiuto, in italiano o in inglese.
+  - name: Security / Sicurezza
+    url: https://github.com/foyer-labs/Pit-Lane-Live-Board/security/advisories/new
+    about: Report a vulnerability privately. Segnala una vulnerabilità in privato.

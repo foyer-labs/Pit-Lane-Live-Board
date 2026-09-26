@@ -1,0 +1,62 @@
+name: Problem / Problema
+description: Something does not work as it should. Qualcosa non funziona come dovrebbe.
+labels: ["problem"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. English and Italian are both fine — *puoi scrivere anche in italiano*.
+        **Never paste your F1TV token.** *Non incollare mai il token F1TV.*
+  - type: input
+    id: version
+    attributes:
+      label: Integration version / Versione dell'integrazione
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: home_assistant
+    attributes:
+      label: Home Assistant version / Versione di Home Assistant
+      placeholder: "2026.9.2"
+    validations:
+      required: true
+  - type: input
+    id: session
+    attributes:
+      label: Session / Sessione
+      description: Which session, if it is about live or historical data. Quale sessione, se riguarda dati live o storici.
+      placeholder: "2026 Italian GP, Race"
+  - type: dropdown
+    id: page
+    attributes:
+      label: Where / Dove
+      options:
+        - Live
+        - Calendar / Calendario
+        - Results / Risultati
+        - Standings / Classifiche
+        - Entities, automations / Entità, automazioni
+        - Setup, F1TV / Configurazione, F1TV
+        - Other / Altro
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected / Cosa ti aspettavi
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened / Cosa è successo
+      description: A screenshot helps. Uno screenshot aiuta.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log / Registro
+      description: Home Assistant log lines about pit_lane_live_board. Le righe del registro su pit_lane_live_board.
+      render: text

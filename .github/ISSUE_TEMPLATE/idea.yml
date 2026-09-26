@@ -1,0 +1,19 @@
+name: Idea
+description: Something you miss. Una cosa che ti manca.
+labels: ["idea"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Most ideas will not be built: the project stays small on purpose. Explain the real situation it would solve.
+        *La maggior parte delle idee non verrà realizzata: il progetto resta piccolo di proposito. Spiega la situazione reale che risolverebbe.*
+  - type: textarea
+    id: case
+    attributes:
+      label: The real situation / La situazione reale
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: How you picture it / Come te lo immagini
