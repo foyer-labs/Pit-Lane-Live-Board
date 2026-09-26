@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from .store import SettingsStore
 
 _COMMANDS_KEY = "pit_lane_live_board_commands"
+PLATFORMS = ["binary_sensor", "calendar", "event", "number", "sensor", "switch"]
 
 
 @dataclass
@@ -44,6 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) ->
         websocket.async_register(hass)
         hass.data[_COMMANDS_KEY] = True
     await hub.async_start()
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await panel.async_register(hass, entry)
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
@@ -60,6 +62,7 @@ async def _async_options_updated(
 async def async_unload_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -> bool:
     from . import panel
 
+    unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     await entry.runtime_data.hub.async_stop()
     panel.async_remove(hass)
-    return True
+    return unloaded

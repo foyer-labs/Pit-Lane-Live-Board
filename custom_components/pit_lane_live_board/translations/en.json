@@ -19,5 +19,133 @@
       "title": "Live timing unreachable",
       "description": "The last three session windows ended without a single connection to F1's live timing. F1 may have changed or closed the feed, or this Home Assistant cannot reach livetiming.formula1.com.\n\nCalendar, results and standings keep working. Check the diagnostics of Pit Lane Live Board and the project's issues for news; this notice clears itself after the next successful connection."
     }
+  },
+  "selector": {
+    "session": {
+      "options": {
+        "practice_1": "Practice 1",
+        "practice_2": "Practice 2",
+        "practice_3": "Practice 3",
+        "sprint_qualifying": "Sprint Qualifying",
+        "sprint": "Sprint",
+        "qualifying": "Qualifying",
+        "race": "Race"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Pit Lane Live Board",
+        "description": "**F1TV (optional).** Only the live track map needs it; everything else works without an account. Current status: **{status}** (expires {expires}).\n\nTo add or replace the token:\n1. In a browser, sign in at {site} with an active F1TV subscription.\n2. Open the browser's developer tools → Application (Storage in Firefox) → Cookies → {site}.\n3. Copy the value of the cookie named `loginSession` and paste it below. A bare token, or `Bearer …`, works too.\n\nThe token stays in this Home Assistant and is renewed automatically; about once a month F1 ends the login and a repair notice asks for a new one. It is stored in `.storage/` in plain text, like every other integration's token.",
+        "data": {
+          "show_in_sidebar": "Show Live Board in the sidebar",
+          "f1tv_token": "F1TV token (leave empty to keep the current one)",
+          "remove_f1tv_token": "Remove the F1TV token"
+        },
+        "data_description": {
+          "show_in_sidebar": "When off, the panel still opens from the device page.",
+          "f1tv_token": "The value is never shown again after saving."
+        }
+      }
+    },
+    "error": {
+      "token_invalid": "That does not look like an F1TV token. Paste the whole value of the loginSession cookie.",
+      "token_expired": "This token has expired or expires within minutes. Sign in to F1TV again and copy a fresh one.",
+      "token_no_subscription": "This F1TV account has no active subscription.",
+      "token_missing": "Paste a token."
+    }
+  },
+  "entity": {
+    "calendar": {
+      "sessions": {
+        "name": "Sessions"
+      }
+    },
+    "sensor": {
+      "next_session": {
+        "name": "Next session"
+      },
+      "session_status": {
+        "name": "Session status",
+        "state": {
+          "inactive": "Inactive",
+          "started": "Started",
+          "aborted": "Aborted",
+          "finished": "Finished",
+          "finalised": "Finalised"
+        }
+      },
+      "track_status": {
+        "name": "Track status",
+        "state": {
+          "clear": "Track clear",
+          "yellow": "Yellow flag",
+          "safety_car": "Safety car",
+          "virtual_safety_car": "Virtual safety car",
+          "vsc_ending": "VSC ending",
+          "red_flag": "Red flag",
+          "chequered": "Chequered flag"
+        }
+      },
+      "lap": {
+        "name": "Lap",
+        "state_attributes": {
+          "total_laps": {
+            "name": "Total laps"
+          }
+        }
+      },
+      "f1tv": {
+        "name": "F1TV",
+        "state": {
+          "not_configured": "Not configured",
+          "active": "Active",
+          "expiring": "Renewing",
+          "expired": "Expired",
+          "invalid": "Refused"
+        },
+        "state_attributes": {
+          "expires": {
+            "name": "Expires"
+          }
+        }
+      }
+    },
+    "binary_sensor": {
+      "session_live": {
+        "name": "Session running"
+      }
+    },
+    "event": {
+      "race_control": {
+        "name": "Race control",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "green_flag": "Green flag",
+              "yellow_flag": "Yellow flag",
+              "safety_car": "Safety car",
+              "virtual_safety_car": "Virtual safety car",
+              "vsc_ending": "VSC ending",
+              "red_flag": "Red flag",
+              "chequered_flag": "Chequered flag",
+              "session_started": "Session started",
+              "session_ended": "Session ended"
+            }
+          }
+        }
+      }
+    },
+    "switch": {
+      "no_spoiler": {
+        "name": "No-spoiler mode"
+      }
+    },
+    "number": {
+      "tv_delay": {
+        "name": "TV delay"
+      }
+    }
   }
 }

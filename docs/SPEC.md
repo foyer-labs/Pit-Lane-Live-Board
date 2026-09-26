@@ -781,6 +781,13 @@ Decisions taken in chat with the owner.
   live page updating, the calendar from real Jolpica data, and the map drawn from live
   positions through the fallback of §6.5. The map card no longer says "F1TV": the map
   can exist without it.
+34. **Calendar event names come from the integration's translations** (taken by me,
+  phase 6): Home Assistant has no translation category for data such as event
+  summaries, so the session names live under `selector.session` in `strings.json` and
+  are read with Home Assistant's own translation loader (INV-7 holds).
+35. **One options form** (taken by me, phase 6): "show in sidebar", the F1TV token and,
+  when one is stored, "remove the token". A menu of two steps would add a click for
+  two fields. URLs in the instructions are placeholders, as hassfest requires.
 
 ---
 

@@ -19,5 +19,133 @@
       "title": "Tempi live non raggiungibili",
       "description": "Le ultime tre finestre di sessione si sono chiuse senza nemmeno una connessione ai tempi live della F1. La F1 potrebbe aver cambiato o chiuso il flusso, oppure questo Home Assistant non raggiunge livetiming.formula1.com.\n\nCalendario, risultati e classifiche continuano a funzionare. Guarda la diagnostica di Pit Lane Live Board e le issue del progetto per le novità; questo avviso sparisce da solo alla prossima connessione riuscita."
     }
+  },
+  "selector": {
+    "session": {
+      "options": {
+        "practice_1": "Prove libere 1",
+        "practice_2": "Prove libere 2",
+        "practice_3": "Prove libere 3",
+        "sprint_qualifying": "Qualifiche sprint",
+        "sprint": "Sprint",
+        "qualifying": "Qualifiche",
+        "race": "Gara"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Pit Lane Live Board",
+        "description": "**F1TV (facoltativo).** Serve solo per la mappa live della pista; tutto il resto funziona senza account. Stato attuale: **{status}** (scade {expires}).\n\nPer aggiungere o sostituire il token:\n1. Dal browser, accedi a {site} con un abbonamento F1TV attivo.\n2. Apri gli strumenti per sviluppatori del browser → Applicazione (Archiviazione in Firefox) → Cookie → {site}.\n3. Copia il valore del cookie `loginSession` e incollalo qui sotto. Va bene anche il solo token, o `Bearer …`.\n\nIl token resta in questo Home Assistant e si rinnova da solo; circa una volta al mese la F1 chiude l'accesso e un avviso in Riparazioni te ne chiede uno nuovo. È salvato in `.storage/` in chiaro, come il token di ogni altra integrazione.",
+        "data": {
+          "show_in_sidebar": "Mostra Live Board nella barra laterale",
+          "f1tv_token": "Token F1TV (lascia vuoto per tenere quello attuale)",
+          "remove_f1tv_token": "Rimuovi il token F1TV"
+        },
+        "data_description": {
+          "show_in_sidebar": "Se disattivato, il pannello si apre comunque dalla pagina del dispositivo.",
+          "f1tv_token": "Dopo il salvataggio il valore non viene più mostrato."
+        }
+      }
+    },
+    "error": {
+      "token_invalid": "Non sembra un token F1TV. Incolla l'intero valore del cookie loginSession.",
+      "token_expired": "Questo token è scaduto o scade tra pochi minuti. Accedi di nuovo a F1TV e copiane uno nuovo.",
+      "token_no_subscription": "Questo account F1TV non ha un abbonamento attivo.",
+      "token_missing": "Incolla un token."
+    }
+  },
+  "entity": {
+    "calendar": {
+      "sessions": {
+        "name": "Sessioni"
+      }
+    },
+    "sensor": {
+      "next_session": {
+        "name": "Prossima sessione"
+      },
+      "session_status": {
+        "name": "Stato della sessione",
+        "state": {
+          "inactive": "Inattiva",
+          "started": "Iniziata",
+          "aborted": "Interrotta",
+          "finished": "Finita",
+          "finalised": "Conclusa"
+        }
+      },
+      "track_status": {
+        "name": "Stato della pista",
+        "state": {
+          "clear": "Pista libera",
+          "yellow": "Bandiera gialla",
+          "safety_car": "Safety car",
+          "virtual_safety_car": "Virtual safety car",
+          "vsc_ending": "VSC in uscita",
+          "red_flag": "Bandiera rossa",
+          "chequered": "Bandiera a scacchi"
+        }
+      },
+      "lap": {
+        "name": "Giro",
+        "state_attributes": {
+          "total_laps": {
+            "name": "Giri totali"
+          }
+        }
+      },
+      "f1tv": {
+        "name": "F1TV",
+        "state": {
+          "not_configured": "Non configurato",
+          "active": "Attivo",
+          "expiring": "In rinnovo",
+          "expired": "Scaduto",
+          "invalid": "Rifiutato"
+        },
+        "state_attributes": {
+          "expires": {
+            "name": "Scadenza"
+          }
+        }
+      }
+    },
+    "binary_sensor": {
+      "session_live": {
+        "name": "Sessione in corso"
+      }
+    },
+    "event": {
+      "race_control": {
+        "name": "Direzione gara",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "green_flag": "Bandiera verde",
+              "yellow_flag": "Bandiera gialla",
+              "safety_car": "Safety car",
+              "virtual_safety_car": "Virtual safety car",
+              "vsc_ending": "VSC in uscita",
+              "red_flag": "Bandiera rossa",
+              "chequered_flag": "Bandiera a scacchi",
+              "session_started": "Sessione iniziata",
+              "session_ended": "Sessione finita"
+            }
+          }
+        }
+      }
+    },
+    "switch": {
+      "no_spoiler": {
+        "name": "Modalità senza spoiler"
+      }
+    },
+    "number": {
+      "tv_delay": {
+        "name": "Ritardo TV"
+      }
+    }
   }
 }
