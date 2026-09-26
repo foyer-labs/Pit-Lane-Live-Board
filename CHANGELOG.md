@@ -17,3 +17,9 @@ under **Changed — read before updating**.
   and never shows a silent feed as live. An F1TV token is renewed automatically; a
   repair notice appears when a new one is needed, or when three session windows in a
   row could not connect. Diagnostics never contain the token.
+- The **Live Board** panel in the sidebar, for every user: the season calendar in
+  your timezone with a countdown and the podium of each finished weekend; results of
+  every season since 1950 with race, qualifying, sprint, lap chart, tyre strategy,
+  lap times, pit stops, race control and weather where the data exists; drivers' and
+  constructors' standings after any round. The TV delay and no-spoiler mode are set
+  from the panel's header; no-spoiler mode withholds results in the backend.

@@ -56,6 +56,25 @@ jobs:
         run: "! python -c 'import homeassistant'"
       - run: pytest -n auto
 
+  frontend:
+    name: frontend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+      # HACS installs the integration as it is: the built file is committed and
+      # must match the sources.
+      - name: The built panel matches the sources
+        run: git diff --exit-code custom_components/pit_lane_live_board/frontend
+
   ha:
     name: Home Assistant pytest (${{ matrix.name }})
     runs-on: ubuntu-latest

@@ -767,6 +767,15 @@ Decisions taken in chat with the owner.
 29. **Weather and pit stops sit under the timing tower; map, race control and radio in
   the side column** (taken by me, from the prototype's screenshots): the tower is
   shorter than the side column, and the space under it was empty.
+30. **The bench's data is generated, not committed** (taken by me, phase 4):
+  `scripts/bench_data.py` runs real Jolpica and archive data through the backend's own
+  `core/` functions into the git-ignored `bench/data/`. The pictures are realistic and
+  the repository still carries no F1 data (decision 27).
+31. **"Next" is the meeting holding the next session to start** (taken by me, phase 4,
+  from the bench): during a live race the following weekend is already "next", and
+  between two sessions of the same weekend that weekend still is.
+32. **Icons are inline Material Design Icons paths** (taken by me, phase 4), so the
+  panel needs no icon element from Home Assistant and the bench needs no fake one.
 
 ---
 
