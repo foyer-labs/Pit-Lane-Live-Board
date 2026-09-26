@@ -29,3 +29,12 @@ under **Changed — read before updating**.
   clock and the track status, race control with a flag/penalty filter, team radio
   played straight from F1, weather, pit lane times, and the track map when F1 sends
   positions. A lost feed is announced after 30 s and greys the page after 60 s.
+- Entities for automations: a **Sessions** calendar (with Home Assistant's calendar
+  triggers, "15 minutes before the race" needs no code), **Next session**, **Session
+  status**, **Track status**, **Lap**, **Session running**, a **Race control** event
+  (green, yellow, safety car, VSC, VSC ending, red, chequered, session started and
+  ended), the **No-spoiler mode** switch and the **TV delay** number. Live entities are
+  delayed like the page, go unavailable when the feed is lost, and stay quiet in
+  no-spoiler mode.
+- *Configure*: show or hide the panel in the sidebar, and paste, replace or remove the
+  F1TV token, with step-by-step instructions. The token is never shown again.
