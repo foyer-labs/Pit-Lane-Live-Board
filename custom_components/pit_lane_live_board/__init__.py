@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from .hub import Hub
     from .store import SettingsStore
 
+_COMMANDS_KEY = "pit_lane_live_board_commands"
+
 
 @dataclass
 class RuntimeData:
@@ -30,6 +32,7 @@ type LiveBoardConfigEntry = ConfigEntry[RuntimeData]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -> bool:
+    from . import panel, websocket
     from .hub import Hub
     from .store import SettingsStore
 
@@ -37,10 +40,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) ->
     await store.async_load()
     hub = Hub(hass, entry, store)
     entry.runtime_data = RuntimeData(store=store, hub=hub)
+    if not hass.data.get(_COMMANDS_KEY):
+        websocket.async_register(hass)
+        hass.data[_COMMANDS_KEY] = True
     await hub.async_start()
+    await panel.async_register(hass, entry)
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
 
 
+async def _async_options_updated(
+    hass: HomeAssistant, entry: LiveBoardConfigEntry
+) -> None:
+    from . import panel
+
+    await panel.async_register(hass, entry)
+
+
 async def async_unload_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -> bool:
+    from . import panel
+
     await entry.runtime_data.hub.async_stop()
+    panel.async_remove(hass)
     return True

@@ -208,8 +208,10 @@ def meeting_state(meeting: Meeting, meetings: list[Meeting], now: datetime) -> s
     for session in meeting.sessions:
         if session.start and session.end and session.start <= now <= session.end:
             return "live"
-    upcoming = [m for m in meetings if not m.finished(now)]
-    if upcoming and upcoming[0] is meeting:
+    # The meeting that holds the next session to start, so during a live race the
+    # next weekend is already "next".
+    following = next_session(meetings, now)
+    if following is not None and following[0] is meeting:
         return "next"
     return "upcoming"
 

@@ -119,6 +119,10 @@ def test_meeting_states():
     assert meeting_state(first, MEETINGS, now) == "next"
     assert meeting_state(second, MEETINGS, now) == "upcoming"
     assert meeting_state(first, MEETINGS, at(10, 14)) == "live"
+    # While round 1's race is live, round 2 holds the next session.
+    assert meeting_state(second, MEETINGS, at(10, 14)) == "next"
+    # Between two sessions of the same weekend, that weekend is still next.
+    assert meeting_state(first, MEETINGS, at(9, 12)) == "next"
     assert meeting_state(first, MEETINGS, at(11, 0)) == "done"
     assert meeting_state(second, MEETINGS, at(11, 0)) == "next"
 

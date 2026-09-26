@@ -58,6 +58,24 @@ the parts that look relevant: it carries the reasons behind the choices.
 - Run the whole suite after every change, in parallel. Do not split it into sections:
   cross-effects hide between sections.
 
+## Frontend and the bench
+
+- `cd frontend && npm ci && npm run build`: the built panel
+  (`custom_components/pit_lane_live_board/frontend/pit-lane-live-board-panel.js`) is
+  committed, and CI checks it matches the sources.
+- `bench/` is the real panel with a fake `hass`. Serve the repository root
+  (`python -m http.server 8777`) and open `/bench/?page=live&lang=it&theme=dark`.
+  Parameters: `page`, `live` (race, qualifying, stale, idle, hidden, syncing,
+  connecting), `lang`, `theme`, `delay`, `spoiler`, `admin`, `f1tv`, `round` and `tab`
+  (open a Results detail).
+- The bench's data comes from `python scripts/bench_data.py`: real Jolpica and archive
+  data run through the backend's own `core/` functions, frozen at the 2026 Spanish GP,
+  lap 34. It lands in `bench/data/`, which is git-ignored: no F1 data in the
+  repository (decision 27).
+- Headless Chrome cannot make a window narrower than about 500 px: phone captures are
+  taken at 500 px, which is below every breakpoint (640, 900, 1100 px).
+- Look at every page as an image as soon as it exists.
+
 ## How to work here
 
 - One phase per session (SPEC §19). Nothing from a later phase, even when it is one line
