@@ -169,6 +169,7 @@ class FinalView:
     key: str | None
     state: LiveState
     ended: datetime | None
+    start: datetime | None = None  # when its session started: newer never loses
     builder: LiveViewBuilder = field(default_factory=LiveViewBuilder)
 
 
@@ -202,7 +203,6 @@ class Hub:
         self._lock = asyncio.Lock()
         self._stopped = False
         self._done_sessions: set[str] = set()
-        self._auto_started: set[str] = set()
         self._unsubs: list[CALLBACK_TYPE] = []
         self._token_refused = False
         self.f1tv = self._evaluate_token()
@@ -356,14 +356,18 @@ class Hub:
         ):
             self._done_sessions.add(live.session.key)
         window = self._window(now)
-        if window is not None and self.settings.auto_start and not self.settings.live:
-            key = window[1].key if window[1] else DEV_WINDOW
-            if key not in self._auto_started:
-                # Once per window: a pause pressed during the session stays.
-                self._auto_started.add(key)
+        key = (window[1].key if window[1] else DEV_WINDOW) if window else None
+        if key is not None and key != self.store.auto_window:
+            # Auto-start acts once per window, as it opens, whether or not live
+            # timing is already on: a pause pressed during the session holds, and
+            # the window is remembered across restarts.
+            self.store.auto_window = key
+            if self.settings.auto_start and not self.settings.live:
                 await self.store.async_save(self.settings.with_live(True))
                 async_dispatcher_send(self.hass, SIGNAL_SETTINGS)
                 self.publish_full()
+            else:
+                await self.store.async_save()
         wanted = window if self.settings.live else None
         if live is not None:
             if wanted is not None and _same_window(live, wanted):
@@ -399,6 +403,7 @@ class Hub:
             self.hass, self._async_loop(live), f"{DOMAIN} live loop"
         )
         self.publish_full()
+        async_dispatcher_send(self.hass, SIGNAL_SETTINGS)  # Settings: "running"
         _LOGGER.debug("Live window open for %s", session.key if session else "dev")
 
     async def _async_stop_live(self, *, counts_as_window: bool) -> None:
@@ -411,6 +416,10 @@ class Hub:
         live, self.live = self.live, None
         if live is None:
             return
+        # The loop first, before any await: it must not publish a view without
+        # its session in between.
+        if live.loop is not None:
+            live.loop.cancel()
         if live.ever_connected or live.client.connected:
             ir.async_delete_issue(self.hass, DOMAIN, ISSUE_LIVE)
             if self.store.failed_windows:
@@ -444,9 +453,11 @@ class Hub:
                 live.session.key if live.session else None,
                 live.state,
                 live.finalised_at or dt_util.utcnow(),
+                live.session.start if live.session else dt_util.utcnow(),
             )
         if self._stopped:
             return
+        async_dispatcher_send(self.hass, SIGNAL_SETTINGS)  # Settings: "running"
         self._update_entities()
         self.publish_full()
         self._notify_map(self.map_payload(broadcast=True, full=True))
@@ -534,6 +545,9 @@ class Hub:
                 # A reconnect to the same session: F1 deletes pit times soon after
                 # sending them, and positions come back only when cars move.
                 live.state.carry_over(previous)
+            # Versions restart with the new state: what the pages hold can no
+            # longer be compared with them, so the next view goes out complete.
+            self._sent = {}
             live.dirty = True
         else:
             _, topic, delta, utc = item
@@ -865,6 +879,14 @@ class Hub:
         session = self.last_finished_session()
         if session is None or (self.final and self.final.key == session.key):
             return
+        final = self.final
+        if final is not None and (
+            final.start is None
+            or (session.start is not None and session.start <= final.start)
+        ):
+            # What is shown is as recent or more (a race that ended early, a
+            # pause during a session): never swap it for an older session.
+            return
         if self._final_task is not None and not self._final_task.done():
             return
         self._final_task = self.entry.async_create_background_task(
@@ -885,7 +907,7 @@ class Hub:
             state.apply("PitLaneTimeCollection", payload)
         if not state.topics:
             return
-        self.final = FinalView(session.key, state, session.end)
+        self.final = FinalView(session.key, state, session.end, session.start)
         self.publish_full()
 
     # The panel's listeners.

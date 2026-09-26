@@ -64,13 +64,14 @@ export class PlbLiveMap extends LitElement {
     this.subscribing = true;
     try {
       const unsubscribe = await api.subscribeMap(this.hass, (m) => this.receive(m));
-      if (this.isConnected && this.onScreen) this.unsubscribe = unsubscribe;
-      else unsubscribe();
+      // Hidden or scrolled away while subscribing: sync() below lets go at once.
+      this.unsubscribe = unsubscribe;
     } catch {
       /* no map this time: the next visibility change asks again */
     } finally {
       this.subscribing = false;
     }
+    this.sync();
   }
 
   private receive(m: MapView): void {

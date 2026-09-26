@@ -40,6 +40,7 @@ class SettingsStore:
         self.settings = Settings()
         self.marks: dict[str, Any] = {}
         self.failed_windows = 0
+        self.auto_window: str | None = None  # the last session window seen
 
     async def async_load(self) -> Settings:
         data = await self._store.async_load()
@@ -48,6 +49,8 @@ class SettingsStore:
         self.marks = dict(marks) if isinstance(marks, dict) else {}
         failed = data.get("failed_windows") if isinstance(data, dict) else None
         self.failed_windows = failed if isinstance(failed, int) and failed >= 0 else 0
+        window = data.get("auto_window") if isinstance(data, dict) else None
+        self.auto_window = window if isinstance(window, str) else None
         return self.settings
 
     def _data(self) -> dict[str, Any]:
@@ -55,6 +58,7 @@ class SettingsStore:
             **self.settings.to_dict(),
             "marks": self.marks,
             "failed_windows": self.failed_windows,
+            "auto_window": self.auto_window,
         }
 
     async def async_save(self, settings: Settings | None = None) -> None:

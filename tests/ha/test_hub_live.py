@@ -313,3 +313,65 @@ async def test_the_page_says_how_old_its_data_is_while_quiet(hub):
     first = hub.live_view()["data_age"]
     await settle(1.2)
     assert hub.live_view()["data_age"] >= first + 1
+
+
+async def test_a_pause_holds_when_live_timing_was_already_on(hass: HomeAssistant, hub):
+    now = datetime.now(UTC)
+    from custom_components.pit_lane_live_board.core.schedule import parse_schedule
+
+    hub.meetings = parse_schedule(schedule_payload(now + timedelta(minutes=10)))
+    await hub.store.async_save(hub.settings.with_auto_start(True).with_live(True))
+    await hub._async_tick(now)
+    assert hub.live is not None
+    await hub.async_update_settings(hub.settings.with_live(False))
+    await hub._async_tick(now)
+    assert hub.settings.live is False and hub.live is None
+    assert hub.store.auto_window == hub.meetings[0].race.key  # survives a restart
+
+
+async def test_a_reconnect_sends_every_section_again(hass: HomeAssistant, hub):
+    from custom_components.pit_lane_live_board.hub import listen_live
+
+    received: list[dict] = []
+    unsub = listen_live(hass, lambda payload: received.append(json.loads(payload)))
+    await hub._async_start_live(None, None)
+    client = FakeClient.instances[-1]
+    client.keyframes(keyframes())
+    await settle()
+    frames = keyframes()
+    frames["RaceControlMessages"] = {
+        "Messages": [
+            {"Utc": "t", "Lap": 3, "Category": "Other", "Message": "NEW MESSAGE"}
+        ]
+    }
+    client.keyframes(frames)  # after a drop: versions restart at 1
+    await settle()
+    assert received[-1]["full"] is True
+    assert received[-1]["race_control"][0]["message"] == "NEW MESSAGE"
+    unsub()
+
+
+async def test_the_final_view_is_never_replaced_by_an_older_session(
+    hass: HomeAssistant, hub
+):
+    from unittest.mock import AsyncMock
+
+    from custom_components.pit_lane_live_board.core.schedule import parse_schedule
+
+    hub.meetings = parse_schedule(
+        schedule_payload(datetime.now(UTC) - timedelta(hours=5))
+    )
+    race = hub.meetings[0].race
+    await hub._async_start_live(hub.meetings[0], race)
+    FakeClient.instances[-1].keyframes(keyframes())
+    await settle()
+    await hub._async_stop_live(counts_as_window=False)
+    hub.archive.final_state = AsyncMock(return_value=None)
+    # A race that ended early: its final is newer than the last session whose
+    # scheduled end has passed; the older one must not replace it.
+    hub.final.key = "newer-session"
+    hub.final.start = race.start + timedelta(hours=1)
+    hub.ensure_final()
+    await hass.async_block_till_done()
+    assert hub.final.key == "newer-session"
+    hub.archive.final_state.assert_not_awaited()

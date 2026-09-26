@@ -806,7 +806,8 @@ var Ie = {
 			token_invalid: "That does not look like an F1TV token. Paste the whole value of the loginSession cookie.",
 			token_expired: "This token has expired or expires within minutes. Sign in to F1TV again and copy a fresh one.",
 			token_no_subscription: "This F1TV account has no active subscription.",
-			token_missing: "Paste a token."
+			token_missing: "Paste a token.",
+			remove_failed: "The token could not be removed. Try again in a moment."
 		}
 	},
 	stewards: {
@@ -1088,7 +1089,8 @@ var Ie = {
 				token_invalid: "Non sembra un token F1TV. Incolla l'intero valore del cookie loginSession.",
 				token_expired: "Questo token è scaduto o scade entro pochi minuti. Accedi di nuovo a F1TV e copiane uno nuovo.",
 				token_no_subscription: "Questo account F1TV non ha un abbonamento attivo.",
-				token_missing: "Incolla un token."
+				token_missing: "Incolla un token.",
+				remove_failed: "Non è stato possibile rimuovere il token. Riprova tra un momento."
 			}
 		},
 		stewards: {
@@ -2297,10 +2299,11 @@ var At = o`
 		this.subscribing = !0;
 		try {
 			let e = await F.subscribeMap(this.hass, (e) => this.receive(e));
-			this.isConnected && this.onScreen ? this.unsubscribe = e : e();
+			this.unsubscribe = e;
 		} catch {} finally {
 			this.subscribing = !1;
 		}
+		this.sync();
 	}
 	receive(e) {
 		if (e.full) {
@@ -2694,6 +2697,8 @@ var At = o`
 		this.saving = !0;
 		try {
 			await F.removeToken(this.hass);
+		} catch {
+			this.tokenError = "remove_failed";
 		} finally {
 			this.saving = !1, this.confirmRemove = !1;
 		}

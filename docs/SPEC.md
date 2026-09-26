@@ -279,8 +279,10 @@ the event loop), measures health and publishes when due (decision 45):
 ### 5.5 Resource budget
 
 Targets on a Raspberry Pi 4:
-- paused (the default, decision 42): no connection to F1 and nothing live written to
-  disk; the only writes are settings the user changes;
+- paused (the default, decision 42): no connection to F1's live feed and nothing live
+  written to disk; the only writes are settings the user changes, the window
+  auto-start has seen (once per session), and, when a page opens Live after a
+  session, that session's final state downloaded once from the archive and cached;
 - idle outside session windows: no connection and no timers except the schedule;
 - live: under 5% CPU and under 150 MB of memory for the integration.
 
@@ -599,7 +601,8 @@ transition. A reconnect never re-fires an event already fired for the same messa
 The stewards event fires once per decision whose race control message lies past the
 persisted mark `rcm_seen`: joining a session midway, what race control already said is
 the baseline, and a reconnect or a restart replays nothing. Marks are written at most
-every 30 s and only while live timing runs.
+every 30 s and only while live timing runs, and flushed on unload: only after a crash
+can the events of the last 30 s fire again.
 
 ### 10.4 Repairs and diagnostics
 

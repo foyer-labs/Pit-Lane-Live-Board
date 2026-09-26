@@ -230,7 +230,8 @@
       "token_invalid": "That does not look like an F1TV token. Paste the whole value of the loginSession cookie.",
       "token_expired": "This token has expired or expires within minutes. Sign in to F1TV again and copy a fresh one.",
       "token_no_subscription": "This F1TV account has no active subscription.",
-      "token_missing": "Paste a token."
+      "token_missing": "Paste a token.",
+      "remove_failed": "The token could not be removed. Try again in a moment."
     }
   },
   "stewards": {

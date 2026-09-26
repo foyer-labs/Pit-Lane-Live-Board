@@ -10,6 +10,7 @@ import { tokens } from "../styles";
 import type { Hass, LinkedEntity, Settings } from "../types";
 
 const TOKEN_ERRORS = new Set(["token_invalid", "token_expired", "token_no_subscription", "token_missing"]);
+// "remove_failed" is set here, never by the backend.
 
 export class PlbSettings extends LitElement {
   static override properties = {
@@ -86,6 +87,8 @@ export class PlbSettings extends LitElement {
     this.saving = true;
     try {
       await api.removeToken(this.hass);
+    } catch {
+      this.tokenError = "remove_failed";
     } finally {
       this.saving = false;
       this.confirmRemove = false;
