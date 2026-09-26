@@ -16,25 +16,31 @@ if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
 
+    from .hub import Hub
     from .store import SettingsStore
 
 
 @dataclass
 class RuntimeData:
     store: SettingsStore
+    hub: Hub
 
 
 type LiveBoardConfigEntry = ConfigEntry[RuntimeData]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -> bool:
+    from .hub import Hub
     from .store import SettingsStore
 
     store = SettingsStore(hass)
     await store.async_load()
-    entry.runtime_data = RuntimeData(store=store)
+    hub = Hub(hass, entry, store)
+    entry.runtime_data = RuntimeData(store=store, hub=hub)
+    await hub.async_start()
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -> bool:
+    await entry.runtime_data.hub.async_stop()
     return True

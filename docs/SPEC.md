@@ -179,9 +179,13 @@ here was checked against source code or a live request; the unverified ones are 
 
 ### 4.5 F1TV (optional, for the live map)
 
-- The token is the `subscriptionToken`, an RS256 JWT, verified against
-  `https://api.formula1.com/static/jwks.json`. Claims used: `exp`, `SubscriptionStatus`,
+- The token is the `subscriptionToken`, an RS256 JWT. Its claims are read, not
+  verified: F1's servers reject a bad token anyway, and verifying would need F1's
+  signing keys at setup time. Claims used: `exp`, `SubscriptionStatus`,
   `SubscribedProduct`, `SessionId`.
+- The user may paste the bare token, a `Bearer …` header, or the whole
+  `loginSession` cookie (URL-encoded JSON holding `data.subscriptionToken`): all
+  three are accepted.
 - **Password login is not possible.** `…/authenticate/by-password` sits behind bot
   protection (reese84) and rejects programmatic logins. FastF1 and F1 Sensor avoid it
   for this reason.
@@ -552,8 +556,8 @@ Every command requires an authenticated Home Assistant user.
   per-session reveals, the last fired event per topic (§10.3), and the next renewal
   time. Versioned schema, migrated forward.
 - **Cache:** `<config>/.cache/pit_lane_live_board/`, disposable. Deleting it costs
-  downloads, never data. It must stay out of Home Assistant backups (phase 2 verifies
-  it); if it does not, it moves.
+  downloads, never data. Home Assistant's backups exclude `.cache/*` (verified in
+  `homeassistant/components/backup/const.py`, 2026.6).
 
 ---
 
@@ -588,9 +592,11 @@ Every command requires an authenticated Home Assistant user.
 - **Contract check** (`scripts/contract_check.py`), manual, not in CI: hits the real
   sources and reports format drift. It is run before each release and after F1 changes
   something.
-- **Development session player** (`scripts/dev_session.py`, §18 I): feeds a recorded
-  archive session through the real pipeline to a local panel at accelerated speed. It is
-  a development tool, never shipped as a user feature (decision 8).
+- **Development session player** (`scripts/dev_session.py`, §18 I): serves the
+  SignalR Core protocol on localhost and plays an archived session at a chosen speed.
+  Home Assistant started with `PIT_LANE_DEV_LIVE_URL=http://127.0.0.1:8765/signalrcore`
+  connects to it as if a window were open. It is a development tool, never shipped as
+  a user feature (decision 8).
 
 ---
 
