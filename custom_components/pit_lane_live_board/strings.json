@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Pit Lane Live Board",
+        "description": "Formula 1 in a ready-made sidebar panel: live timing, calendar, results since 1950 and both championships.\n\nPit Lane Live Board is unofficial and is not associated in any way with the Formula 1 companies. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX and related marks are trade marks of Formula One Licensing B.V.\n\nResults and standings data: Jolpica-F1 (CC BY-NC-SA 4.0). Live data: F1's public live timing, for personal, non-commercial use."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Pit Lane Live Board is already set up."
+    }
+  }
+}

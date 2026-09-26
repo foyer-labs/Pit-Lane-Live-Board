@@ -1,0 +1,21 @@
+{
+  "domain": "pit_lane_live_board",
+  "name": "Pit Lane Live Board",
+  "codeowners": [
+    "@foyer-labs"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "frontend",
+    "http",
+    "repairs",
+    "websocket_api"
+  ],
+  "documentation": "https://github.com/foyer-labs/Pit-Lane-Live-Board",
+  "integration_type": "service",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/foyer-labs/Pit-Lane-Live-Board/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

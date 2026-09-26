@@ -45,6 +45,19 @@ the parts that look relevant: it carries the reasons behind the choices.
   a reduced CI (hassfest and HACS). Never work on `main` directly; it is updated only by
   the publish script's pull request, and tags and releases go on `main`'s commit.
 
+## Tests
+
+- Pure suite (`tests/core`, `tests/repo`), with no Home Assistant installed:
+  `pytest -n 12`, with only `pytest`, `pytest-xdist` and `hypothesis`.
+- Home Assistant suite (Linux or WSL only):
+  `pytest -p pytest_homeassistant_custom_component -o asyncio_mode=auto -o asyncio_default_fixture_loop_scope=function -n 12 tests/ha`.
+  It runs on `pytest-homeassistant-custom-component==0.13.336` (HA 2026.6) and on the
+  latest version.
+- `ruff check .` and `ruff format --check .`.
+- `python scripts/sync_translations.py` after every change to `strings.json`.
+- Run the whole suite after every change, in parallel. Do not split it into sections:
+  cross-effects hide between sections.
+
 ## How to work here
 
 - One phase per session (SPEC §19). Nothing from a later phase, even when it is one line

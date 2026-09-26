@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  hassfest:
+    name: hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    name: HACS validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hacs/action@main
+        with:
+          category: integration
+          # Brand icons arrive in phase 7 (SPEC §19); until then this check is skipped.
+          ignore: brands
+
+  lint:
+    name: ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: pip install ruff
+      - run: ruff check .
+      - run: ruff format --check .
+
+  pure:
+    # The pure suite, deliberately WITHOUT Home Assistant installed: if core/ needed
+    # it, these tests could not even import (INV-1). It also covers the translation
+    # key parity (INV-7).
+    name: pure pytest (py${{ matrix.python }}, no Home Assistant)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install pytest pytest-xdist hypothesis
+      - name: Home Assistant must not be importable here
+        run: "! python -c 'import homeassistant'"
+      - run: pytest -n auto
+
+  ha:
+    name: Home Assistant pytest (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The minimum declared in hacs.json (decision 12).
+          - name: HA 2026.6
+            python: "3.14"
+            packages: pytest-homeassistant-custom-component==0.13.336
+          # The latest Home Assistant, to learn early when something breaks.
+          - name: HA latest
+            python: "3.14"
+            packages: pytest-homeassistant-custom-component
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          # Home Assistant's test packages are most of the job's time: keep them
+          # between runs, keyed on this file so a version change starts afresh.
+          cache: pip
+          cache-dependency-path: .github/workflows/ci.yml
+      - run: pip install ${{ matrix.packages }} pytest-xdist
+      # The integration depends on frontend: install the frontend package at the
+      # version that Home Assistant pins in its manifest.
+      - name: Install the frontend pinned by that Home Assistant
+        run: |
+          pip install "$(python - <<'EOF'
+          import json, pathlib, homeassistant.components.frontend as f
+          manifest = pathlib.Path(f.__file__).with_name("manifest.json")
+          print(json.loads(manifest.read_text())["requirements"][0])
+          EOF
+          )"
+      - run: >
+          pytest -p pytest_homeassistant_custom_component
+          -o asyncio_mode=auto -o asyncio_default_fixture_loop_scope=function
+          -n auto tests/ha
