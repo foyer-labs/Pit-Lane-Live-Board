@@ -176,3 +176,43 @@ async def test_failed_windows_raise_a_repair(hass: HomeAssistant, hub):
             await hub._async_tick(now)
             await hub._async_stop_live()
     assert ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_LIVE) is not None
+
+
+async def test_the_map_projects_positions_and_respects_no_spoiler(hub):
+    from unittest.mock import AsyncMock
+
+    from custom_components.pit_lane_live_board.core.archive_parse import encode_z
+    from custom_components.pit_lane_live_board.core.outline import build_outline
+
+    from ..core.test_outline import ellipse_laps
+
+    outline = build_outline(ellipse_laps())
+    hub.archive.outline = AsyncMock(return_value=outline)
+    hub._live_token = lambda: "token"
+    await hub._async_start_live(None, None)
+    client = FakeClient.instances[-1]
+    await settle(0.1)
+    client.keyframes(keyframes())
+    _, x, y, _ = ellipse_laps()[50]
+    client.feed(
+        "Position.z",
+        encode_z(
+            {
+                "Position": [
+                    {
+                        "Timestamp": "t",
+                        "Entries": {"4": {"Status": "OnTrack", "X": x, "Y": y}},
+                    }
+                ]
+            }
+        ),
+    )
+    await settle()
+    assert hub.archive.outline.await_args.args[0] == 99  # the circuit key
+    view = hub.map_view()
+    assert view["outline"]["width"] == 1000.0
+    (car,) = view["cars"]
+    assert (car["x"], car["y"]) == outline.project(x, y)
+    assert hub.live_view()["map_available"] is True
+    await hub.async_update_settings(hub.settings.with_no_spoiler(True))
+    assert hub.map_view() is None
