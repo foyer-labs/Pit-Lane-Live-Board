@@ -9,5 +9,15 @@
     "abort": {
       "single_instance_allowed": "Pit Lane Live Board è già configurato."
     }
+  },
+  "issues": {
+    "f1tv_new_token": {
+      "title": "F1TV ha bisogno di un nuovo token",
+      "description": "Pit Lane Live Board non è riuscito a rinnovare il tuo token F1TV: l'accesso a F1TV da cui proviene è scaduto, oppure la F1 ha rifiutato il rinnovo. Tutto continua a funzionare tranne la mappa live della pista.\n\nPer riavere la mappa, accedi a F1TV dal browser, copia un nuovo token e incollalo in Impostazioni → Dispositivi e servizi → Pit Lane Live Board → Configura. La guida mostra ogni passaggio."
+    },
+    "live_unreachable": {
+      "title": "Tempi live non raggiungibili",
+      "description": "Le ultime tre finestre di sessione si sono chiuse senza nemmeno una connessione ai tempi live della F1. La F1 potrebbe aver cambiato o chiuso il flusso, oppure questo Home Assistant non raggiunge livetiming.formula1.com.\n\nCalendario, risultati e classifiche continuano a funzionare. Guarda la diagnostica di Pit Lane Live Board e le issue del progetto per le novità; questo avviso sparisce da solo alla prossima connessione riuscita."
+    }
   }
 }
