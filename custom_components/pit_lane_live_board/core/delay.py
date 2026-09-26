@@ -52,14 +52,19 @@ class DelayBuffer[T]:
     def push(self, received: float, item: T) -> None:
         self._held.append(_Held(received, item))
 
-    def release(self, now: float) -> list[T]:
-        """Everything due at `now`, in arrival order."""
+    def release(self, now: float, limit: int | None = None) -> list[T]:
+        """Everything due at `now`, in arrival order; at most `limit` messages, so
+        a lowered delay's backlog is applied over several calls."""
         due: list[T] = []
-        while self._held and (
-            self._held[0].received + self._delay <= now
-            # Nothing waits longer than the largest possible delay, even if the
-            # clock the caller passes jumped.
-            or self._held[0].received + MAX_DELAY < now
+        while (
+            (limit is None or len(due) < limit)
+            and self._held
+            and (
+                self._held[0].received + self._delay <= now
+                # Nothing waits longer than the largest possible delay, even if the
+                # clock the caller passes jumped.
+                or self._held[0].received + MAX_DELAY < now
+            )
         ):
             held = self._held.popleft()
             self._last_released = held.received

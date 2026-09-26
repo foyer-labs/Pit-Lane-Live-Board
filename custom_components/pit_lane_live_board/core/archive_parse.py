@@ -33,15 +33,21 @@ def parse_offset(text: str) -> int | None:
     return ((hours * 60 + minutes) * 60 + seconds) * 1000 + millis
 
 
-def iter_stream(lines: Iterable[str]) -> Iterator[tuple[int, Any]]:
+def iter_stream(
+    lines: Iterable[str], keep: tuple[str, ...] | None = None
+) -> Iterator[tuple[int, Any]]:
     """Yield `(offset_ms, payload)` per line, skipping blank or damaged lines.
 
     Works on any iterable of lines so a large file can be read without loading it
-    whole (SPEC §4.3).
+    whole (SPEC §4.3). `keep`, when given, skips lines containing none of its words
+    before parsing them.
     """
     for raw in lines:
         line = raw.lstrip("﻿").strip()
         if not line:
+            continue
+        if keep is not None and not any(word in line for word in keep):
+            # Cheaper than parsing JSON that would be thrown away.
             continue
         match = _OFFSET.match(line)
         if match is None:

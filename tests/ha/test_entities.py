@@ -35,6 +35,15 @@ E = {
     "lap": "sensor.pit_lane_live_board_lap",
     "f1tv": "sensor.pit_lane_live_board_f1tv",
     "running": "binary_sensor.pit_lane_live_board_session_running",
+    "safety_car": "binary_sensor.pit_lane_live_board_safety_car",
+    "vsc": "binary_sensor.pit_lane_live_board_virtual_safety_car",
+    "red_flag": "binary_sensor.pit_lane_live_board_red_flag",
+    "yellow": "binary_sensor.pit_lane_live_board_yellow_flag",
+    "penalties": "sensor.pit_lane_live_board_penalties",
+    "investigations": "sensor.pit_lane_live_board_investigations",
+    "message": "sensor.pit_lane_live_board_race_control_message",
+    "stewards": "event.pit_lane_live_board_stewards",
+    "live": "switch.pit_lane_live_board_live_timing",
     "event": "event.pit_lane_live_board_race_control",
     "spoiler": "switch.pit_lane_live_board_no_spoiler_mode",
     "delay": "number.pit_lane_live_board_tv_delay",
@@ -66,7 +75,16 @@ async def test_entities_outside_a_session(hass: HomeAssistant, entry, race_start
     quali = race_start - timedelta(days=1)
     assert hass.states.get(E["next"]).state == quali.isoformat()
     assert hass.states.get(E["next"]).attributes["session"] == "qualifying"
+    # Paused (decision 42): the live entities know nothing.
+    assert hass.states.get(E["live"]).state == STATE_OFF
+    assert hass.states.get(E["status"]).state == STATE_UNAVAILABLE
+    await hass.services.async_call(
+        "switch", "turn_on", {"entity_id": E["live"]}, blocking=True
+    )
+    await hass.async_block_till_done()
     assert hass.states.get(E["status"]).state == "inactive"
+    for key in ("safety_car", "red_flag", "yellow", "penalties"):
+        assert hass.states.get(E[key]).state == STATE_UNKNOWN
     assert hass.states.get(E["track"]).state == STATE_UNKNOWN
     assert hass.states.get(E["lap"]).state == STATE_UNKNOWN
     assert hass.states.get(E["running"]).state == STATE_OFF
@@ -81,6 +99,7 @@ async def test_entities_outside_a_session(hass: HomeAssistant, entry, race_start
 
 async def test_live_entities_follow_the_released_state(hass: HomeAssistant, entry):
     hub = entry.runtime_data.hub
+    await hub.store.async_save(hub.settings.with_live(True))
     await hub._async_start_live(None, None)
     client = FakeClient.instances[-1]
     client.keyframes(keyframes(track="4"))
@@ -120,6 +139,8 @@ async def test_the_delay_number_sets_the_household_delay(hass: HomeAssistant, en
 
 
 async def test_the_event_entity_relays_hub_events(hass: HomeAssistant, entry):
+    hub = entry.runtime_data.hub
+    await hub.async_update_settings(hub.settings.with_live(True))
     async_dispatcher_send(hass, SIGNAL_EVENT, "red_flag")
     await hass.async_block_till_done()
     state = hass.states.get(E["event"])

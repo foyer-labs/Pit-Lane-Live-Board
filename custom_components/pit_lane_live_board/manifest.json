@@ -8,7 +8,6 @@
   "dependencies": [
     "frontend",
     "http",
-    "repairs",
     "websocket_api"
   ],
   "documentation": "https://github.com/foyer-labs/Pit-Lane-Live-Board",

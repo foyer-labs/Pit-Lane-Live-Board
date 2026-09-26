@@ -22,7 +22,12 @@ from custom_components.pit_lane_live_board.diagnostics import (
 from .conftest import schedule_payload
 
 
-async def test_config_flow_creates_the_entry(hass: HomeAssistant):
+async def test_config_flow_creates_the_entry(
+    hass: HomeAssistant, aioclient_mock, race_start
+):
+    aioclient_mock.get(
+        f"{JOLPICA_BASE}{race_start.year}.json", json=schedule_payload(race_start)
+    )
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )

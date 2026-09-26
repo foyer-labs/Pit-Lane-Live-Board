@@ -11,6 +11,7 @@ from typing import Any
 
 from .schedule import Meeting, meeting_state
 
+FIRST_QUALIFYING_SEASON = 1994  # Jolpica qualifying: nothing before
 FIRST_LAPS_SEASON = 1996  # Jolpica laps
 FIRST_PITSTOPS_SEASON = 2011  # Jolpica pit stops
 FIRST_ARCHIVE_SEASON = 2018  # F1's archive
@@ -45,7 +46,9 @@ def session_key(season: int, rnd: int, kind: str) -> str:
 
 
 def tabs_for(season: int, sprint: bool) -> list[str]:
-    tabs = ["race", "qualifying"]
+    tabs = ["race"]
+    if season >= FIRST_QUALIFYING_SEASON:
+        tabs.append("qualifying")
     if sprint:
         tabs.append("sprint")
     if season >= FIRST_LAPS_SEASON:
@@ -101,32 +104,51 @@ def season_rounds(
     meetings: list[Meeting],
     winners: list[dict[str, Any]],
     hidden: frozenset[str],
+    now: datetime | None = None,
 ) -> dict[str, Any]:
-    """The Results page's list of rounds: every race held, with its winner."""
-    by_round = {m.round: m for m in meetings}
-    rounds = []
-    for race in winners:
-        rnd = race.get("round")
-        if rnd is None:
-            continue
-        meeting = by_round.get(rnd)
-        sprint = bool(meeting and meeting.sprint)
-        race_hidden = session_key(season, rnd, "race") in hidden
-        winner = race.get("winner")
-        rounds.append(
-            {
-                "round": rnd,
-                "name": race.get("name"),
-                "date": race.get("date"),
-                "circuit": race.get("circuit"),
-                "country": race.get("country"),
-                "sprint": sprint,
-                "hidden": race_hidden,
-                "winner": None if race_hidden or not winner else _podium_row(winner),
-                "tabs": tabs_for(season, sprint),
-            }
-        )
-    return {"season": season, "rounds": rounds}
+    """The Results page's list of rounds, with each winner.
+
+    Rounds come from the calendar as soon as their weekend has started, so the
+    qualifying and the sprint of the current weekend can be opened before the race
+    has a winner; seasons whose calendar is unknown fall back to the winners.
+    """
+    won = {race.get("round"): race for race in winners if race.get("round")}
+    started = [m for m in meetings if now is None or m.started(now)]
+    rounds_from = started if started else []
+    rows: list[dict[str, Any]] = []
+    for meeting in rounds_from:
+        race = won.get(meeting.round, {})
+        rows.append(_round_row(season, meeting.round, meeting, race, hidden))
+    known = {row["round"] for row in rows}
+    for rnd, race in won.items():
+        if rnd not in known:
+            rows.append(_round_row(season, rnd, None, race, hidden))
+    rows.sort(key=lambda row: row["round"])
+    return {"season": season, "rounds": rows}
+
+
+def _round_row(
+    season: int,
+    rnd: int,
+    meeting: Meeting | None,
+    race: dict[str, Any],
+    hidden: frozenset[str],
+) -> dict[str, Any]:
+    sprint = bool(meeting and meeting.sprint)
+    race_hidden = session_key(season, rnd, "race") in hidden
+    winner = race.get("winner")
+    day = meeting.race.day.isoformat() if meeting and meeting.race else None
+    return {
+        "round": rnd,
+        "name": race.get("name") or (meeting.name if meeting else None),
+        "date": race.get("date") or day,
+        "circuit": race.get("circuit") or (meeting.circuit if meeting else None),
+        "country": race.get("country") or (meeting.country if meeting else None),
+        "sprint": sprint,
+        "hidden": race_hidden,
+        "winner": None if race_hidden or not winner else _podium_row(winner),
+        "tabs": tabs_for(season, sprint),
+    }
 
 
 def hidden_tab(season: int, rnd: int, tab: str, hidden: frozenset[str]) -> str | None:
@@ -170,6 +192,38 @@ def lap_chart(
     drivers.sort(key=lambda d: order.get(d["driver_id"], 999))
     laps_count = max((len(d["positions"]) - 1 for d in drivers), default=0)
     return {"laps": laps_count, "drivers": drivers}
+
+
+def lap_chart_from_archive(
+    detail: dict[str, Any], results: list[dict[str, Any]]
+) -> dict[str, Any] | None:
+    """The lap chart from the archive's `LapSeries` (one file instead of a dozen
+    Jolpica pages), keyed like the Jolpica one so the page draws either."""
+    positions = detail.get("lap_positions") or {}
+    if not positions:
+        return None
+    by_number = {str(r.get("number")): r for r in results if r.get("number")}
+    order = {str(r.get("number")): i for i, r in enumerate(results)}
+    drivers_info = detail.get("drivers", {})
+    drivers = []
+    for number in sorted(positions, key=lambda n: order.get(n, 999)):
+        values = positions[number]
+        row = by_number.get(number, {})
+        info = drivers_info.get(number, {})
+        drivers.append(
+            {
+                "driver_id": row.get("driver_id") or number,
+                "name": row.get("name") or info.get("name"),
+                "code": row.get("code") or info.get("tla"),
+                "team": row.get("team") or info.get("team"),
+                "team_id": row.get("team_id"),
+                "grid": values[0] if values else None,
+                "position": row.get("position"),
+                "positions": values,
+            }
+        )
+    laps = max((len(d["positions"]) - 1 for d in drivers), default=0)
+    return {"laps": laps, "drivers": drivers}
 
 
 def pit_stops(
