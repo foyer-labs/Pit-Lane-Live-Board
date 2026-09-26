@@ -297,6 +297,10 @@ page states "reconnected at HH:MM"; nothing is interpolated.
 
 ### 6.3 Loss of feed (INV-2)
 
+Silence is measured on what the page shows: the receive time of the last *released*
+message plus the TV delay, so a gap in the feed is noticed when the page reaches it,
+not when the network had it. Only data counts: the server's keep-alive pings do not.
+
 | After | What happens |
 |---|---|
 | 30 s | Banner "Live feed lost — reconnecting", data age visible on every block. |
@@ -797,6 +801,15 @@ Decisions taken in chat with the owner.
 38. **The first release is 0.1.0, a normal release** (taken by me, phase 7), as with
   Raccolta: HACS offers pre-releases only to those who ask for them, and a version
   below 1.0 already says "young".
+39. **A review before the first release** (taken by me, phase 7): two review agents,
+  one on the backend and one on the panel, found 29 defects; every one verified was
+  fixed with a test where it could be. The ones that mattered most: overlapping
+  session windows would have skipped the second session of a day; protocol pings
+  counted as live data and health ignored the TV delay (INV-2); no-spoiler mode made
+  withheld events fire later, and failed open while the calendar was unknown (INV-5);
+  a refused F1TV token stopped the whole feed instead of only the map; open pages kept
+  listening to the old hub after a reload; settings changed elsewhere never reached an
+  open panel. Settings are now pushed to the panel (`settings/subscribe`).
 
 ---
 

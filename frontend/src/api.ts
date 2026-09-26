@@ -27,6 +27,8 @@ export const api = {
     hass.callWS<TabResult>({ type: `${P}/results/detail`, season, round, tab }),
   standings: (hass: Hass, season: number, round: number | null, kind: string) =>
     hass.callWS<StandingsPage>({ type: `${P}/standings/get`, season, round, kind }),
+  subscribeSettings: (hass: Hass, callback: (settings: Settings) => void) =>
+    hass.connection.subscribeMessage<Settings>(callback, { type: `${P}/settings/subscribe` }),
   subscribeLive: (hass: Hass, callback: (view: LiveView) => void) =>
     hass.connection.subscribeMessage<LiveView>(callback, { type: `${P}/live/subscribe` }),
   subscribeMap: (hass: Hass, callback: (view: MapView | null) => void) =>

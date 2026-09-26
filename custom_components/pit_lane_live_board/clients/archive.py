@@ -23,7 +23,7 @@ from ..core.history import build_detail
 from ..core.outline import Outline, build_outline, position_samples
 from ..core.schedule import Meeting, Session, feed_start, match_session
 from ..core.session import session_kind
-from .http import Executor, SourceError
+from .http import Executor, InFlight, SourceError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,6 +67,7 @@ class ArchiveClient:
         self._cache = cache
         self._run = run
         self.last_error: str | None = None
+        self._inflight = InFlight()
 
     async def _download(self, url: str) -> bytes | None:
         """The file's bytes, or None when the archive does not have it (403)."""
@@ -145,29 +146,36 @@ class ArchiveClient:
         if entry is None:
             return None
         path = entry["Path"]
+        return await self._inflight.run(path, lambda: self._detail(path))
+
+    async def _detail(self, path: str) -> Any:
         key = f"detail/{path}"
         cached = await self._run(self._cache.read_json, key, None)
         if cached is not None:
             return cached
         index = await self._json(f"{path}Index.json", None)
-        feeds = (index or {}).get("Feeds") or {}
+        if not index:
+            # Not published yet (0-30 min after a session): nothing to cache.
+            return None
+        feeds = index.get("Feeds") or {}
         files: dict[str, Path | None] = {}
-        for name in DETAIL_STREAMS:
-            files[name] = (
-                await self._file_to_cache(path, f"{name}.jsonStream")
-                if name in feeds
-                else None
-            )
-        for name in DETAIL_KEYFRAMES:
-            files[name] = (
-                await self._file_to_cache(path, f"{name}.json")
-                if name in feeds
-                else None
-            )
-        detail = await self._run(self._build_detail, files)
+        complete = True
+        for name in (*DETAIL_STREAMS, *DETAIL_KEYFRAMES):
+            suffix = ".jsonStream" if name in DETAIL_STREAMS else ".json"
+            if name in feeds:
+                files[name] = await self._file_to_cache(path, f"{name}{suffix}")
+                complete = complete and files[name] is not None
+            else:
+                files[name] = None
+        try:
+            detail = await self._run(self._build_detail, files)
+        finally:
+            await self._run(self._drop, files)
         detail["session_path"] = path
-        await self._run(self._cache.write_json, key, detail)
-        await self._run(self._drop, files)
+        # A feed the index lists but that could not be read (a half-uploaded batch)
+        # would freeze a gap forever: only a complete detail is kept.
+        if complete:
+            await self._run(self._cache.write_json, key, detail)
         return detail
 
     @staticmethod

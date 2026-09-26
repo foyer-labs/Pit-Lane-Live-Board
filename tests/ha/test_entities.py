@@ -104,7 +104,7 @@ async def test_live_entities_follow_the_released_state(hass: HomeAssistant, entr
     )
 
     # INV-2: a lost feed makes the live entities unavailable.
-    client.last_message = time.monotonic() - 70
+    hub.live.buffer._last_released = time.monotonic() - 70
     await settle(0.5)
     await hass.async_block_till_done()
     assert hass.states.get(E["track"]).state == STATE_UNAVAILABLE

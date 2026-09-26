@@ -73,7 +73,10 @@ class FakeClient:
 
     instances: ClassVar[list[FakeClient]] = []
 
-    def __init__(self, session, base_url, on_keyframes, on_feed, token) -> None:
+    def __init__(
+        self, session, base_url, on_keyframes, on_feed, token, *, on_refused=None
+    ) -> None:
+        self.on_refused = on_refused
         self.base_url = base_url
         self.on_keyframes = on_keyframes
         self.on_feed = on_feed

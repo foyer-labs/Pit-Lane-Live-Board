@@ -16,7 +16,7 @@ import aiohttp
 from ..cache import DiskCache
 from ..const import JOLPICA_BASE, USER_AGENT
 from ..core.jolpica_parse import page_info
-from .http import BudgetExhausted, Executor, RateLimiter, SourceError
+from .http import BudgetExhausted, Executor, InFlight, RateLimiter, SourceError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,6 +34,7 @@ class JolpicaClient:
         self._cache = cache
         self._run = run
         self.limiter = RateLimiter(per_second=2, per_hour=200)
+        self._inflight = InFlight()
         self.last_error: str | None = None
 
     @staticmethod
@@ -46,6 +47,13 @@ class JolpicaClient:
         self, path: str, *, season: int | None, offset: int = 0, fresh: bool = False
     ) -> Any:
         """`path` like `2026/14/results`; returns the parsed JSON."""
+        return await self._inflight.run(
+            f"{path}?{offset}&{fresh}", lambda: self._get(path, season, offset, fresh)
+        )
+
+    async def _get(
+        self, path: str, season: int | None, offset: int, fresh: bool
+    ) -> Any:
         key = f"jolpica/{path}?offset={offset}"
         if not fresh:
             cached = await self._run(self._cache.read_json, key, self.max_age(season))

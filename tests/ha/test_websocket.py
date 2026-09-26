@@ -242,3 +242,27 @@ async def test_live_subscription_starts_idle(hass, setup, hass_ws_client):
     event = await ws.receive_json()
     assert event["event"]["state"] == "idle"
     assert event["event"]["next_session"]["meeting"] == "Test Grand Prix"
+
+
+async def test_settings_are_pushed_on_every_change(hass, setup, hass_ws_client):
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": f"{P}settings/subscribe"})
+    assert (await ws.receive_json())["success"]
+    assert (await ws.receive_json())["event"]["no_spoiler"] is False
+    # Changed from somewhere else: the switch entity.
+    await setup.runtime_data.hub.async_update_settings(
+        setup.runtime_data.hub.settings.with_no_spoiler(True)
+    )
+    assert (await ws.receive_json())["event"]["no_spoiler"] is True
+
+
+async def test_no_spoiler_fails_closed_without_a_calendar(hass, setup, hass_ws_client):
+    hub = setup.runtime_data.hub
+    hub.meetings = []
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": f"{P}settings/set", "no_spoiler": True})
+    await ws.receive_json()
+    await ws.send_json_auto_id(
+        {"type": f"{P}results/detail", "season": hub.season, "round": 3, "tab": "race"}
+    )
+    assert (await ws.receive_json())["result"]["hidden"] is True

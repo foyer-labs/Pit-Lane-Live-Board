@@ -81,3 +81,14 @@ def test_never_early_never_reordered(arrivals, delay, checks):
             assert arrivals[i] + delay <= now
             released.append(i)
     assert released == sorted(released)
+
+
+def test_last_released_is_the_receive_time_of_what_is_shown():
+    buffer: DelayBuffer[str] = DelayBuffer(10)
+    assert buffer.last_released is None
+    buffer.push(1.0, "a")
+    buffer.push(3.0, "b")
+    buffer.release(12.0)
+    assert buffer.last_released == 1.0
+    buffer.release(20.0)
+    assert buffer.last_released == 3.0

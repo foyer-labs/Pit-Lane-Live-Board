@@ -144,10 +144,10 @@ async def test_a_silent_feed_is_never_shown_as_live(hub):
     client = FakeClient.instances[-1]
     client.keyframes(keyframes())
     await settle()
-    client.last_message = time.monotonic() - 40
+    hub.live.buffer._last_released = time.monotonic() - 40
     await settle(0.5)
     assert hub.live_view()["state"] == "stale"
-    client.last_message = time.monotonic() - 70
+    hub.live.buffer._last_released = time.monotonic() - 70
     await settle(0.5)
     assert hub.live_view()["state"] == "lost"
     client.feed("LapCount", {"CurrentLap": 5})
@@ -174,7 +174,7 @@ async def test_failed_windows_raise_a_repair(hass: HomeAssistant, hub):
     with patch.object(FakeClient, "run", new=lambda self: asyncio.Event().wait()):
         for _ in range(FAILED_WINDOWS_FOR_REPAIR):
             await hub._async_tick(now)
-            await hub._async_stop_live()
+            await hub._async_stop_live(counts_as_window=True)
     assert ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_LIVE) is not None
 
 
@@ -216,3 +216,59 @@ async def test_the_map_projects_positions_and_respects_no_spoiler(hub):
     assert hub.live_view()["map_available"] is True
     await hub.async_update_settings(hub.settings.with_no_spoiler(True))
     assert hub.map_view() is None
+
+
+async def test_a_reconnect_keeps_the_pit_log(hub):
+    await hub._async_start_live(None, None)
+    client = FakeClient.instances[-1]
+    client.keyframes(keyframes())
+    client.feed(
+        "PitLaneTimeCollection",
+        {"PitTimes": {"4": {"RacingNumber": "4", "Lap": "12", "Duration": "22.0"}}},
+    )
+    await settle()
+    client.keyframes(keyframes())  # the same session, after a reconnect
+    await settle()
+    assert hub.live_view()["pits"] == [{"number": "4", "lap": "12", "duration": "22.0"}]
+
+
+async def test_events_withheld_by_no_spoiler_never_fire_late(hass: HomeAssistant, hub):
+    fired: list[str] = []
+    unsub = async_dispatcher_connect(hass, SIGNAL_EVENT, fired.append)
+    await hub._async_start_live(None, None)
+    client = FakeClient.instances[-1]
+    client.keyframes(keyframes(track="1"))
+    await settle()
+    await hub.async_update_settings(hub.settings.with_no_spoiler(True))
+    client.feed("TrackStatus", {"Status": "5"})
+    await settle()
+    await hub.async_update_settings(hub.settings.with_no_spoiler(False))
+    client.feed("LapCount", {"CurrentLap": 9})
+    await settle()
+    assert fired == []  # the red flag happened while hidden: it does not fire now
+    client.feed("TrackStatus", {"Status": "1"})
+    await settle()
+    assert fired == ["green_flag"]
+    unsub()
+
+
+async def test_a_refused_token_leaves_everything_but_the_map(hass: HomeAssistant, hub):
+    await hub._async_start_live(None, None)
+    client = FakeClient.instances[-1]
+    client.on_refused()
+    assert hub.f1tv.status == "invalid" and hub.f1tv.reason == "refused"
+    assert hub._live_token() is None
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "f1tv_new_token") is not None
+    assert hub.live_view()["map_reason"] == "token_problem"
+
+
+async def test_the_page_says_how_old_its_data_is_while_quiet(hub):
+    await hub._async_start_live(None, None)
+    client = FakeClient.instances[-1]
+    client.keyframes(keyframes())
+    await settle()
+    hub.live.buffer._last_released = time.monotonic() - 40
+    await settle(0.5)
+    first = hub.live_view()["data_age"]
+    await settle(1.2)
+    assert hub.live_view()["data_age"] >= first + 1

@@ -9,8 +9,13 @@ records separated by `\\x1e`:
 * `type 6` is a ping (we send one every 15 s so the server keeps us);
 * `type 7` is the server closing.
 
-The client reconnects by itself with a capped backoff; 45 s of silence counts as a
-dead connection.
+Only data counts as life (INV-2): the server's pings keep the socket open even when
+F1's publisher has stalled, so `last_message` moves only with keyframes and feed
+records, and 45 s without data counts as a dead connection. The client reconnects by
+itself with a capped backoff.
+
+When F1 refuses the F1TV token, the client tells the hub (which marks the token
+refused and stops offering it) and reconnects without it: only the map is lost.
 """
 
 from __future__ import annotations
@@ -39,6 +44,7 @@ TIMEOUT = aiohttp.ClientTimeout(total=20)
 type OnKeyframes = Callable[[dict[str, Any]], None]
 type OnFeed = Callable[[str, Any, str | None], None]
 type TokenProvider = Callable[[], str | None]
+type OnRefused = Callable[[], None]
 
 
 def _ws_url(base: str) -> str:
@@ -72,18 +78,22 @@ class LiveTimingClient:
         on_keyframes: OnKeyframes,
         on_feed: OnFeed,
         token: TokenProvider,
+        *,
+        on_refused: OnRefused | None = None,
     ) -> None:
         self._session = session
         self._base = base_url.rstrip("/")
         self._on_keyframes = on_keyframes
         self._on_feed = on_feed
         self._token = token
+        self._on_refused = on_refused
         self.connected = False
         self.authenticated = False
         self.last_message: float | None = None
         self.last_error: str | None = None
         self.topics_seen: set[str] = set()
         self.failures = 0
+        self._connected_at = 0.0
 
     def _headers(self) -> dict[str, str]:
         headers = {"User-Agent": USER_AGENT}
@@ -101,6 +111,13 @@ class LiveTimingClient:
                 self.last_error = None
             except asyncio.CancelledError:
                 raise
+            except aiohttp.ClientResponseError as err:
+                self.last_error = f"HTTP {err.status}"
+                self.failures += 1
+                if err.status in (401, 403) and self._on_refused and self._token():
+                    _LOGGER.warning("F1 refused the F1TV token: continuing without it")
+                    self._on_refused()
+                    backoff = 1.0
             except (aiohttp.ClientError, TimeoutError, ValueError, KeyError) as err:
                 self.last_error = f"{type(err).__name__}: {err}"
                 self.failures += 1
@@ -163,7 +180,7 @@ class LiveTimingClient:
             self.connected = True
             self.authenticated = authenticated
             self.failures = 0
-            self.last_message = time.monotonic()
+            self._connected_at = time.monotonic()
             pinger = asyncio.create_task(self._ping(ws))
             try:
                 await self._read(ws)
@@ -177,13 +194,19 @@ class LiveTimingClient:
             await asyncio.sleep(PING_EVERY)
             await ws.send_str(json.dumps({"type": 6}) + SEPARATOR)
 
+    def _silent_for(self) -> float:
+        since = max(self.last_message or 0.0, self._connected_at)
+        return time.monotonic() - since
+
     async def _read(self, ws: aiohttp.ClientWebSocketResponse) -> None:
         while True:
-            try:
-                message = await ws.receive(timeout=SILENCE_LIMIT)
-            except TimeoutError:
-                _LOGGER.debug("Live timing silent for %ss: reconnecting", SILENCE_LIMIT)
+            if self._silent_for() >= SILENCE_LIMIT:
+                _LOGGER.debug("No live data for %ss: reconnecting", SILENCE_LIMIT)
                 return
+            try:
+                message = await ws.receive(timeout=PING_EVERY)
+            except TimeoutError:
+                continue
             if message.type in (
                 aiohttp.WSMsgType.CLOSE,
                 aiohttp.WSMsgType.CLOSED,
@@ -193,7 +216,6 @@ class LiveTimingClient:
                 return
             if message.type != aiohttp.WSMsgType.TEXT:
                 continue
-            self.last_message = time.monotonic()
             for record in records(message.data):
                 if self._handle(record):
                     return
@@ -204,12 +226,14 @@ class LiveTimingClient:
         if kind == 1 and record.get("target") == "feed":
             arguments = record.get("arguments") or []
             if len(arguments) >= 2 and isinstance(arguments[0], str):
+                self.last_message = time.monotonic()
                 utc = arguments[2] if len(arguments) > 2 else None
                 self.topics_seen.add(arguments[0])
                 self._on_feed(arguments[0], arguments[1], utc)
         elif kind == 3 and record.get("invocationId") == "0":
             result = record.get("result")
             if isinstance(result, dict):
+                self.last_message = time.monotonic()
                 self.topics_seen.update(result)
                 self._on_keyframes(result)
             elif record.get("error"):

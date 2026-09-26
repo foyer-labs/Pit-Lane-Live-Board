@@ -1,10 +1,17 @@
 {
-  "tabs": { "live": "Live", "calendar": "Calendario", "results": "Risultati", "standings": "Classifiche" },
+  "tabs": {
+    "live": "Live",
+    "calendar": "Calendario",
+    "results": "Risultati",
+    "standings": "Classifiche"
+  },
   "delay": {
     "title": "Ritardo TV",
     "help": "Trattiene la pagina, i team radio e le tue automazioni per allinearli alla TV o allo streaming. L'impostazione vale per tutta la casa.",
     "none": "Nessun ritardo",
-    "seconds": "{n} s"
+    "seconds": "{n} s",
+    "less": "−1 s",
+    "more": "+1 s"
   },
   "spoiler": {
     "on": "Senza spoiler",
@@ -31,7 +38,9 @@
     "points": "Punti",
     "back": "Tutte le gare",
     "sprint": "SPRINT",
-    "disclaimer": "Pit Lane Live Board non è ufficiale e non è in alcun modo associato alle società della Formula 1. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX e i marchi correlati sono marchi di Formula One Licensing B.V. Risultati e classifiche: Jolpica-F1 (CC BY-NC-SA 4.0). Dati live: il live timing pubblico della F1."
+    "disclaimer": "Pit Lane Live Board non è ufficiale e non è in alcun modo associato alle società della Formula 1. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX e i marchi correlati sono marchi di Formula One Licensing B.V. Risultati e classifiche: Jolpica-F1 (CC BY-NC-SA 4.0). Dati live: il live timing pubblico della F1.",
+    "menu": "Menu",
+    "title": "Live Board"
   },
   "sessions": {
     "practice_1": "Prove libere 1",
@@ -49,7 +58,9 @@
     "live": "IN DIRETTA",
     "results": "Risultati",
     "startsIn": "inizia tra",
-    "empty": "Ancora nessun calendario per questa stagione."
+    "empty": "Ancora nessun calendario per questa stagione.",
+    "round": "G{n}",
+    "watch": "Segui in diretta"
   },
   "results": {
     "title": "Risultati",
@@ -88,7 +99,10 @@
     "yes": "Sì",
     "no": "No",
     "air": "Temperatura dell'aria",
-    "track": "Temperatura della pista"
+    "track": "Temperatura della pista",
+    "pitIn": "ENTRATA",
+    "pitOut": "USCITA",
+    "gridShort": "G"
   },
   "standings": {
     "title": "Classifiche",
@@ -158,7 +172,12 @@
       "vsc_ending": "VSC IN USCITA",
       "red_flag": "BANDIERA ROSSA",
       "chequered": "BANDIERA A SCACCHI"
-    }
+    },
+    "mapNotEnabled": "La mappa live della pista non è attiva in questo Home Assistant.",
+    "mapToken": "La F1 non ha accettato il token F1TV, quindi niente mappa. Un nuovo token va in Impostazioni → Dispositivi e servizi → Pit Lane Live Board → Configura.",
+    "play": "Ascolta il team radio di {driver} delle {time}",
+    "pause": "Ferma il team radio di {driver}",
+    "windSpeed": "{n} m/s"
   },
   "f1tv": {
     "active": "F1TV attivo",
@@ -166,5 +185,13 @@
     "expired": "F1TV scaduto",
     "invalid": "Token F1TV rifiutato",
     "not_configured": "F1TV non impostato"
+  },
+  "tyres": {
+    "soft": "Morbida",
+    "medium": "Media",
+    "hard": "Dura",
+    "intermediate": "Intermedia",
+    "wet": "Da bagnato",
+    "unknown": "Sconosciuta"
   }
 }

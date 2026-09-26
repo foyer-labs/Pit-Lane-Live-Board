@@ -3,7 +3,7 @@ import { LitElement, css, html, nothing } from "lit";
 import { api } from "../api";
 import { number } from "../format";
 import { translator } from "../i18n";
-import { failure, gained, loading, person } from "../parts";
+import { failure, gained, loading, person, spoilerKey } from "../parts";
 import { tokens } from "../styles";
 import { teamColour } from "../teams";
 import type { Hass, Settings, StandingsPage } from "../types";
@@ -29,10 +29,15 @@ export class PlbStandings extends LitElement {
   data?: StandingsPage;
   failed = false;
   private request = 0;
+  private spoilers = "";
 
   protected override willUpdate(changed: Map<string, unknown>): void {
     if (this.season === undefined && this.settings) this.season = this.settings.season;
-    if (["settings", "season", "kind", "round"].some((k) => changed.has(k))) void this.load();
+    const spoilers = spoilerKey(this.settings);
+    if (["season", "kind", "round"].some((k) => changed.has(k)) || spoilers !== this.spoilers) {
+      this.spoilers = spoilers;
+      void this.load();
+    }
   }
 
   private async load(): Promise<void> {

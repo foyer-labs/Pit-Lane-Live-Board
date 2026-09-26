@@ -184,21 +184,32 @@ def next_session(
 
 
 def live_window(
-    meetings: list[Meeting], now: datetime
+    meetings: list[Meeting], now: datetime, skip: frozenset[str] = frozenset()
 ) -> tuple[Meeting, Session] | None:
     """The session whose live window contains `now` (SPEC §6.1).
 
     The window opens 30 minutes before the scheduled start and, at the latest,
     closes 4 hours after the scheduled end; the live feed's own status closes it
-    earlier.
+    earlier, and the caller then passes that session in `skip`.
+
+    Windows overlap on a busy day (FP3's hard cap runs into Qualifying's window): the
+    latest session to start wins, so the next session is never shadowed by one
+    that already ended.
     """
+    best: tuple[Meeting, Session] | None = None
     for meeting in meetings:
         for session in meeting.sessions:
-            if session.start is None or session.end is None:
+            if session.start is None or session.end is None or session.key in skip:
                 continue
-            if session.start - WINDOW_BEFORE <= now <= session.end + WINDOW_HARD_CAP:
-                return meeting, session
-    return None
+            if (
+                not session.start - WINDOW_BEFORE
+                <= now
+                <= session.end + WINDOW_HARD_CAP
+            ):
+                continue
+            if best is None or session.start > best[1].start:
+                best = (meeting, session)
+    return best
 
 
 def meeting_state(meeting: Meeting, meetings: list[Meeting], now: datetime) -> str:

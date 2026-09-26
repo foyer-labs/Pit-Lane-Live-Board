@@ -117,6 +117,9 @@ def archive_json(path: str, topic: str):
 
 
 def write(name: str, value) -> None:
+    if name.startswith("live_") and value.get("state") in ("live", "stale"):
+        # What the hub adds to the view: why there is (no) map.
+        value["map_reason"] = "available" if value.get("map_available") else "no_data"
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / f"{name}.json").write_text(
         json.dumps(value, ensure_ascii=False), encoding="utf-8"

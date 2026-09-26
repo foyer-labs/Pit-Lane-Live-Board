@@ -124,7 +124,7 @@ async def test_archive_detail_is_derived_and_cached(hass, aioclient_mock, cache)
     )
     aioclient_mock.get(
         f"{ARCHIVE_BASE}{path}Index.json",
-        json={"Feeds": {"TimingData": {}, "DriverList": {}, "TimingAppData": {}}},
+        json={"Feeds": {"TimingData": {}, "DriverList": {}}},
     )
     aioclient_mock.get(
         f"{ARCHIVE_BASE}{path}TimingData.jsonStream",
@@ -146,7 +146,7 @@ async def test_archive_detail_is_derived_and_cached(hass, aioclient_mock, cache)
     assert detail["session_path"] == path
     assert [lap["time"] for lap in detail["laps"]["4"]] == [None, "1:30.000"]
     assert detail["drivers"]["4"]["tla"] == "NOR"
-    assert detail["stints"] == {}
+    assert detail["stints"] == {}  # TimingAppData is not in this session's index
     calls = aioclient_mock.call_count
     assert await client.detail(meetings, race) == detail
     assert aioclient_mock.call_count == calls
@@ -285,3 +285,74 @@ def test_signalr_sends_the_token_only_when_there_is_one():
     assert "Authorization" not in client._headers()
     client = LiveTimingClient(None, "https://x", print, print, lambda: "abc")
     assert client._headers()["Authorization"] == "Bearer abc"
+
+
+async def test_an_incomplete_archive_is_not_cached(hass, aioclient_mock, cache):
+    start = datetime(2026, 5, 10, 13, tzinfo=UTC)
+    meetings = parse_schedule(schedule_payload(start))
+    path = "2026/2026-05-10_Test/2026-05-10_Race/"
+    aioclient_mock.get(
+        f"{ARCHIVE_BASE}2026/Index.json",
+        json={
+            "Meetings": [
+                {
+                    "Sessions": [
+                        {
+                            "Type": "Race",
+                            "Name": "Race",
+                            "StartDate": "2026-05-10T15:00:00",
+                            "GmtOffset": "02:00:00",
+                            "Path": path,
+                        }
+                    ]
+                }
+            ]
+        },
+    )
+    aioclient_mock.get(
+        f"{ARCHIVE_BASE}{path}Index.json", json={"Feeds": {"TimingData": {}}}
+    )
+    # Listed but not there yet: a half-uploaded batch.
+    aioclient_mock.get(f"{ARCHIVE_BASE}{path}TimingData.jsonStream", status=403)
+    client = ArchiveClient(
+        async_get_clientsession(hass), cache, hass.async_add_executor_job
+    )
+    assert (await client.detail(meetings, meetings[0].race))["laps"] == {}
+    assert not list(cache.root.glob("detail*"))
+
+
+async def test_the_archive_not_published_yet(hass, aioclient_mock, cache):
+    start = datetime(2026, 5, 10, 13, tzinfo=UTC)
+    meetings = parse_schedule(schedule_payload(start))
+    path = "2026/2026-05-10_Test/2026-05-10_Race/"
+    aioclient_mock.get(
+        f"{ARCHIVE_BASE}2026/Index.json",
+        json={
+            "Meetings": [
+                {
+                    "Sessions": [
+                        {
+                            "Type": "Race",
+                            "Name": "Race",
+                            "StartDate": "2026-05-10T15:00:00",
+                            "GmtOffset": "02:00:00",
+                            "Path": path,
+                        }
+                    ]
+                }
+            ]
+        },
+    )
+    aioclient_mock.get(f"{ARCHIVE_BASE}{path}Index.json", status=403)
+    client = ArchiveClient(
+        async_get_clientsession(hass), cache, hass.async_add_executor_job
+    )
+    assert await client.detail(meetings, meetings[0].race) is None
+
+
+def test_pings_are_not_data():
+    client = LiveTimingClient(None, "https://x", print, print, lambda: None)
+    client._handle({"type": 6})
+    assert client.last_message is None
+    client._handle({"type": 1, "target": "feed", "arguments": ["Heartbeat", {}, "t"]})
+    assert client.last_message is not None

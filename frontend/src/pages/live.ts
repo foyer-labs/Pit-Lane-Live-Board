@@ -2,11 +2,12 @@
 // team radio, weather, pit stops and the track map. Everything the page shows was
 // released by the backend through the TV delay; stale data says so (INV-2).
 import { LitElement, css, html, nothing, svg } from "lit";
+import { repeat } from "lit/directives/repeat.js";
 import { api } from "../api";
 import { clockTime, countdown, number, sessionClock, sessionTime } from "../format";
 import { translator, type Translate } from "../i18n";
 import { ICON, icon } from "../icons";
-import { gained, tyre } from "../parts";
+import { failure, gained, onKey, tyre } from "../parts";
 import { tokens } from "../styles";
 import type { Hass, LiveView, MapView, Message, Row, Settings, Timed } from "../types";
 
@@ -31,6 +32,7 @@ export class PlbLive extends LitElement {
     selected: { state: true },
     filter: { state: true },
     playing: { state: true },
+    failed: { state: true },
   };
 
   hass!: Hass;
@@ -41,8 +43,14 @@ export class PlbLive extends LitElement {
   selected = "";
   filter = "all";
   playing = "";
-  private unsubscribe?: Promise<() => void>;
-  private unsubscribeMap?: Promise<() => void>;
+  failed = false;
+  private unsubscribe?: () => void;
+  private unsubscribeMap?: () => void;
+  private subscribing = false;
+  private subscribingMap = false;
+  private retry?: number;
+  // When the current view arrived: while the feed is quiet, the data keeps ageing.
+  private receivedAt = Date.now();
   private timer?: number;
   private audio?: HTMLAudioElement;
 
@@ -54,24 +62,56 @@ export class PlbLive extends LitElement {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     window.clearInterval(this.timer);
-    void this.unsubscribe?.then((stop) => stop());
-    void this.unsubscribeMap?.then((stop) => stop());
+    window.clearTimeout(this.retry);
+    this.retry = undefined;
+    this.unsubscribe?.();
+    this.unsubscribeMap?.();
     this.unsubscribe = this.unsubscribeMap = undefined;
     this.audio?.pause();
   }
 
   protected override willUpdate(): void {
-    if (this.hass && !this.unsubscribe) {
-      this.unsubscribe = api.subscribeLive(this.hass, (view) => (this.view = view));
+    if (this.hass && !this.unsubscribe && !this.subscribing && this.retry === undefined) {
+      void this.subscribe();
     }
     // The map is only asked for while it has something to show (SPEC §5.4).
     const wantMap = !!this.view?.map_available && ["live", "stale"].includes(this.view.state);
-    if (wantMap && !this.unsubscribeMap) {
-      this.unsubscribeMap = api.subscribeMap(this.hass, (map) => (this.map = map));
+    if (wantMap && !this.unsubscribeMap && !this.subscribingMap) {
+      void this.subscribeMap();
     } else if (!wantMap && this.unsubscribeMap) {
-      void this.unsubscribeMap.then((stop) => stop());
+      this.unsubscribeMap();
       this.unsubscribeMap = undefined;
       this.map = undefined;
+    }
+  }
+
+  private async subscribe(): Promise<void> {
+    this.subscribing = true;
+    try {
+      this.unsubscribe = await api.subscribeLive(this.hass, (view) => {
+        this.view = view;
+        this.receivedAt = Date.now();
+      });
+      this.failed = false;
+    } catch {
+      this.failed = true;
+      this.retry = window.setTimeout(() => {
+        this.retry = undefined;
+        this.requestUpdate();
+      }, 10_000);
+    } finally {
+      this.subscribing = false;
+    }
+  }
+
+  private async subscribeMap(): Promise<void> {
+    this.subscribingMap = true;
+    try {
+      this.unsubscribeMap = await api.subscribeMap(this.hass, (map) => (this.map = map));
+    } catch {
+      /* no map this time: the next view asks again */
+    } finally {
+      this.subscribingMap = false;
     }
   }
 
@@ -97,7 +137,15 @@ export class PlbLive extends LitElement {
   protected override render() {
     const t = translator(this.hass);
     const v = this.view;
-    if (!v) return html`<div class="card loading">${t("common.loading")}</div>`;
+    if (!v) {
+      return this.failed
+        ? failure(t, () => {
+            window.clearTimeout(this.retry);
+            this.retry = undefined;
+            void this.subscribe();
+          })
+        : html`<div class="card loading">${t("common.loading")}</div>`;
+    }
     switch (v.state) {
       case "hidden":
         return html`<div class="card state">${icon(ICON.eyeOff, 56)}<h2>${t("live.hidden")}</h2>
@@ -130,7 +178,8 @@ export class PlbLive extends LitElement {
 
   private renderLive(t: Translate, v: LiveView) {
     const h = v.header;
-    const age = Math.round(v.data_age ?? 0);
+    const ageSeconds = (v.data_age ?? 0) + Math.max(0, this.now - this.receivedAt) / 1000;
+    const age = Math.round(ageSeconds);
     const banner =
       v.state === "stale"
         ? html`<div class="banner">${icon(ICON.alert)}${t("live.stale", { n: age })}</div>`
@@ -152,7 +201,7 @@ export class PlbLive extends LitElement {
           ? html`<span class="status-pill ${STATUS_CLASS[h.track_status] ?? ""}">${t(`live.status.${h.track_status}`)}</span>`
           : nothing}
         <span class="spacer"></span>
-        <span class="age">${t("live.updated", { n: number(this.hass, v.data_age ?? 0, 1) })}</span>
+        <span class="age">${t("live.updated", { n: number(this.hass, ageSeconds, v.state === "live" ? 1 : 0) })}</span>
       </div>
       <div class="grid ${v.state === "lost" ? "dim" : ""}">
         <div class="col">
@@ -186,7 +235,7 @@ export class PlbLive extends LitElement {
       <tr>
         <th class="pos">${t("common.pos")}</th><th>${t("common.driver")}</th>
         ${qualifying
-          ? html`<th>Q1</th><th>Q2</th><th class="col-s">Q3</th><th>${t("live.gap")}</th>`
+          ? html`${[1, 2, 3].map((p) => html`<th class=${p === part ? "" : "col-s"}>Q${p}</th>`)}<th>${t("live.gap")}</th>`
           : html`<th></th><th>${t("live.gap")}</th><th class="col-int">${t("live.int")}</th><th>${t("live.last")}</th><th class="col-best">${t("live.best")}</th>`}
         <th class="col-s">S1</th><th class="col-s">S2</th><th class="col-s">S3</th>
         <th>${t("live.tyre")}</th>${qualifying ? nothing : html`<th class="col-pits">${t("live.pits")}</th>`}
@@ -195,14 +244,17 @@ export class PlbLive extends LitElement {
         const out = r.status === "retired" || r.status === "knocked_out";
         const classes = [r.number === this.selected ? "sel" : "", out ? "out" : "", i === cutoffAfter - 1 ? "zone" : ""].join(" ");
         const q = r.qualifying;
-        return html`<tr class=${classes} @click=${() => this.select(r.number)}>
+        const pick = () => this.select(r.number);
+        const selected = r.number === this.selected;
+        return html`<tr class=${classes} tabindex="0" aria-selected=${selected ? "true" : "false"}
+            @click=${pick} @keydown=${onKey(pick)}>
           <td class="pos num">${r.position ?? "—"}</td>
           <td><div class="drv"><span class="bar" style="background:${r.colour ?? "var(--divider-color)"}"></span>
             <span class="tla" title=${r.name ?? ""}>${r.tla}</span><small>${r.number}</small>${this.badge(t, r)}
             ${r.status === "knocked_out" ? html`<span class="badge ko">${t("live.ko")}</span>` : nothing}</div></td>
           ${qualifying && q
             ? html`${[0, 1, 2].map(
-                  (p) => html`<td class="t ${p === 2 ? "col-s" : ""} ${p + 1 === part ? "" : "muted"}">${q.part_bests[p] ?? ""}</td>`,
+                  (p) => html`<td class="t ${p + 1 === part ? "" : "col-s muted"}">${q.part_bests[p] ?? ""}</td>`,
                 )}<td class="t">${q.gap ?? ""}</td>`
             : html`<td>${gained(r.gained)}</td><td class="t">${r.gap ?? ""}</td><td class="t col-int">${r.interval ?? ""}</td>
                 <td>${this.timed(r.last_lap)}</td>
@@ -210,9 +262,24 @@ export class PlbLive extends LitElement {
           ${r.sectors.map((s) => html`<td class="col-s">${this.timed(s, "sector")}</td>`)}
           <td>${r.tyre ? tyre(t, r.tyre.compound, r.tyre.new, r.tyre.age) : ""}</td>
           ${qualifying ? nothing : html`<td class="num col-pits">${r.pit_stops}</td>`}
-        </tr>`;
+        </tr>
+        ${selected ? this.details(t, r, qualifying ? 10 : 12) : nothing}`;
       })}
     </table>`;
+  }
+
+  /** On a narrow screen the selected row opens: what its hidden columns say. */
+  private details(t: Translate, r: Row, columns: number) {
+    const sectors = r.sectors.map((s, i) => html`<span>S${i + 1} ${this.timed(s)}</span>`);
+    return html`<tr class="details"><td colspan=${columns}>
+      <div><b>${r.name ?? r.tla}</b>${r.team ? html` · ${r.team}` : nothing}</div>
+      <div class="facts">
+        ${r.interval ? html`<span>${t("live.int")} <span class="t">${r.interval}</span></span>` : nothing}
+        ${r.best_lap ? html`<span>${t("live.best")} <span class="t">${r.best_lap.time}</span></span>` : nothing}
+        ${sectors}
+        <span>${t("live.pits")} ${r.pit_stops}</span>
+      </div>
+    </td></tr>`;
   }
 
   private tla(number: string | null): string {
@@ -227,10 +294,17 @@ export class PlbLive extends LitElement {
     const head = html`<div class="card-head">${t("live.map")}</div>`;
     if (!v.map_available) {
       const admin = this.settings?.is_admin;
-      const f1tv = this.settings?.f1tv?.status;
-      const locked = !admin || !f1tv || f1tv === "not_configured";
+      const reason = v.map_reason ?? "not_configured";
+      const message =
+        reason === "no_data"
+          ? t("live.mapNoData")
+          : !admin
+            ? t("live.mapNotEnabled")
+            : reason === "token_problem"
+              ? t("live.mapToken")
+              : t("live.mapLocked");
       return html`<div class="card">${head}<div class="locked">${icon(ICON.lock, 36)}
-        <div>${locked ? t("live.mapLocked") : t("live.mapNoData")}</div></div></div>`;
+        <div>${message}</div></div></div>`;
     }
     const m = this.map;
     if (!m?.outline) {
@@ -238,13 +312,19 @@ export class PlbLive extends LitElement {
     }
     const o = m.outline;
     const d = o.points.map((p, i) => `${i ? "L" : "M"}${p[0]} ${p[1]}`).join(" ") + "Z";
-    const cars = [...m.cars].sort((a) => (a.number === this.selected ? 1 : -1));
+    // The selected car is drawn last, on top; keys keep each dot on its own car.
+    const cars = [
+      ...m.cars.filter((c) => c.number !== this.selected),
+      ...m.cars.filter((c) => c.number === this.selected),
+    ];
     return html`<div class="card map">${head}
       <svg viewBox="0 0 ${o.width} ${o.height}" role="img" aria-label=${t("live.map")}>
         <path class="track" d=${d}></path><path class="track-line" d=${d}></path>
-        ${cars.map((c) => {
+        ${repeat(cars, (c) => c.number, (c) => {
           const sel = c.number === this.selected;
-          return svg`<g class="car" style="transform:translate(${c.x}px,${c.y}px)" @click=${() => this.select(c.number)}>
+          const pick = () => this.select(c.number);
+          return svg`<g class="car" style="transform:translate(${c.x}px,${c.y}px)" @click=${pick}
+              @keydown=${onKey(pick)} tabindex="0" role="button" aria-label=${this.tla(c.number)}>
             <circle r=${sel ? 17 : 12} fill=${this.colour(c.number)} stroke=${sel ? "var(--primary-text-color)" : "var(--card-background-color)"} stroke-width="4"
               opacity=${c.on_track ? 1 : 0.4}></circle>
             <text x="16" y="-12">${this.tla(c.number)}</text></g>`;
@@ -274,7 +354,8 @@ export class PlbLive extends LitElement {
       ${clips.length
         ? html`<div class="feed short">${clips.map(
             (c) => html`<div class="radio ${c.number === this.selected ? "sel" : ""}">
-              <button class="play" @click=${() => this.play(c.url)} aria-label="play">${icon(this.playing === c.url ? ICON.pause : ICON.play, 18)}</button>
+              <button class="play" @click=${() => this.play(c.url)}
+                aria-label=${t(this.playing === c.url ? "live.pause" : "live.play", { driver: this.tla(c.number), time: clockTime(this.hass, c.utc) })}>${icon(this.playing === c.url ? ICON.pause : ICON.play, 18)}</button>
               <span class="bar" style="background:${this.colour(c.number)}"></span><b>${this.tla(c.number)}</b>
               <time>${clockTime(this.hass, c.utc)}</time></div>`,
           )}</div>`
@@ -293,7 +374,7 @@ export class PlbLive extends LitElement {
         <div><small>${t("live.track")}</small><b class="num">${number(this.hass, w.track)}°</b></div>
         <div><small>${t("live.rain")}</small><b>${w.rain ? t("live.wet") : t("live.dry")}</b></div>
         <div><small>${t("live.humidity")}</small><b class="num">${number(this.hass, w.humidity, 0)}%</b></div>
-        <div><small>${t("live.wind")}</small><b class="num">${number(this.hass, w.wind_speed)} m/s ${arrow}</b></div>
+        <div><small>${t("live.wind")}</small><b class="num">${t("live.windSpeed", { n: number(this.hass, w.wind_speed) })} ${arrow}</b></div>
         <div><small>${t("live.pressure")}</small><b class="num">${number(this.hass, w.pressure, 0)}</b></div>
       </div>
     </div>`;
@@ -306,7 +387,7 @@ export class PlbLive extends LitElement {
       ${pits.length
         ? html`<div class="feed short pits">${pits.map(
             (p) => html`<div><span class="bar" style="background:${this.colour(p.number)}"></span><b>${this.tla(p.number)}</b>
-              <span>${t("common.lap")} ${p.lap}</span><span class="num end">${p.duration} s</span></div>`,
+              <span>${t("common.lap")} ${p.lap}</span><span class="num end">${t("delay.seconds", { n: p.duration })}</span></div>`,
           )}</div>`
         : html`<div class="empty">${t("live.noPits")}</div>`}
     </div>`;
@@ -344,6 +425,12 @@ export class PlbLive extends LitElement {
       .tower tr.sel td { background: color-mix(in srgb, var(--primary-color) 12%, transparent); }
       .tower tr.out td { color: var(--plb-muted); }
       .tower tr.zone td { border-bottom: 2px dashed var(--error-color, #db4437); }
+      .tower tr:focus-visible td { outline: 2px solid var(--primary-color); outline-offset: -2px; }
+      .tower tr.details td { height: auto; padding: 8px 12px; white-space: normal; cursor: default; font-size: 13px;
+        background: color-mix(in srgb, var(--primary-color) 6%, transparent); }
+      .tower tr.details .facts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 4px; color: var(--secondary-text-color); }
+      .tower tr.details { display: none; }
+      @media (max-width: 900px) { .tower tr.details { display: table-row; } }
       .pos { width: 34px; text-align: center; font-weight: 600; font-size: 15px; }
       .tower .drv { min-width: 100px; }
       .tower .drv small { color: var(--secondary-text-color); font-size: 11px; }

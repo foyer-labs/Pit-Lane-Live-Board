@@ -160,3 +160,25 @@ def test_session_serialisation():
         "start": "2026-05-10T13:00:00+00:00",
         "end": (at(10, 13) + timedelta(hours=2)).isoformat(),
     }
+
+
+def test_overlapping_windows_prefer_the_session_about_to_start():
+    # FP3 ended at 11:30; Qualifying starts at 14:00: at 13:45 it is Qualifying.
+    _, session = live_window(MEETINGS, at(9, 13, 45))
+    assert session.kind == "qualifying"
+    # Friday: FP2 at 15:00 wins over FP1's hard cap.
+    _, session = live_window(MEETINGS, at(8, 15, 0))
+    assert session.kind == "practice_2"
+
+
+def test_finished_sessions_are_skipped():
+    # FP3 finished at 11:30: at 12:00 nothing else is open.
+    assert (
+        live_window(MEETINGS, at(9, 12, 0), skip=frozenset({"2026-1-practice_3"}))
+        is None
+    )
+    # With FP2 finished early, FP1's window (still inside its hard cap) is what is left.
+    _, session = live_window(
+        MEETINGS, at(8, 16, 0), skip=frozenset({"2026-1-practice_2"})
+    )
+    assert session.kind == "practice_1"

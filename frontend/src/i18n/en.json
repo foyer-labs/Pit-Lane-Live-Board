@@ -1,10 +1,17 @@
 {
-  "tabs": { "live": "Live", "calendar": "Calendar", "results": "Results", "standings": "Standings" },
+  "tabs": {
+    "live": "Live",
+    "calendar": "Calendar",
+    "results": "Results",
+    "standings": "Standings"
+  },
   "delay": {
     "title": "TV delay",
     "help": "Hold the page, the team radio and your automations back to match your TV or stream. Everyone in the house shares this setting.",
     "none": "No delay",
-    "seconds": "{n} s"
+    "seconds": "{n} s",
+    "less": "−1 s",
+    "more": "+1 s"
   },
   "spoiler": {
     "on": "No spoilers",
@@ -31,7 +38,9 @@
     "points": "Pts",
     "back": "All rounds",
     "sprint": "SPRINT",
-    "disclaimer": "Pit Lane Live Board is unofficial and is not associated in any way with the Formula 1 companies. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX and related marks are trade marks of Formula One Licensing B.V. Results and standings: Jolpica-F1 (CC BY-NC-SA 4.0). Live data: F1's public live timing."
+    "disclaimer": "Pit Lane Live Board is unofficial and is not associated in any way with the Formula 1 companies. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX and related marks are trade marks of Formula One Licensing B.V. Results and standings: Jolpica-F1 (CC BY-NC-SA 4.0). Live data: F1's public live timing.",
+    "menu": "Menu",
+    "title": "Live Board"
   },
   "sessions": {
     "practice_1": "Practice 1",
@@ -49,7 +58,9 @@
     "live": "LIVE NOW",
     "results": "Results",
     "startsIn": "starts in",
-    "empty": "No calendar for this season yet."
+    "empty": "No calendar for this season yet.",
+    "round": "R{n}",
+    "watch": "Watch live"
   },
   "results": {
     "title": "Results",
@@ -88,7 +99,10 @@
     "yes": "Yes",
     "no": "No",
     "air": "Air temperature",
-    "track": "Track temperature"
+    "track": "Track temperature",
+    "pitIn": "IN",
+    "pitOut": "OUT",
+    "gridShort": "G"
   },
   "standings": {
     "title": "Standings",
@@ -158,7 +172,12 @@
       "vsc_ending": "VSC ENDING",
       "red_flag": "RED FLAG",
       "chequered": "CHEQUERED FLAG"
-    }
+    },
+    "mapNotEnabled": "The live track map is not enabled in this Home Assistant.",
+    "mapToken": "F1 did not accept the F1TV token, so there is no map. A new token goes under Settings → Devices & services → Pit Lane Live Board → Configure.",
+    "play": "Play {driver}'s team radio at {time}",
+    "pause": "Stop {driver}'s team radio",
+    "windSpeed": "{n} m/s"
   },
   "f1tv": {
     "active": "F1TV active",
@@ -166,5 +185,13 @@
     "expired": "F1TV expired",
     "invalid": "F1TV token refused",
     "not_configured": "F1TV not set"
+  },
+  "tyres": {
+    "soft": "Soft",
+    "medium": "Medium",
+    "hard": "Hard",
+    "intermediate": "Intermediate",
+    "wet": "Wet",
+    "unknown": "Unknown"
   }
 }
