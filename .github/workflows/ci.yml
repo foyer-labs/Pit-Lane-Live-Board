@@ -22,8 +22,6 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # Brand icons arrive in phase 7 (SPEC §19); until then this check is skipped.
-          ignore: brands
 
   lint:
     name: ruff

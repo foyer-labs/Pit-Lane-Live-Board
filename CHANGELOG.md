@@ -6,6 +6,10 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-26
+
+The first release.
+
 ### Added
 - The specification, the README in English and Italian, the support, security and
   contribution documents, and the issue forms.

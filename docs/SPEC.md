@@ -788,6 +788,15 @@ Decisions taken in chat with the owner.
 35. **One options form** (taken by me, phase 6): "show in sidebar", the F1TV token and,
   when one is stored, "remove the token". A menu of two steps would add a click for
   two fields. URLs in the instructions are placeholders, as hassfest requires.
+36. **The brand is a timing tower on the panel's gradient** (taken by me, phase 7):
+  four rows with purple, green and yellow timing marks and a chequered corner; no F1
+  mark, font or red. `scripts/build_brand.py` renders the eight files of
+  `custom_components/pit_lane_live_board/brand/` from `docs/logo/*.svg`.
+37. **Screenshots in both languages** (taken by me, phase 7): each README and each guide
+  shows its own language, captured from the bench by `scripts/screenshots.sh`.
+38. **The first release is 0.1.0, a normal release** (taken by me, phase 7), as with
+  Raccolta: HACS offers pre-releases only to those who ask for them, and a version
+  below 1.0 already says "young".
 
 ---
 

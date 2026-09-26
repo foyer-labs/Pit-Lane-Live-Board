@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Pit Lane Live Board: a timing tower on the panel's gradient. No F1 marks. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#03a9f4"/>
+      <stop offset="1" stop-color="#7c4dff"/>
+    </linearGradient>
+    <clipPath id="r"><rect x="2" y="2" width="60" height="60" rx="14"/></clipPath>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#g)"/>
+  <!-- chequered strip along the top edge -->
+  <g clip-path="url(#r)" fill="#ffffff" opacity="0.9">
+    <rect x="38" y="2" width="6" height="6"/><rect x="50" y="2" width="6" height="6"/>
+    <rect x="44" y="8" width="6" height="6"/><rect x="56" y="8" width="6" height="6"/>
+  </g>
+  <!-- the tower: four rows, each with a timing colour -->
+  <g>
+    <rect x="12" y="18" width="5" height="7" rx="1.5" fill="#b56cf0"/>
+    <rect x="20" y="18" width="24" height="7" rx="3.5" fill="#ffffff"/>
+    <rect x="12" y="29" width="5" height="7" rx="1.5" fill="#35d07f"/>
+    <rect x="20" y="29" width="32" height="7" rx="3.5" fill="#ffffff"/>
+    <rect x="12" y="40" width="5" height="7" rx="1.5" fill="#ffd23f"/>
+    <rect x="20" y="40" width="20" height="7" rx="3.5" fill="#ffffff" opacity="0.92"/>
+    <rect x="12" y="51" width="5" height="5" rx="1.5" fill="#ffffff" opacity="0.6"/>
+    <rect x="20" y="51" width="28" height="5" rx="2.5" fill="#ffffff" opacity="0.6"/>
+  </g>
+</svg>
