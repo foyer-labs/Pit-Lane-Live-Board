@@ -202,6 +202,7 @@ export interface LiveView {
   radio?: { utc: string | null; number: string | null; url: string }[];
   pits?: { number: string; lap: string; duration: string }[];
   map_available?: boolean;
+  map_reason?: "available" | "no_data" | "not_configured" | "token_problem";
 }
 
 export interface MapView {

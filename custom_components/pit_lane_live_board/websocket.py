@@ -13,6 +13,7 @@ from typing import Any
 
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 import voluptuous as vol
 
 from .clients.http import SourceError
@@ -30,7 +31,7 @@ from .core.jolpica_parse import (
     parse_standings,
 )
 from .core.spoiler import hidden_sessions, standings_round_cap
-from .hub import Hub
+from .hub import SIGNAL_SETTINGS, Hub, listen_live, listen_map
 
 FIRST_SEASON = 1950
 
@@ -44,7 +45,22 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
+class _Season(frozenset):
+    """Every session of one season: what no-spoiler mode hides while the
+    calendar is unknown, so the mode fails closed (INV-5)."""
+
+    def __new__(cls, season: int) -> _Season:
+        instance = super().__new__(cls)
+        instance.prefix = f"{season}-"
+        return instance
+
+    def __contains__(self, key: object) -> bool:
+        return isinstance(key, str) and key.startswith(self.prefix)
+
+
 def _hidden(hub: Hub) -> frozenset[str]:
+    if hub.settings.no_spoiler and not hub.meetings:
+        return _Season(hub.season)
     return hidden_sessions(hub.settings, hub.meetings, _now())
 
 
@@ -107,8 +123,32 @@ async def ws_settings_set(hass, connection, msg):
     connection.send_result(msg["id"], _settings_payload(hub, connection.user.is_admin))
 
 
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/settings/subscribe"})
+@callback
+def ws_settings_subscribe(hass, connection, msg):
+    """Settings pushed on every change, wherever it came from (the switch and
+    number entities, another device)."""
+    if _ready(hass, connection, msg) is None:
+        return
+
+    @callback
+    def send() -> None:
+        if (hub := _hub(hass)) is not None:
+            payload = _settings_payload(hub, connection.user.is_admin)
+            connection.send_message(websocket_api.event_message(msg["id"], payload))
+
+    connection.subscriptions[msg["id"]] = async_dispatcher_connect(
+        hass, SIGNAL_SETTINGS, send
+    )
+    connection.send_result(msg["id"])
+    send()
+
+
 @websocket_api.websocket_command(
-    {vol.Required("type"): f"{DOMAIN}/spoiler/reveal", vol.Required("session"): str}
+    {
+        vol.Required("type"): f"{DOMAIN}/spoiler/reveal",
+        vol.Required("session"): vol.All(str, vol.Length(max=40)),
+    }
 )
 @websocket_api.async_response
 async def ws_spoiler_reveal(hass, connection, msg):
@@ -148,9 +188,10 @@ async def ws_calendar_get(hass, connection, msg):
     except SourceError as err:
         _error(connection, msg["id"], err)
         return
-    connection.send_result(
-        msg["id"], pages.calendar_page(meetings, _now(), _hidden(hub), podiums)
-    )
+    page = pages.calendar_page(meetings, _now(), _hidden(hub), podiums)
+    # The season asked for, even when it has no meetings yet (January).
+    page["season"] = season
+    connection.send_result(msg["id"], page)
 
 
 # Results.
@@ -214,7 +255,8 @@ async def _tab(hub: Hub, season: int, rnd: int, tab: str) -> dict[str, Any] | No
         return parse_sprint(await hub.jolpica.sprint(season, rnd))
     results = await _classification(hub, season, rnd)
     if tab == "lap_chart":
-        return pages.lap_chart(parse_laps(await hub.jolpica.laps(season, rnd)), results)
+        positions = parse_laps(await hub.jolpica.laps(season, rnd))
+        return pages.lap_chart(positions, results) if positions else None
     if tab == "pit_stops":
         stops = parse_pitstops(await hub.jolpica.pitstops(season, rnd))
         return pages.pit_stops(stops, results)
@@ -282,6 +324,8 @@ async def ws_standings_get(hass, connection, msg):
         rounds = latest["round"] if latest and latest.get("round") else 0
         wanted = msg.get("round") or rounds
         cap = standings_round_cap(hub.settings, hub.meetings, _now())
+        if hub.settings.no_spoiler and not hub.meetings and season == hub.season:
+            cap = (season, 0)  # no calendar: fail closed (INV-5)
         capped = False
         if cap is not None and cap[0] == season and wanted > cap[1]:
             wanted, capped = cap[1], True
@@ -311,17 +355,24 @@ async def ws_standings_get(hass, connection, msg):
 # Live (SPEC §7.1): the view pushed on every change.
 
 
+# The subscriptions look the hub up at every send: after an entry reload the open
+# pages receive from the new hub.
+
+
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/live/subscribe"})
 @callback
 def ws_live_subscribe(hass, connection, msg):
-    if (hub := _ready(hass, connection, msg)) is None:
+    if _ready(hass, connection, msg) is None:
         return
 
     @callback
     def send() -> None:
-        connection.send_message(websocket_api.event_message(msg["id"], hub.live_view()))
+        if (hub := _hub(hass)) is not None:
+            connection.send_message(
+                websocket_api.event_message(msg["id"], hub.live_view())
+            )
 
-    connection.subscriptions[msg["id"]] = hub.listen_live(send)
+    connection.subscriptions[msg["id"]] = listen_live(hass, send)
     connection.send_result(msg["id"])
     send()
 
@@ -329,14 +380,17 @@ def ws_live_subscribe(hass, connection, msg):
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/map/subscribe"})
 @callback
 def ws_map_subscribe(hass, connection, msg):
-    if (hub := _ready(hass, connection, msg)) is None:
+    if _ready(hass, connection, msg) is None:
         return
 
     @callback
     def send() -> None:
-        connection.send_message(websocket_api.event_message(msg["id"], hub.map_view()))
+        if (hub := _hub(hass)) is not None:
+            connection.send_message(
+                websocket_api.event_message(msg["id"], hub.map_view())
+            )
 
-    connection.subscriptions[msg["id"]] = hub.listen_map(send)
+    connection.subscriptions[msg["id"]] = listen_map(hass, send)
     connection.send_result(msg["id"])
     send()
 
@@ -344,6 +398,7 @@ def ws_map_subscribe(hass, connection, msg):
 COMMANDS = (
     ws_settings_get,
     ws_settings_set,
+    ws_settings_subscribe,
     ws_spoiler_reveal,
     ws_calendar_get,
     ws_seasons,

@@ -27,6 +27,7 @@ class DelayBuffer[T]:
         self._delay = clamp_delay(delay)
         self._held: deque[_Held[T]] = deque()
         self._released_any = False
+        self._last_released: float | None = None
 
     @property
     def delay(self) -> int:
@@ -36,6 +37,12 @@ class DelayBuffer[T]:
         """Raising the delay holds output until it catches up; lowering it lets the
         backlog through on the next `release`."""
         self._delay = clamp_delay(delay)
+
+    @property
+    def last_released(self) -> float | None:
+        """When the most recently released message was received: what the page
+        shows is exactly that old, plus the delay (INV-2)."""
+        return self._last_released
 
     def reset(self) -> None:
         """A new connection: forget what was held for the old one."""
@@ -48,12 +55,15 @@ class DelayBuffer[T]:
     def release(self, now: float) -> list[T]:
         """Everything due at `now`, in arrival order."""
         due: list[T] = []
-        while self._held and self._held[0].received + self._delay <= now:
-            due.append(self._held.popleft().item)
-        # Nothing may wait longer than the largest possible delay: if the clock the
-        # caller passes jumped, the buffer still cannot grow without bound.
-        while self._held and self._held[0].received + MAX_DELAY < now:
-            due.append(self._held.popleft().item)
+        while self._held and (
+            self._held[0].received + self._delay <= now
+            # Nothing waits longer than the largest possible delay, even if the
+            # clock the caller passes jumped.
+            or self._held[0].received + MAX_DELAY < now
+        ):
+            held = self._held.popleft()
+            self._last_released = held.received
+            due.append(held.item)
         if due:
             self._released_any = True
         return due

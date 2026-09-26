@@ -297,6 +297,10 @@ page states "reconnected at HH:MM"; nothing is interpolated.
 
 ### 6.3 Loss of feed (INV-2)
 
+Silence is measured on what the page shows: the receive time of the last *released*
+message plus the TV delay, so a gap in the feed is noticed when the page reaches it,
+not when the network had it. Only data counts: the server's keep-alive pings do not.
+
 | After | What happens |
 |---|---|
 | 30 s | Banner "Live feed lost — reconnecting", data age visible on every block. |
@@ -788,6 +792,24 @@ Decisions taken in chat with the owner.
 35. **One options form** (taken by me, phase 6): "show in sidebar", the F1TV token and,
   when one is stored, "remove the token". A menu of two steps would add a click for
   two fields. URLs in the instructions are placeholders, as hassfest requires.
+36. **The brand is a timing tower on the panel's gradient** (taken by me, phase 7):
+  four rows with purple, green and yellow timing marks and a chequered corner; no F1
+  mark, font or red. `scripts/build_brand.py` renders the eight files of
+  `custom_components/pit_lane_live_board/brand/` from `docs/logo/*.svg`.
+37. **Screenshots in both languages** (taken by me, phase 7): each README and each guide
+  shows its own language, captured from the bench by `scripts/screenshots.sh`.
+38. **The first release is 0.1.0, a normal release** (taken by me, phase 7), as with
+  Raccolta: HACS offers pre-releases only to those who ask for them, and a version
+  below 1.0 already says "young".
+39. **A review before the first release** (taken by me, phase 7): two review agents,
+  one on the backend and one on the panel, found 29 defects; every one verified was
+  fixed with a test where it could be. The ones that mattered most: overlapping
+  session windows would have skipped the second session of a day; protocol pings
+  counted as live data and health ignored the TV delay (INV-2); no-spoiler mode made
+  withheld events fire later, and failed open while the calendar was unknown (INV-5);
+  a refused F1TV token stopped the whole feed instead of only the map; open pages kept
+  listening to the old hub after a reload; settings changed elsewhere never reached an
+  open panel. Settings are now pushed to the panel (`settings/subscribe`).
 
 ---
 

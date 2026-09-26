@@ -4,7 +4,7 @@ import { LitElement, css, html, nothing } from "lit";
 import { api } from "../api";
 import { countdown, dayRange, sessionTime } from "../format";
 import { translator } from "../i18n";
-import { failure, loading, person } from "../parts";
+import { failure, loading, person, spoilerKey } from "../parts";
 import { tokens } from "../styles";
 import type { CalendarPage, Hass, Meeting, Settings } from "../types";
 
@@ -27,6 +27,8 @@ export class PlbCalendar extends LitElement {
   failed = false;
   now = Date.now();
   private timer?: number;
+  private request = 0;
+  private spoilers = "";
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -40,18 +42,22 @@ export class PlbCalendar extends LitElement {
 
   protected override willUpdate(changed: Map<string, unknown>): void {
     if (this.season === undefined && this.settings) this.season = this.settings.season;
-    if (changed.has("settings") || changed.has("season")) void this.load();
+    const spoilers = spoilerKey(this.settings);
+    if (changed.has("season") || spoilers !== this.spoilers) {
+      this.spoilers = spoilers;
+      void this.load();
+    }
   }
 
   private async load(): Promise<void> {
     if (!this.hass || this.season === undefined) return;
-    const season = this.season;
+    const request = ++this.request;
     this.failed = false;
     try {
-      const data = await api.calendar(this.hass, season);
-      if (season === this.season) this.data = data;
+      const data = await api.calendar(this.hass, this.season);
+      if (request === this.request) this.data = data;
     } catch {
-      this.failed = true;
+      if (request === this.request) this.failed = true;
     }
   }
 
@@ -78,13 +84,17 @@ export class PlbCalendar extends LitElement {
     `;
   }
 
+  private go(detail: { page: string; season?: number; round?: number }): void {
+    this.dispatchEvent(new CustomEvent("plb-go", { detail, bubbles: true, composed: true }));
+  }
+
   private renderMeeting(m: Meeting) {
     const t = translator(this.hass);
     const first = m.sessions[0]?.date;
     const last = m.sessions[m.sessions.length - 1]?.date;
     const next = m.state === "next" ? m.sessions.find((s) => s.start && Date.parse(s.start) > this.now) : undefined;
     return html`<div class="card meet ${m.state}">
-      <div class="meet-head"><span class="round">R${m.round}</span><h3>${m.name}</h3></div>
+      <div class="meet-head"><span class="round">${t("calendar.round", { n: m.round })}</span><h3>${m.name}</h3></div>
       <div class="where">${[m.locality, m.country].filter(Boolean).join(" · ")}${first && last ? ` · ${dayRange(this.hass, first, last)}` : ""}</div>
       ${m.sprint || m.state === "next" || m.state === "live"
         ? html`<div class="flagline">
@@ -101,7 +111,7 @@ export class PlbCalendar extends LitElement {
                     (p, i) => html`<div><b>${i + 1}</b>${person(p.name, p.team_id)}</div>`,
                   )}
             </div>
-            <button class="link more" @click=${() => this.dispatchEvent(new CustomEvent("plb-go", { detail: "results", bubbles: true, composed: true }))}>
+            <button class="link more" @click=${() => this.go({ page: "results", season: m.season, round: m.round })}>
               ${t("calendar.results")} →
             </button>`
         : html`<ul>
@@ -109,6 +119,9 @@ export class PlbCalendar extends LitElement {
               (s) => html`<li><span>${t(`sessions.${s.kind}`)}</span><span class="num">${sessionTime(this.hass, s.start, s.date)}</span></li>`,
             )}
           </ul>`}
+      ${m.state === "live"
+        ? html`<button class="link more" @click=${() => this.go({ page: "live" })}>${t("calendar.watch")} →</button>`
+        : nothing}
       ${next?.start
         ? html`<div class="countdown">${t(`sessions.${next.kind}`)} · ${t("calendar.startsIn")}
             <b class="num">${countdown(Date.parse(next.start) - this.now)}</b></div>`

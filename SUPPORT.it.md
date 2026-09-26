@@ -8,8 +8,8 @@ come Foyer Labs. Domande e segnalazioni ricevono risposta al meglio delle possib
 
 ## Prima di chiedere
 
-- Leggi la guida, soprattutto *Risoluzione dei problemi* e le domande frequenti
-  (disponibile con la prima release).
+- Leggi la [guida](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.it.md),
+  soprattutto *Risoluzione dei problemi* e le domande frequenti.
 - Guarda in *Impostazioni → Riparazioni* se c'è un avviso di Pit Lane Live Board.
 - Ricorda che i dati live arrivano da flussi F1 non ufficiali: quando la F1 li cambia,
   qualcosa può smettere di funzionare per tutti insieme. Cerca tra le

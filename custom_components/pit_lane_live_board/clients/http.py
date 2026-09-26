@@ -20,6 +20,36 @@ class BudgetExhausted(SourceError):
     """Our own request budget for the hour is spent (INV-4)."""
 
 
+class InFlight:
+    """Joins identical requests made at the same time into one (INV-4: five
+    open pages cost the sources what one does)."""
+
+    def __init__(self) -> None:
+        self._running: dict[str, asyncio.Future[Any]] = {}
+
+    async def run(self, key: str, make: Callable[[], Awaitable[Any]]) -> Any:
+        if (running := self._running.get(key)) is not None:
+            return await asyncio.shield(running)
+        future: asyncio.Future[Any] = asyncio.get_running_loop().create_future()
+        self._running[key] = future
+        try:
+            result = await make()
+        except asyncio.CancelledError:
+            future.cancel()
+            raise
+        except Exception as err:
+            future.set_exception(err)
+            # Retrieved here so a failure nobody else awaited is not reported as
+            # an unhandled one.
+            future.exception()
+            raise
+        else:
+            future.set_result(result)
+            return result
+        finally:
+            self._running.pop(key, None)
+
+
 class RateLimiter:
     """A token bucket plus an hourly budget, both on our side of the wire.
 

@@ -11,7 +11,7 @@
     python -m http.server 8777
   then open http://127.0.0.1:8777/bench/?page=live&lang=it&theme=dark
   Data: python scripts/bench_data.py (git-ignored bench/data/).
-  Extra: round=14&tab=strategy opens a Results detail.
+  Extra: round=14&tab=strategy opens a Results detail; select=16 selects a driver.
 -->
 <script type="module">
   const params = new URLSearchParams(location.search);
@@ -40,6 +40,13 @@
     }
   }
   if (params.get("delayOpen") === "true") panel.delayOpen = true;
+  if (params.get("select")) {
+    for (let i = 0; i < 50; i++) {
+      const live = panel.shadowRoot?.querySelector("plb-live");
+      if (live?.view) { live.selected = params.get("select"); break; }
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }
 </script>
 </body>
 </html>

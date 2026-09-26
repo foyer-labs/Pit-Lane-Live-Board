@@ -5,7 +5,7 @@ import { api } from "../api";
 import { clockTime, longDate, number } from "../format";
 import { translator, type Translate } from "../i18n";
 import { ICON, icon } from "../icons";
-import { failure, gained, loading, person, tyre } from "../parts";
+import { failure, gained, loading, onKey, person, spoilerKey, tyre } from "../parts";
 import { tokens } from "../styles";
 import { teamColour } from "../teams";
 import type { Classified, Hass, Message, Round, Settings, TabResult } from "../types";
@@ -27,6 +27,7 @@ export class PlbResults extends LitElement {
     driver: { state: true },
     filter: { state: true },
     highlight: { state: true },
+    target: { attribute: false },
   };
 
   hass!: Hass;
@@ -42,25 +43,43 @@ export class PlbResults extends LitElement {
   driver = "";
   filter = "all";
   highlight = "";
+  target?: { page: string; season?: number; round?: number };
   private request = 0;
+  private roundsRequest = 0;
+  private spoilers = "";
+  private wanted?: number;
 
   protected override willUpdate(changed: Map<string, unknown>): void {
+    if (changed.has("target") && this.target?.page === "results" && this.target.season) {
+      // Opened from the calendar: that season, and that round once it is loaded.
+      this.selected = undefined;
+      this.rounds = undefined;
+      this.season = this.target.season;
+      this.wanted = this.target.round;
+    }
     if (this.season === undefined && this.settings) this.season = this.settings.season;
-    if (changed.has("settings") || changed.has("season")) void this.loadRounds();
-    if (this.selected && (changed.has("settings") || changed.has("tab") || changed.has("selected"))) {
+    const spoilers = spoilerKey(this.settings);
+    const spoilersChanged = spoilers !== this.spoilers;
+    this.spoilers = spoilers;
+    if (changed.has("season") || spoilersChanged) void this.loadRounds();
+    if (this.selected && (spoilersChanged || changed.has("tab") || changed.has("selected"))) {
       void this.loadTab();
     }
   }
 
   private async loadRounds(): Promise<void> {
     if (!this.hass || this.season === undefined) return;
-    const season = this.season;
+    const request = ++this.roundsRequest;
     this.failed = false;
     try {
-      const data = await api.rounds(this.hass, season);
-      if (season === this.season) this.rounds = data.rounds;
+      const data = await api.rounds(this.hass, this.season);
+      if (request !== this.roundsRequest) return;
+      this.rounds = data.rounds;
+      const wanted = this.wanted !== undefined ? data.rounds.find((r) => r.round === this.wanted) : undefined;
+      this.wanted = undefined;
+      if (wanted) this.open(wanted);
     } catch {
-      this.failed = true;
+      if (request === this.roundsRequest) this.failed = true;
     }
   }
 
@@ -75,6 +94,14 @@ export class PlbResults extends LitElement {
     } catch {
       if (request === this.request) this.tabFailed = true;
     }
+  }
+
+  private get gridLabel(): string {
+    return translator(this.hass)("results.gridShort");
+  }
+
+  private tyreName(compound: string): string {
+    return translator(this.hass)(`tyres.${compound}`);
   }
 
   private open(round: Round): void {
@@ -107,7 +134,7 @@ export class PlbResults extends LitElement {
             : html`<div class="card"><div class="scroll"><table class="tbl">
                 <tr><th>${t("common.round")}</th><th>${t("results.grandPrix")}</th><th>${t("results.date")}</th><th>${t("results.winner")}</th></tr>
                 ${[...this.rounds].reverse().map(
-                  (r) => html`<tr class="click" @click=${() => this.open(r)}>
+                  (r) => html`<tr class="click" tabindex="0" @click=${() => this.open(r)} @keydown=${onKey(() => this.open(r))}>
                     <td class="num">${r.round}</td>
                     <td>${r.name}${r.sprint ? html` <span class="pill sprint">${t("common.sprint")}</span>` : nothing}</td>
                     <td class="num">${longDate(this.hass, r.date)}</td>
@@ -227,7 +254,9 @@ export class PlbResults extends LitElement {
       const last = lastIndex >= 0 ? d.positions[lastIndex]! : null;
       const on = !this.highlight || this.highlight === d.driver_id;
       const colour = teamColour(d.team_id);
-      return svg`<g class="line" @click=${() => (this.highlight = this.highlight === d.driver_id ? "" : d.driver_id ?? "")}
+      const pick = () => (this.highlight = this.highlight === d.driver_id ? "" : d.driver_id ?? "");
+      return svg`<g class="line" @click=${pick} @keydown=${onKey(pick)} tabindex="0" role="button"
+          aria-label=${d.name ?? d.code ?? ""} aria-pressed=${this.highlight === d.driver_id ? "true" : "false"}
           style="opacity:${on ? 1 : 0.15}">
         <path d=${path} fill="none" stroke=${colour} stroke-width=${this.highlight === d.driver_id ? 4 : 2}></path>
         ${last !== null ? svg`<text x=${x(lastIndex) + 6} y=${y(last) + 4} style="fill:var(--primary-text-color);font-weight:600">${d.code ?? d.name?.slice(0, 3).toUpperCase()}</text>` : nothing}
@@ -235,7 +264,7 @@ export class PlbResults extends LitElement {
     });
     const grid = Array.from({ length: count }, (_, i) => svg`<line class="axis" x1="36" x2=${W - 74} y1=${y(i + 1)} y2=${y(i + 1)}></line><text x="8" y=${y(i + 1) + 4}>${i + 1}</text>`);
     const ticks = Array.from({ length: Math.floor(laps / 10) + 1 }, (_, i) => i * 10).map(
-      (l) => svg`<text x=${x(l)} y=${H} text-anchor="middle">${l || "G"}</text>`,
+      (l) => svg`<text x=${x(l)} y=${H} text-anchor="middle">${l || this.gridLabel}</text>`,
     );
     return html`<div class="chart"><svg viewBox="0 0 ${W} ${H + 6}">${grid}${lines}${ticks}</svg></div>`;
   }
@@ -250,7 +279,7 @@ export class PlbResults extends LitElement {
       <text x="8" y=${10 + i * row + 13} style="font-weight:600;fill:var(--primary-text-color)">${d.tla}</text>
       ${d.stints.map((s) => svg`<rect x=${x(s.start_lap - 1) + 1} y=${10 + i * row} width=${Math.max(2, x(s.end_lap) - x(s.start_lap - 1) - 2)}
         height=${row - 8} rx="4" style="fill:var(${`--plb-${s.compound}`}, var(--plb-unknown));stroke:var(--divider-color)"
-        opacity=${s.new ? 1 : 0.75}><title>${s.compound} ${s.start_lap}–${s.end_lap}</title></rect>`)}`);
+        opacity=${s.new ? 1 : 0.75}><title>${this.tyreName(s.compound)} ${s.start_lap}–${s.end_lap}</title></rect>`)}`);
     const ticks = [1, ...Array.from({ length: Math.floor(laps / 10) }, (_, i) => (i + 1) * 10), laps]
       .filter((v, i, a) => a.indexOf(v) === i)
       .map((l) => svg`<text x=${x(l)} y=${H - 4} text-anchor="middle">${l}</text>`);
@@ -277,7 +306,7 @@ export class PlbResults extends LitElement {
             <td class="t ${mark(l.best)}">${l.time ?? "—"}</td>
             ${[0, 1, 2].map((i) => html`<td class="t ${mark(l.sector_bests?.[i])}">${l.sectors[i] ?? "—"}</td>`)}
             <td>${l.compound ? tyre(t, l.compound, null, l.tyre_age) : ""}</td>
-            <td>${l.pit_in ? html`<span class="badge pit">IN</span>` : nothing}${l.pit_out ? html`<span class="badge out">OUT</span>` : nothing}</td>
+            <td>${l.pit_in ? html`<span class="badge pit">${t("results.pitIn")}</span>` : nothing}${l.pit_out ? html`<span class="badge out">${t("results.pitOut")}</span>` : nothing}</td>
           </tr>`,
         )}
       </table></div>`;

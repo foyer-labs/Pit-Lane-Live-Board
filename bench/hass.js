@@ -63,6 +63,8 @@ export function createHass() {
     f1tv: admin ? { status: params.get("f1tv") ?? "active", expires: "2026-09-16T10:00:00+00:00", product: "F1 TV Pro" } : null,
   };
   const P = "pit_lane_live_board/";
+  const settingsListeners = [];
+  const pushSettings = () => settingsListeners.forEach((listen) => listen({ ...settings }));
   return {
     language: params.get("lang") ?? "en",
     locale: { language: params.get("lang") ?? "en" },
@@ -76,6 +78,7 @@ export function createHass() {
         case "settings/set":
           if ("tv_delay" in msg) settings.tv_delay = msg.tv_delay;
           if ("no_spoiler" in msg) settings.no_spoiler = msg.no_spoiler;
+          pushSettings();
           return { ...settings };
         case "spoiler/reveal":
           return { ...settings, revealed: [...settings.revealed, msg.session] };
@@ -97,7 +100,10 @@ export function createHass() {
     connection: {
       async subscribeMessage(callback, msg) {
         const type = msg.type.replace(P, "");
-        if (type === "live/subscribe") {
+        if (type === "settings/subscribe") {
+          settingsListeners.push(callback);
+          callback({ ...settings });
+        } else if (type === "live/subscribe") {
           const live = params.get("live") ?? "race";
           const view = ["syncing", "connecting"].includes(live)
             ? { state: live, delay: settings.tv_delay, next_session: null }

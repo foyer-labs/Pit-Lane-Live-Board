@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import time
 from typing import Any
+import uuid
 
 from .const import CACHE_CAP_BYTES
 
@@ -68,7 +69,8 @@ class DiskCache:
     def write_bytes(self, key: str, suffix: str, data: bytes) -> Path:
         self.root.mkdir(parents=True, exist_ok=True)
         path = self.path(key, suffix)
-        temporary = path.with_suffix(path.suffix + ".part")
+        # A unique temporary name: two writers of the same key never share it.
+        temporary = path.with_suffix(f"{path.suffix}.{uuid.uuid4().hex[:8]}.part")
         temporary.write_bytes(data)
         temporary.replace(path)
         self.evict()

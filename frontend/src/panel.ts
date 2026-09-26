@@ -5,6 +5,7 @@ import { api } from "./api";
 import { define } from "./define";
 import { translator, type Translate } from "./i18n";
 import { ICON, icon } from "./icons";
+import { failure } from "./parts";
 import { tokens } from "./styles";
 import type { Hass, Settings } from "./types";
 import { PlbCalendar } from "./pages/calendar";
@@ -12,7 +13,7 @@ import { PlbLive } from "./pages/live";
 import { PlbResults } from "./pages/results";
 import { PlbStandings } from "./pages/standings";
 
-type Page = "live" | "calendar" | "results" | "standings";
+export type Page = "live" | "calendar" | "results" | "standings";
 const PAGES: Page[] = ["live", "calendar", "results", "standings"];
 const STORAGE_KEY = "pit-lane-live-board-page";
 
@@ -25,6 +26,12 @@ function rememberedPage(): Page {
   }
 }
 
+export interface GoTo {
+  page: Page;
+  season?: number;
+  round?: number;
+}
+
 export class PitLaneLiveBoardPanel extends LitElement {
   static override properties = {
     hass: { attribute: false },
@@ -33,6 +40,8 @@ export class PitLaneLiveBoardPanel extends LitElement {
     settings: { state: true },
     seasons: { state: true },
     delayOpen: { state: true },
+    failed: { state: true },
+    target: { state: true },
   };
 
   hass?: Hass;
@@ -41,59 +50,118 @@ export class PitLaneLiveBoardPanel extends LitElement {
   settings?: Settings;
   seasons: number[] = [];
   delayOpen = false;
-  private loaded = false;
+  failed = false;
+  target?: GoTo;
+  private unsubscribe?: () => void;
+  private connecting = false;
+  private retry?: number;
+  private backoff = 5_000;
+  // A delay chosen here and not yet confirmed: pushed settings do not undo it.
+  private pendingDelay: number | null = null;
+  private delayTimer?: number;
 
   private get t(): Translate {
     return translator(this.hass);
   }
 
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.unsubscribe?.();
+    this.unsubscribe = undefined;
+    window.clearTimeout(this.retry);
+    this.retry = undefined;
+  }
+
   protected override updated(): void {
-    if (this.hass && !this.loaded) {
-      this.loaded = true;
-      void this.load();
+    // Home Assistant hands a new `hass` on every state change: subscribe once.
+    if (this.hass && !this.unsubscribe && !this.connecting && this.retry === undefined) {
+      void this.connect();
     }
   }
 
-  private async load(): Promise<void> {
+  /** Settings arrive through a subscription, so a change made anywhere (the
+   *  switch and number entities, another screen) shows here at once. */
+  private async connect(): Promise<void> {
     if (!this.hass) return;
+    this.connecting = true;
     try {
-      this.settings = await api.settings(this.hass);
+      this.unsubscribe = await api.subscribeSettings(this.hass, (settings) => this.receive(settings));
+      this.failed = false;
+      this.backoff = 5_000;
     } catch {
-      this.loaded = false;
+      this.failed = true;
+      this.retry = window.setTimeout(() => {
+        this.retry = undefined;
+        this.requestUpdate();
+      }, this.backoff);
+      this.backoff = Math.min(this.backoff * 2, 60_000);
       return;
+    } finally {
+      this.connecting = false;
     }
-    try {
-      this.seasons = (await api.seasons(this.hass)).seasons;
-    } catch {
-      this.seasons = [this.settings.season];
+    if (!this.seasons.length) {
+      try {
+        this.seasons = (await api.seasons(this.hass)).seasons;
+      } catch {
+        this.seasons = this.settings ? [this.settings.season] : [];
+      }
     }
   }
 
-  private go(page: Page): void {
-    this.page = page;
+  private receive(settings: Settings): void {
+    this.settings = this.pendingDelay === null ? settings : { ...settings, tv_delay: this.pendingDelay };
+  }
+
+  private go(target: GoTo): void {
+    this.page = target.page;
+    this.target = target;
     this.delayOpen = false;
     try {
-      localStorage.setItem(STORAGE_KEY, page);
+      localStorage.setItem(STORAGE_KEY, target.page);
     } catch {
       /* private mode: the page is simply not remembered */
     }
   }
 
-  private async setDelay(value: number): Promise<void> {
+  /** Steps and the slider change the number at once; the value is sent once the
+   *  user pauses, so quick clicks are never lost to an earlier reply. */
+  private setDelay(value: number): void {
     if (!this.hass || !this.settings) return;
     const tv_delay = Math.max(0, Math.min(120, Math.round(value)));
+    this.pendingDelay = tv_delay;
     this.settings = { ...this.settings, tv_delay };
-    this.settings = await api.setSettings(this.hass, { tv_delay });
+    window.clearTimeout(this.delayTimer);
+    this.delayTimer = window.setTimeout(() => void this.sendDelay(), 400);
   }
 
-  private async toggleSpoiler(): Promise<void> {
-    if (!this.hass || !this.settings) return;
-    this.settings = await api.setSettings(this.hass, { no_spoiler: !this.settings.no_spoiler });
+  private async sendDelay(): Promise<void> {
+    if (!this.hass || this.pendingDelay === null) return;
+    const sent = this.pendingDelay;
+    try {
+      const settings = await api.setSettings(this.hass, { tv_delay: sent });
+      if (this.pendingDelay === sent) this.pendingDelay = null;
+      this.receive(settings);
+    } catch {
+      this.pendingDelay = null;
+    }
+  }
+
+  private async setSpoiler(on: boolean): Promise<void> {
+    if (!this.hass) return;
+    try {
+      this.receive(await api.setSettings(this.hass, { no_spoiler: on }));
+    } catch {
+      /* the subscription keeps showing the real state */
+    }
   }
 
   private async reveal(event: CustomEvent<string>): Promise<void> {
     if (!this.hass) return;
-    this.settings = await api.reveal(this.hass, event.detail);
+    try {
+      this.receive(await api.reveal(this.hass, event.detail));
+    } catch {
+      /* nothing revealed: the page keeps saying so */
+    }
   }
 
   private toggleMenu(): void {
@@ -101,20 +169,28 @@ export class PitLaneLiveBoardPanel extends LitElement {
   }
 
   private renderPage() {
-    if (!this.hass || !this.settings) return html`<div class="card loading">${this.t("common.loading")}</div>`;
+    if (!this.hass || !this.settings) {
+      return this.failed
+        ? failure(this.t, () => {
+            window.clearTimeout(this.retry);
+            this.retry = undefined;
+            void this.connect();
+          })
+        : html`<div class="card loading">${this.t("common.loading")}</div>`;
+    }
     const common = { hass: this.hass, settings: this.settings, seasons: this.seasons };
     switch (this.page) {
       case "calendar":
         return html`<plb-calendar .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons}
-          @plb-go=${(e: CustomEvent<Page>) => this.go(e.detail)}></plb-calendar>`;
+          @plb-go=${(e: CustomEvent<GoTo>) => this.go(e.detail)}></plb-calendar>`;
       case "results":
         return html`<plb-results .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons}
-          @plb-reveal=${this.reveal}></plb-results>`;
+          .target=${this.target} @plb-reveal=${this.reveal}></plb-results>`;
       case "standings":
         return html`<plb-standings .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons}></plb-standings>`;
       default:
         return html`<plb-live .hass=${common.hass} .settings=${common.settings}
-          @plb-spoiler-off=${this.toggleSpoiler}></plb-live>`;
+          @plb-spoiler-off=${() => this.setSpoiler(false)}></plb-live>`;
     }
   }
 
@@ -125,12 +201,12 @@ export class PitLaneLiveBoardPanel extends LitElement {
     return html`
       <header class="appbar">
         ${this.narrow
-          ? html`<button class="icon-btn" @click=${this.toggleMenu} aria-label="menu">${icon(ICON.menu, 24)}</button>`
+          ? html`<button class="icon-btn" @click=${this.toggleMenu} aria-label=${t("common.menu")}>${icon(ICON.menu, 24)}</button>`
           : nothing}
-        <div class="brand"><span class="mark">${icon(ICON.board, 18)}</span><span class="name">Live Board</span></div>
+        <div class="brand"><span class="mark">${icon(ICON.board, 18)}</span><span class="name">${t("common.title")}</span></div>
         <nav class="tabs">
           ${PAGES.map(
-            (p) => html`<button class="tab ${this.page === p ? "active" : ""}" @click=${() => this.go(p)}>
+            (p) => html`<button class="tab ${this.page === p ? "active" : ""}" @click=${() => this.go({ page: p })}>
               ${t(`tabs.${p}`)}
             </button>`,
           )}
@@ -140,11 +216,13 @@ export class PitLaneLiveBoardPanel extends LitElement {
           ? html`<span class="chip small ${f1tv === "active" ? "" : "warn"}" title=${t(`f1tv.${f1tv}`)}>F1TV</span>`
           : nothing}
         <button class="chip ${s?.tv_delay ? "on" : ""}" @click=${() => (this.delayOpen = !this.delayOpen)}
-          aria-expanded=${this.delayOpen ? "true" : "false"}>
-          ${icon(ICON.clock, 18)}<span class="num">${s?.tv_delay ? `+${s.tv_delay} s` : "0 s"}</span>
+          aria-expanded=${this.delayOpen ? "true" : "false"} aria-label=${t("delay.title")}>
+          ${icon(ICON.clock, 18)}<span class="num">${t("delay.seconds", { n: s?.tv_delay ? `+${s.tv_delay}` : 0 })}</span>
           <span class="label">${t("delay.title")}</span>
         </button>
-        <button class="chip ${s?.no_spoiler ? "on" : ""}" @click=${this.toggleSpoiler} title=${t("spoiler.help")}>
+        <button class="chip ${s?.no_spoiler ? "on" : ""}" @click=${() => this.setSpoiler(!s?.no_spoiler)}
+          title=${t("spoiler.help")} aria-pressed=${s?.no_spoiler ? "true" : "false"}
+          aria-label=${s?.no_spoiler ? t("spoiler.on") : t("spoiler.off")}>
           ${icon(s?.no_spoiler ? ICON.eyeOff : ICON.eye, 18)}
           <span class="label">${s?.no_spoiler ? t("spoiler.on") : t("spoiler.off")}</span>
         </button>
@@ -161,12 +239,12 @@ export class PitLaneLiveBoardPanel extends LitElement {
       <h3>${t("delay.title")}</h3>
       <p>${t("delay.help")}</p>
       <div class="stepper">
-        <button @click=${() => this.setDelay(s.tv_delay - 1)} aria-label="−1 s">−</button>
+        <button @click=${() => this.setDelay(s.tv_delay - 1)} aria-label=${t("delay.less")}>−</button>
         <b class="num">${s.tv_delay ? t("delay.seconds", { n: s.tv_delay }) : t("delay.none")}</b>
-        <button @click=${() => this.setDelay(s.tv_delay + 1)} aria-label="+1 s">+</button>
+        <button @click=${() => this.setDelay(s.tv_delay + 1)} aria-label=${t("delay.more")}>+</button>
       </div>
-      <input type="range" min="0" max="120" step="1" .value=${String(s.tv_delay)}
-        @change=${(e: Event) => this.setDelay(Number((e.target as HTMLInputElement).value))} />
+      <input type="range" min="0" max="120" step="1" .value=${String(s.tv_delay)} aria-label=${t("delay.title")}
+        @input=${(e: Event) => this.setDelay(Number((e.target as HTMLInputElement).value))} />
     </div>`;
   }
 
