@@ -7,8 +7,10 @@ race since 1950 and both championships. This guide covers everything, in order: 
 the first two sections and you are set; come back to the others when you need them.
 
 - [Install](#install)
+- [Settings and live timing](#settings-and-live-timing)
 - [The four pages](#the-four-pages)
 - [Reading the timing tower](#reading-the-timing-tower)
+- [Flags and stewards](#flags-and-stewards)
 - [TV delay](#tv-delay)
 - [No-spoiler mode](#no-spoiler-mode)
 - [F1TV and the live map](#f1tv-and-the-live-map)
@@ -32,19 +34,53 @@ only adds the live track map.
 3. *Settings → Devices & services → Add integration → Pit Lane Live Board.* There is
    nothing to fill in: read the notice and confirm.
 4. **Live Board** appears in the sidebar, for every user of the house.
+5. Open the panel's **Settings** (the gear at the top right) and press **play**, or turn
+   on *Start automatically at each session*. Live timing starts paused: see the next
+   section.
 
 To remove it: delete the integration under *Devices & services*, then remove it from
 HACS. Its cache (under `.cache/pit_lane_live_board` in your configuration folder) can
 be deleted at any time; it is not part of backups.
 
+## Settings and live timing
+
+![The Settings page](screenshots/settings.png)
+
+The gear at the top right of the panel opens **Settings**:
+
+- **Live timing.** The big button turns it on and off. **Paused**, nothing connects to
+  F1 and nothing live is written to disk — worth it on a Raspberry Pi with an SD card —
+  and the live entities are unavailable. **On**, the integration connects by itself
+  from 30 minutes before each session and lets go a few minutes after it ends; outside
+  sessions it only checks the calendar. The same switch is the **Live timing** entity.
+- **Start automatically at each session.** Live timing turns itself on as each session
+  window opens. If you pause it during a session, it stays paused until the next one.
+- **TV delay**, the same control as the clock in the header (see [TV delay](#tv-delay)).
+- **F1TV** (administrators only): the token's status and expiry, a field to paste a new
+  one, and *Remove* (see [F1TV](#f1tv-and-the-live-map)).
+- **Entities**: every entity of the integration with its state; click one for its
+  history and settings.
+
+While live timing is paused the header shows a dashed **Paused** chip; it opens
+Settings. Calendar, results and standings do not depend on it.
+
 ## The four pages
 
 ![The Live page during a race](screenshots/live.png)
 
-**Live.** During a session: the session strip (lap or clock, track status), the timing
-tower, race control, team radio, weather, pit stops and — with F1TV — the track map.
-Between sessions: the next session with a countdown. The page connects to F1's live
-timing from 30 minutes before each session and lets go a few minutes after it ends.
+**Live.** During a session: the session strip (lap or clock, and how old the data is),
+[flags and stewards](#flags-and-stewards), the timing tower, race control, team radio,
+weather, pit stops and — with F1TV — the track map.
+
+![The Live page after the race](screenshots/final.png)
+
+After a session the page keeps its **final state**, frozen: the classification, the
+stewards' decisions, race control, radio and pit stops, marked *FINAL* with the time it
+ended, and the next session counting down on the right. If live timing was paused
+during the session, the final state comes from F1's archive the first time you open the
+page (it is published about half an hour after the session). Before the first session
+of the year, or with nothing to show, the page shows the next session with a
+countdown, and a play button when live timing is paused.
 
 ![Qualifying, dark theme](screenshots/qualifying.png)
 
@@ -64,7 +100,8 @@ the data exists:
 
 | Tab | From |
 |---|---|
-| Race, Qualifying | 1950 (qualifying times from the mid-1990s) |
+| Race | 1950 |
+| Qualifying | 1994 |
 | Sprint | 2021 |
 | Lap chart | 1996 |
 | Pit stops | 2011 |
@@ -98,9 +135,10 @@ Colours follow F1's convention: **purple** is the fastest of the session, **gree
 the driver's personal best. Badges: `PIT` in the pit lane, `OUT` leaving it, `RET`
 retired, `STOP` stopped on track, `KO` knocked out of qualifying.
 
+A red `+5s` after a driver's number is a time penalty not served yet.
+
 Click a row to follow a driver: the row, their dot on the map and their team radio are
-highlighted. Race control can be filtered to flags or to penalties; penalties are
-recognised from the stewards' text, so the filter is best effort.
+highlighted. Race control can be filtered to flags or to penalties.
 
 When the feed goes quiet, a banner says so after 30 seconds and the page greys out
 after 60: nothing that is not live is ever shown as live.
@@ -108,6 +146,24 @@ after 60: nothing that is not live is ever shown as live.
 ![The phone layout](screenshots/phone.png)
 
 On a phone the tower keeps position, driver, gap, last lap and tyre.
+
+## Flags and stewards
+
+The card between the session strip and the tower reads race control for you:
+
+| Column | What it shows |
+|---|---|
+| Track | The track status, the sectors under yellow (`S7`) or double yellow (`S10 ×2`), and the safety car or VSC phase, including *in this lap*. |
+| Penalties | Every penalty of the session, newest first: `+5s`, `DT` (drive-through), `SG` (stop and go), grid penalties, `DSQ`. A served penalty turns grey with a ✓. |
+| Investigations | Incidents *noted*, *under investigation* or to be looked at *after the race*, with the cars and the turn. They leave the list when the stewards decide. |
+| Track limits | Laps deleted per driver, and ⚑ for a black and white flag. |
+
+When all is calm the card is a single line; under the safety car or a red flag it gets a
+coloured edge. On a phone it is one row of chips: tap it to open the columns.
+
+F1 has no structured feed for penalties: they are read from the stewards' messages.
+The reading was checked on four whole races without a miss, but a new wording could
+slip through; race control always shows the original message.
 
 ## TV delay
 
@@ -151,13 +207,14 @@ An administrator adds the token once:
 2. Open the browser's developer tools (F12) → *Application* (*Storage* in Firefox) →
    *Cookies* → `https://f1tv.formula1.com`.
 3. Copy the **value** of the cookie named `loginSession`.
-4. In Home Assistant: *Settings → Devices & services → Pit Lane Live Board →
-   Configure*, paste it into *F1TV token* and submit.
+4. In the panel: **Settings** (the gear) → *F1TV*, paste it and press *Save*. (Or in
+   Home Assistant: *Settings → Devices & services → Pit Lane Live Board → Configure*.)
 
 You can also paste the bare token or a `Bearer …` header. The token is never shown
 again. It is renewed automatically (every few days); about once a month F1 ends the
 login behind it, and a notice in *Settings → Repairs* asks you to paste a new one —
-until then everything except the map keeps working. *Configure* also removes it.
+until then everything except the map keeps working. *Remove the token* in Settings (or
+*Configure*) removes it.
 
 Where it is kept: in Home Assistant's `.storage/core.config_entries`, in plain text,
 like every other integration's token. It is never sent to the page, entities, logs or
@@ -179,13 +236,24 @@ ids follow Home Assistant's language when you install; find them on the device p
 | `sensor.pit_lane_live_board_track_status` | `clear`, `yellow`, `safety_car`, `virtual_safety_car`, `vsc_ending`, `red_flag`, `chequered`. |
 | `sensor.pit_lane_live_board_lap` | Current lap; attribute `total_laps`. |
 | `binary_sensor.pit_lane_live_board_session_running` | On while a session runs. |
+| `binary_sensor.pit_lane_live_board_safety_car` | On while the safety car is out; attribute `ending` in its last lap. |
+| `binary_sensor.pit_lane_live_board_virtual_safety_car` | The same for the virtual safety car. |
+| `binary_sensor.pit_lane_live_board_red_flag` | On under a red flag. |
+| `binary_sensor.pit_lane_live_board_yellow_flag` | On with a yellow anywhere; attributes `sectors` and `double`. |
+| `sensor.pit_lane_live_board_penalties` | Penalties given this session; attribute `penalties` (driver, kind, seconds, reason, lap, served). |
+| `sensor.pit_lane_live_board_investigations` | Incidents noted or under investigation; attribute `investigations`. |
+| `sensor.pit_lane_live_board_race_control_message` | The latest race control message, in English as F1 writes it. |
 | `event.pit_lane_live_board_race_control` | `green_flag`, `yellow_flag`, `safety_car`, `virtual_safety_car`, `vsc_ending`, `red_flag`, `chequered_flag`, `session_started`, `session_ended`. |
+| `event.pit_lane_live_board_stewards` | One event per stewards' decision: `time_penalty`, `drive_through`, `stop_go`, `grid_penalty`, `penalty_served`, `disqualified`, `noted`, `investigation`, `investigation_after_race`, `no_further_action`, `warning`, `black_and_white_flag`, `lap_deleted`; attributes `drivers`, `numbers`, `seconds`, `places`, `reason`, `turn`, `lap`, `message`. |
+| `switch.pit_lane_live_board_live_timing` | Live timing on (play) or paused. |
 | `switch.pit_lane_live_board_no_spoiler_mode` | No-spoiler mode. |
 | `number.pit_lane_live_board_tv_delay` | TV delay in seconds. |
 | `sensor.pit_lane_live_board_f1tv` | F1TV status (diagnostic). |
 
-Live entities follow the TV delay, become unavailable when the feed is lost, and stay
-quiet in no-spoiler mode.
+Live entities follow the TV delay, become unavailable when the feed is lost or live
+timing is paused, and stay quiet in no-spoiler mode. They write a new state only when
+their value changes, so a race adds a few hundred rows to the recorder, not thousands;
+the penalty and investigation lists are kept out of the recorder.
 
 **A notification 15 minutes before the race** — the calendar trigger does the timing:
 
@@ -249,7 +317,60 @@ actions:
       message: Red flag!
 ```
 
+**A notification when your driver gets a penalty**, from the stewards event:
+
+```yaml
+alias: Penalty for Leclerc
+triggers:
+  - trigger: state
+    entity_id: event.pit_lane_live_board_stewards
+conditions:
+  - "{{ trigger.to_state.attributes.event_type in ['time_penalty', 'drive_through', 'stop_go', 'grid_penalty'] }}"
+  - "{{ 'LEC' in trigger.to_state.attributes.drivers }}"
+actions:
+  - action: notify.mobile_app_my_phone
+    data:
+      message: >-
+        {{ trigger.to_state.attributes.drivers | join(', ') }}:
+        {{ trigger.to_state.attributes.seconds ~ ' s ' if trigger.to_state.attributes.seconds else '' }}penalty
+        for {{ trigger.to_state.attributes.reason | lower }}
+```
+
+**Amber lights for the whole safety car period**, from its binary sensor:
+
+```yaml
+alias: Safety car lights
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.pit_lane_live_board_safety_car
+    to: ["on", "off"]
+actions:
+  - action: light.turn_on
+    target: { entity_id: light.living_room }
+    data:
+      color_name: "{{ 'orange' if trigger.to_state.state == 'on' else 'white' }}"
+```
+
+**Live timing on for the race only**, if you prefer it paused the rest of the weekend:
+
+```yaml
+alias: Live timing for the race
+triggers:
+  - trigger: calendar
+    event: start
+    offset: "-0:30:0"
+    entity_id: calendar.pit_lane_live_board_sessions
+conditions:
+  - "{{ trigger.calendar_event.summary.endswith('Race') }}"
+actions:
+  - action: switch.turn_on
+    target: { entity_id: switch.pit_lane_live_board_live_timing }
+```
+
 ## Troubleshooting
+
+**The Live page says "Live timing is paused".** Press play on the page or in Settings,
+or turn on *Start automatically at each session*.
 
 **The Live page says "No session running" during a session.** The connection opens 30
 minutes before the scheduled start; check the time on the Calendar page. If a session
@@ -293,8 +414,9 @@ your screen.
 2018+ race's detail downloads a few megabytes once. Everything else is small and
 cached.
 
-**Will it run on a Raspberry Pi?** Yes: no heavy libraries, and outside session
-windows it only checks the calendar.
+**Will it run on a Raspberry Pi?** Yes: no heavy libraries; outside session windows it
+only checks the calendar, and while live timing is paused it writes nothing live to
+the SD card. During a session the page receives only what changed.
 
 **Why no driver photos or team logos?** They belong to F1 and to the teams. Drivers are
 shown by their three-letter code, number, name and team colour.

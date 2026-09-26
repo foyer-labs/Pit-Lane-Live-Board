@@ -6,6 +6,56 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-26
+
+### Changed — read before updating
+- **Live timing now starts paused.** After updating, nothing connects to F1 until you
+  open **Settings** (the gear in the panel's header) and press play, turn on the new
+  **Live timing** switch, or enable *Start automatically at each session*. While paused
+  nothing live is written to disk, which spares the SD card of a Raspberry Pi. Calendar,
+  results and standings work either way.
+- Automations that used the **Lap** sensor's long-term statistics lose them: a lap count
+  is not a measurement, and it no longer has a state class.
+
+### Added
+- **Flags & stewards** on the Live page: the track status, yellow and double yellow
+  sectors, the safety car and VSC with their last lap, every penalty (served or not),
+  incidents noted or under investigation and their outcome, deleted laps and black and
+  white flags. An unserved time penalty shows as `+5s` next to the driver in the tower.
+  On a phone the card is one row of chips that opens on a tap.
+- New entities: **Safety car**, **Virtual safety car**, **Red flag** and **Yellow flag**
+  binary sensors (with the yellow sectors), **Penalties** and **Investigations** sensors
+  (with the list), the latest **Race control message**, a **Stewards** event for every
+  decision (penalty, drive-through, investigation, warning, deleted lap…) with the
+  drivers, seconds, reason and lap, and the **Live timing** switch.
+- **Settings** in the panel, behind the gear: live timing on and off, auto-start, the TV
+  delay, the F1TV token for administrators (pasted, replaced or removed, never shown
+  back), and the list of the integration's entities.
+- **The Live page after a session**: the final classification, the stewards' decisions,
+  race control and the pit stops stay, frozen, with the next session's countdown. When
+  the session was not followed live, they come from F1's archive the first time the
+  page is opened.
+
+### Improved
+- The Live page is much lighter during a session: the backend sends only what changed,
+  once for every open page; the map moves on its own and is not even asked for while it
+  is off screen; the clocks tick without redrawing the page. Entities write only when
+  their value changes.
+- History opens faster and downloads less: files are read in parallel and from memory,
+  the lap chart of recent races comes from one archive file, and results of a finished
+  weekend are kept for 30 days instead of 10 minutes.
+- The Results page lists the current weekend as soon as it starts, so its qualifying
+  and sprint can be opened before the race.
+- Qualifying sector 3 times that arrive after the lap closes are no longer lost.
+- Home Assistant starts without waiting for the calendar; the panel stays open across a
+  reload of the integration; the "Live timing unreachable" notice survives restarts and
+  is removed with the integration.
+
+### Fixed
+- The Qualifying tab is no longer offered for seasons before 1994, which have none.
+- A TV delay that could not be saved no longer stays on screen as if it had been.
+- Calendar event descriptions ("Round 14") follow Home Assistant's language.
+
 ## [0.1.0] - 2026-09-26
 
 The first release.
