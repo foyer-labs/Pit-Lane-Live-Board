@@ -23,3 +23,9 @@ under **Changed — read before updating**.
   lap times, pit stops, race control and weather where the data exists; drivers' and
   constructors' standings after any round. The TV delay and no-spoiler mode are set
   from the panel's header; no-spoiler mode withholds results in the backend.
+- The **Live** page: the timing tower (position, places gained, gap, interval, last and
+  best lap, sectors in purple and green, tyre and its age, pit stops, PIT/OUT/RET
+  badges; Q1–Q3 with the knockout line in qualifying), the session strip with lap or
+  clock and the track status, race control with a flag/penalty filter, team radio
+  played straight from F1, weather, pit lane times, and the track map when F1 sends
+  positions. A lost feed is announced after 30 s and greys the page after 60 s.

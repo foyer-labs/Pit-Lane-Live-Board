@@ -776,6 +776,11 @@ Decisions taken in chat with the owner.
   between two sessions of the same weekend that weekend still is.
 32. **Icons are inline Material Design Icons paths** (taken by me, phase 4), so the
   panel needs no icon element from Home Assistant and the bench needs no fake one.
+33. **Checked end to end in a real Home Assistant** (phase 5): a throwaway local
+  instance (2026.6) with the development player feeding the 2026 Spanish GP showed the
+  live page updating, the calendar from real Jolpica data, and the map drawn from live
+  positions through the fallback of §6.5. The map card no longer says "F1TV": the map
+  can exist without it.
 
 ---
 
