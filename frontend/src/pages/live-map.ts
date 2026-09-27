@@ -10,6 +10,9 @@ import { translator } from "../i18n";
 import { onKey } from "../parts";
 import type { Hass, MapView, Outline, Row } from "../types";
 
+const RETRY_FIRST = 5_000;
+const RETRY_MAX = 60_000;
+
 export class PlbLiveMap extends LitElement {
   static override properties = {
     hass: { attribute: false, hasChanged: hassChanged },
@@ -29,6 +32,8 @@ export class PlbLiveMap extends LitElement {
   private subscribing = false;
   private onScreen = false;
   private observer?: IntersectionObserver;
+  private retry?: number;
+  private backoff = RETRY_FIRST;
   private readonly visibility = () => this.sync();
 
   override connectedCallback(): void {
@@ -49,6 +54,8 @@ export class PlbLiveMap extends LitElement {
   }
 
   private stop(): void {
+    window.clearTimeout(this.retry);
+    this.retry = undefined;
     this.unsubscribe?.();
     this.unsubscribe = undefined;
   }
@@ -56,20 +63,34 @@ export class PlbLiveMap extends LitElement {
   /** Subscribed exactly while the map can be seen. */
   private sync(): void {
     const wanted = this.isConnected && this.onScreen && document.visibilityState === "visible";
-    if (wanted && !this.unsubscribe && !this.subscribing && this.hass) void this.subscribe();
+    if (wanted && !this.unsubscribe && !this.subscribing && this.retry === undefined && this.hass) void this.subscribe();
     else if (!wanted) this.stop();
   }
 
   private async subscribe(): Promise<void> {
     this.subscribing = true;
+    let failed = false;
     try {
       const unsubscribe = await api.subscribeMap(this.hass, (m) => this.receive(m));
       // Hidden or scrolled away while subscribing: sync() below lets go at once.
       this.unsubscribe = unsubscribe;
+      this.backoff = RETRY_FIRST;
     } catch {
-      /* no map this time: the next visibility change asks again */
+      failed = true;
     } finally {
       this.subscribing = false;
+    }
+    if (failed) {
+      // Not at once (the integration may be starting): again after a pause that
+      // grows, while the map can still be seen.
+      if (this.isConnected) {
+        this.retry = window.setTimeout(() => {
+          this.retry = undefined;
+          this.sync();
+        }, this.backoff);
+        this.backoff = Math.min(this.backoff * 2, RETRY_MAX);
+      }
+      return;
     }
     this.sync();
   }
