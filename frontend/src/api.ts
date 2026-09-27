@@ -1,6 +1,8 @@
 // Typed calls to the integration's WebSocket commands (SPEC §10.5).
 import type {
   CalendarPage,
+  CircuitDriverHistory,
+  CircuitHistory,
   Hass,
   LinkedEntity,
   LiveView,
@@ -121,6 +123,11 @@ export const api = {
     hass.callWS<TabResult>({ type: `${P}/results/detail`, season, round, tab }),
   standings: (hass: Hass, season: number, round: number | null, kind: string) =>
     hass.callWS<StandingsPage>({ type: `${P}/standings/get`, season, round, kind }),
+  // A circuit's history for the season's drivers, and one driver's years there.
+  circuitHistory: (hass: Hass, circuit_id: string) =>
+    hass.callWS<CircuitHistory>({ type: `${P}/circuit/history`, circuit_id }),
+  circuitDriver: (hass: Hass, circuit_id: string, driver_id: string) =>
+    hass.callWS<CircuitDriverHistory>({ type: `${P}/circuit/driver`, circuit_id, driver_id }),
   subscribeSettings: (hass: Hass, callback: (settings: Settings) => void) =>
     resilient<Settings>(hass, { type: `${P}/settings/subscribe` }, callback),
   subscribeLive: (hass: Hass, callback: (view: LiveView) => void) =>

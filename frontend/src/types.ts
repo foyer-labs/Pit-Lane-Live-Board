@@ -69,6 +69,8 @@ export interface Meeting {
   season: number;
   round: number;
   name: string;
+  /** Jolpica's circuit id: opens the circuit's history. */
+  circuit_id?: string | null;
   circuit: string | null;
   locality: string | null;
   country: string | null;
@@ -90,6 +92,8 @@ export interface Round {
   round: number;
   name: string | null;
   date: string | null;
+  /** Jolpica's circuit id, when the backend gives it: opens the circuit's history. */
+  circuit_id?: string | null;
   circuit: string | null;
   country: string | null;
   sprint: boolean;
@@ -324,4 +328,77 @@ export interface MapView {
   outline?: Outline | null;
   cars: { number: string; x: number; y: number; on_track: boolean }[];
   utc: string | null;
+}
+
+/** One of the season's drivers at a circuit (`circuit/history`, decision 58). */
+export interface CircuitDriver {
+  driver_id: string;
+  code: string | null;
+  name: string | null;
+  team: string | null;
+  team_id: string | null;
+  /** 0–100: 50 = as the car that year; null = never raced there (or no year counted). */
+  index: number | null;
+  races: number;
+  counted: number;
+  wins: number;
+  podiums: number;
+  poles: number;
+  best_finish: number | null;
+  avg_finish: number | null;
+  avg_quali: number | null;
+  last_season: number | null;
+}
+
+export interface CircuitHistory {
+  circuit_id: string;
+  circuit: string | null;
+  locality: string | null;
+  country: string | null;
+  first_season: number | null;
+  last_season: number | null;
+  drivers: CircuitDriver[];
+}
+
+/** A stewards' decision in one race, from F1's archive (2018+). */
+export interface CircuitPenalty {
+  kind: string;
+  seconds?: number | null;
+  places?: number | null;
+  reason?: string | null;
+  lap?: number | null;
+}
+
+/** One year of a driver at a circuit (`circuit/driver`). */
+export interface CircuitYear {
+  season: number;
+  round: number;
+  team: string | null;
+  team_id: string | null;
+  quali: number | null;
+  grid: number | null;
+  grid_penalty: boolean;
+  finish: number | null;
+  position_text: string | null;
+  status: string | null;
+  points: number | null;
+  fastest_lap_rank: number | null;
+  fastest_lap: string | null;
+  dnf: "driver" | "mechanical" | null;
+  counted: boolean;
+  expected: number | null;
+  delta_race: number | null;
+  delta_quali: number | null;
+  weight: number | null;
+  /** null: not available (before 2018, or no detail); []: none. */
+  penalties: CircuitPenalty[] | null;
+}
+
+export interface CircuitDriverHistory {
+  circuit_id: string;
+  driver_id: string;
+  code: string | null;
+  name: string | null;
+  index: number | null;
+  years: CircuitYear[];
 }

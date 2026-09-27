@@ -4,6 +4,7 @@ import { LitElement, css, html, nothing } from "lit";
 import { api } from "../api";
 import { countdown, dayRange, sessionTime } from "../format";
 import { translator } from "../i18n";
+import { ICON, icon } from "../icons";
 import { failure, loading, person, spoilerKey, alsoTime } from "../parts";
 import { tokens } from "../styles";
 import type { CalendarPage, Hass, Meeting, Settings } from "../types";
@@ -128,7 +129,7 @@ export class PlbCalendar extends LitElement {
     `;
   }
 
-  private go(detail: { page: string; season?: number; round?: number }): void {
+  private go(detail: { page: string; season?: number; round?: number; circuit_id?: string; circuit?: string; from?: string }): void {
     this.dispatchEvent(new CustomEvent("plb-go", { detail, bubbles: true, composed: true }));
   }
 
@@ -154,22 +155,30 @@ export class PlbCalendar extends LitElement {
                 : (m.podium ?? []).map(
                     (p, i) => html`<div><b>${i + 1}</b>${person(p.name, p.team_id)}</div>`,
                   )}
-            </div>
-            <button class="link more" @click=${() => this.go({ page: "results", season: m.season, round: m.round })}>
-              ${t("calendar.results")} →
-            </button>`
+            </div>`
         : html`<ul>
             ${m.sessions.map(
               (s) => html`<li><span>${t(`sessions.${s.kind}`)}</span><span class="num">${sessionTime(this.hass, s.start, s.date, m.timezone)}${alsoTime(t, this.hass, s.start, m.timezone)}</span></li>`,
             )}
           </ul>`}
-      ${m.state === "live"
-        ? html`<button class="link more" @click=${() => this.go({ page: "live" })}>${t("calendar.watch")} →</button>`
-        : nothing}
       ${next?.start
         ? html`<div class="countdown">${t(`sessions.${next.kind}`)} · ${t("calendar.startsIn")}
             <b class="num">${countdown(Date.parse(next.start) - this.now)}</b></div>`
         : nothing}
+      <div class="actions">
+        ${m.state === "done"
+          ? html`<button class="link" @click=${() => this.go({ page: "results", season: m.season, round: m.round })}>
+              ${t("calendar.results")} →</button>`
+          : nothing}
+        ${m.state === "live"
+          ? html`<button class="link" @click=${() => this.go({ page: "live" })}>${t("calendar.watch")} →</button>`
+          : nothing}
+        ${m.circuit_id
+          ? html`<button class="link history" @click=${() =>
+              this.go({ page: "circuit", circuit_id: m.circuit_id!, circuit: m.circuit ?? m.name, from: "calendar" })}>
+              ${icon(ICON.history, 16)}${t("circuit.link")}</button>`
+          : nothing}
+      </div>
     </div>`;
   }
 
@@ -180,7 +189,6 @@ export class PlbCalendar extends LitElement {
       :host { container-type: inline-size; }
       .cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--plb-gap); align-items: stretch; }
       .meet { display: flex; flex-direction: column; scroll-margin-top: 120px; }
-      .meet > .more:first-of-type { margin-top: auto; }
       .meet-head { display: flex; align-items: baseline; gap: 10px; padding: 14px 16px 6px; }
       .round { font-size: 12px; font-weight: 600; color: var(--secondary-text-color); letter-spacing: 0.06em; }
       h3 { margin: 0; font-size: 17px; font-weight: 500; }
@@ -200,8 +208,11 @@ export class PlbCalendar extends LitElement {
       .podium { display: grid; gap: 4px; padding: 0 16px 10px; font-size: 13px; }
       .podium div { display: flex; align-items: center; gap: 8px; }
       .podium b { width: 18px; color: var(--secondary-text-color); font-weight: 500; }
-      .more { align-self: flex-start; margin: 0 16px 14px; font-size: 13px; }
-      .countdown { margin-top: auto; }
+      /* The card's links, at its foot whatever its height. */
+      .actions { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; padding: 0 16px 14px; font-size: 13px; }
+      .actions:empty { display: none; }
+      .actions .link { font-size: 13px; }
+      .history { display: inline-flex; align-items: center; gap: 6px; }
       @container (max-width: 640px) {
         .cal { grid-template-columns: 1fr; }
         li span:first-child { width: 130px; }

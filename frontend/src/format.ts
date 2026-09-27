@@ -33,11 +33,14 @@ function dateFormat(hass: Hass, shape: keyof typeof SHAPES, timeZone: string): I
   return format;
 }
 
-function numberFormat(hass: Hass, digits: number): Intl.NumberFormat {
-  const key = `${locale(hass)}|${digits}`;
+function numberFormat(hass: Hass, digits: number, fixed = false): Intl.NumberFormat {
+  const key = `${locale(hass)}|${digits}|${fixed}`;
   let format = numberFormats.get(key);
   if (!format) {
-    format = new Intl.NumberFormat(locale(hass), { maximumFractionDigits: digits });
+    format = new Intl.NumberFormat(locale(hass), {
+      maximumFractionDigits: digits,
+      ...(fixed ? { minimumFractionDigits: digits } : {}),
+    });
     numberFormats.set(key, format);
   }
   return format;
@@ -172,6 +175,12 @@ export function sessionClock(seconds: number | null): string {
 export function number(hass: Hass, value: number | null, digits = 1): string {
   if (value === null || value === undefined) return "—";
   return numberFormat(hass, digits).format(value);
+}
+
+/** Always `digits` decimals ("59.0", not "59"): numbers read down a column. */
+export function fixed(hass: Hass, value: number | null, digits = 1): string {
+  if (value === null || value === undefined) return "—";
+  return numberFormat(hass, digits, true).format(value);
 }
 
 /** Home Assistant hands every element a new `hass` on each state change in the
