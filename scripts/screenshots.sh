@@ -25,6 +25,13 @@ shot() { # name width height query
   echo "$OUT/$1.png"
 }
 
+cards() { # name width height query: the dashboard cards' bench page
+  local target="$OUT/$1.png"
+  if command -v cygpath >/dev/null; then target="$(cygpath -aw "$target")"; fi
+  "$CHROME" --headless=new --disable-gpu --hide-scrollbars --virtual-time-budget=6000     --screenshot="$target" --window-size="$2,$3" "http://127.0.0.1:8777/bench/cards.html?$4" 2>/dev/null
+  echo "$OUT/$1.png"
+}
+
 for lang in en it; do
   suffix=$([ "$lang" = en ] && echo "" || echo ".it")
   shot "live$suffix" 1440 1180 "page=live&live=race&lang=$lang"
@@ -37,4 +44,5 @@ for lang in en it; do
   shot "delay$suffix" 1440 520 "page=live&live=syncing&lang=$lang&delayOpen=true"
   shot "final$suffix" 1440 1000 "page=live&live=final&playing=false&lang=$lang"
   shot "settings$suffix" 1440 1250 "page=settings&live=race&lang=$lang"
+  cards "cards$suffix" 1200 1320 "live=race&lang=$lang"
 done

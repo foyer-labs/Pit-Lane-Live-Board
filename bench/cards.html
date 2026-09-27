@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bench: Pit Lane cards</title>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; padding: 16px; align-items: start; }
+</style>
+</head>
+<body>
+<!--
+  The dashboard cards with the bench's fake hass (bench/hass.js), as a dashboard
+  would show them. Same parameters as bench/index.html (live, lang, theme, …).
+  A stub <ha-card> stands in for Home Assistant's.
+-->
+<div class="grid" id="grid"></div>
+<script type="module">
+  const { createHass, applyTheme } = await import("./hass.js");
+  applyTheme();
+  // A stand-in for Home Assistant's <ha-card>: a surface with its own shadow, as
+  // the real one has (page styles do not reach inside the cards).
+  customElements.define("ha-card", class extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      this.attachShadow({ mode: "open" }).innerHTML = `<style>:host{display:block;background:var(--card-background-color);
+        color:var(--primary-text-color);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.08);overflow:hidden}</style><slot></slot>`;
+    }
+  });
+  await import(`../custom_components/pit_lane_live_board/frontend/pit-lane-live-board-cards.js?${Math.random()}`);
+  const hass = createHass();
+  const configs = [
+    { type: "pit-lane-session-card" },
+    { type: "pit-lane-tower-card", rows: 10, columns: ["gap", "last", "tyre"], highlight: "LEC" },
+    { type: "pit-lane-stewards-card" },
+    { type: "pit-lane-map-card" },
+    { type: "pit-lane-race-control-card", count: 5, filter: "all" },
+    { type: "pit-lane-radio-card", count: 5 },
+    { type: "pit-lane-weather-card" },
+    { type: "pit-lane-standings-card", kind: "drivers", rows: 8 },
+  ];
+  const grid = document.getElementById("grid");
+  for (const config of configs) {
+    await customElements.whenDefined(config.type);
+    const card = document.createElement(config.type);
+    card.setConfig(config);
+    card.hass = hass;
+    grid.append(card);
+  }
+</script>
+</body>
+</html>

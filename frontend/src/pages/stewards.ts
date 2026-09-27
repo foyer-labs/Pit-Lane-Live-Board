@@ -155,8 +155,10 @@ export function stewardsCard(
 }
 
 export const stewardsStyles = css`
-  .stewards { margin-bottom: var(--plb-gap); }
-  .stewards.calm { display: flex; align-items: center; gap: 12px; padding: 10px 16px; font-size: 13px; }
+  /* Sized by its own width, not the window's: the same card sits in the panel
+     and, narrower, on a dashboard. */
+  .stewards { margin-bottom: var(--plb-gap); container-type: inline-size; }
+  .stewards.calm { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 16px; font-size: 13px; }
   .stewards.accent-sc { box-shadow: inset 4px 0 #f2c200, var(--ha-card-box-shadow, 0 1px 2px rgba(0, 0, 0, 0.08)); }
   .stewards.accent-red { box-shadow: inset 4px 0 var(--error-color, #db4437), var(--ha-card-box-shadow, 0 1px 2px rgba(0, 0, 0, 0.08)); }
   .stewards .cols { display: grid; grid-template-columns: minmax(160px, 0.7fr) 1.2fr 1.2fr 0.8fr; }
@@ -191,17 +193,29 @@ export const stewardsStyles = css`
   .stewards details summary { cursor: pointer; font-size: 12px; color: var(--primary-color); list-style: none; }
   .stewards details[open] summary { display: none; }
   .stewards details { display: grid; gap: 6px; }
-  @media (max-width: 1100px) {
+  @container (max-width: 1000px) {
     .stewards .cols { grid-template-columns: 1fr 1fr; }
     .stewards .col:nth-child(3) { border-left: 0; }
     .stewards .col:nth-child(n + 3) { border-top: 1px solid var(--divider-color); }
   }
-  @media (max-width: 640px) {
+  @container (max-width: 560px) {
     .stewards .card-head { display: none; }
     .stewards .compact { display: flex; }
     .stewards .cols { grid-template-columns: 1fr; display: none; border-top: 1px solid var(--divider-color); }
     .stewards.open .cols { display: grid; }
     .stewards .col + .col { border-left: 0; border-top: 1px solid var(--divider-color); }
-    .stewards.calm { flex-wrap: wrap; }
   }
+`;
+
+/** The track status pill, shared by the Live page and the cards. */
+export const pillStyles = css`
+  .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; letter-spacing: 0.04em; }
+  .status-pill::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+  .st-clear { background: color-mix(in srgb, var(--plb-green) 16%, transparent); color: var(--plb-green); }
+  .st-yellow { background: color-mix(in srgb, var(--plb-yellow) 22%, transparent); color: #a07d00; }
+  .st-sc { background: #f2c200; color: #1a1a1a; }
+  .st-red { background: var(--error-color, #db4437); color: #fff; }
+  .st-chequered { background: var(--secondary-background-color); color: var(--primary-text-color); }
+  .st-chequered::before { border-radius: 2px; background: repeating-conic-gradient(#222 0 25%, #fff 0 50%) 0 0 / 5px 5px;
+  box-shadow: 0 0 0 1px var(--divider-color); }
 `;

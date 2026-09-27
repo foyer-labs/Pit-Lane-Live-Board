@@ -49,12 +49,13 @@ export class PlbSettings extends LitElement {
     }
   }
 
-  private async set(values: { live?: boolean; auto_start?: boolean }): Promise<void> {
+  private async set(values: { live?: boolean; auto_start?: boolean }, box?: EventTarget | null): Promise<void> {
     this.busy = true;
     try {
       await api.setSettings(this.hass, values);
     } catch {
-      /* the subscription keeps showing the real state */
+      // Not saved: the box goes back to what is saved (Lit would not redraw it).
+      if (box instanceof HTMLInputElement) box.checked = !box.checked;
     } finally {
       this.busy = false;
     }
@@ -105,6 +106,7 @@ export class PlbSettings extends LitElement {
     return html`<div class="page">
       ${this.renderLive(t, s)}
       ${this.renderDelay(t, s)}
+      ${s.is_admin ? this.renderPanel(t, s) : nothing}
       ${s.is_admin ? this.renderF1tv(t, s) : nothing}
       ${this.renderEntities(t)}
     </div>`;
@@ -126,8 +128,38 @@ export class PlbSettings extends LitElement {
       </div>
       <label class="row">
         <input type="checkbox" .checked=${s.auto_start} ?disabled=${this.busy}
-          @change=${(e: Event) => this.set({ auto_start: (e.target as HTMLInputElement).checked })} />
+          @change=${(e: Event) => this.set({ auto_start: (e.target as HTMLInputElement).checked }, e.target)} />
         <span><b>${t("settings.autoStart")}</b><small>${t("settings.autoStartHelp")}</small></span>
+      </label>
+    </section>`;
+  }
+
+  private async setPanel(
+    values: { show_in_sidebar?: boolean; admin_only?: boolean },
+    box: EventTarget | null,
+  ): Promise<void> {
+    this.busy = true;
+    try {
+      await api.setPanel(this.hass, values);
+    } catch {
+      if (box instanceof HTMLInputElement) box.checked = !box.checked;
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  private renderPanel(t: Translate, s: Settings) {
+    return html`<section class="card">
+      <div class="card-head">${t("settings.panel")}<span class="spacer"></span><small>${t("settings.adminOnly")}</small></div>
+      <label class="row">
+        <input type="checkbox" .checked=${s.show_in_sidebar} ?disabled=${this.busy}
+          @change=${(e: Event) => this.setPanel({ show_in_sidebar: (e.target as HTMLInputElement).checked }, e.target)} />
+        <span><b>${t("settings.sidebar")}</b><small>${t("settings.sidebarHelp")}</small></span>
+      </label>
+      <label class="row">
+        <input type="checkbox" .checked=${s.admin_only} ?disabled=${this.busy}
+          @change=${(e: Event) => this.setPanel({ admin_only: (e.target as HTMLInputElement).checked }, e.target)} />
+        <span><b>${t("settings.adminPanel")}</b><small>${t("settings.adminPanelHelp")}</small></span>
       </label>
     </section>`;
   }

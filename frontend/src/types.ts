@@ -11,7 +11,13 @@ export interface Hass {
   formatEntityState?: (state: { state: string; attributes: Record<string, unknown> }) => string;
   callWS<T>(msg: Record<string, unknown>): Promise<T>;
   connection: {
-    subscribeMessage<T>(callback: (msg: T) => void, msg: Record<string, unknown>): Promise<() => void>;
+    subscribeMessage<T>(
+      callback: (msg: T) => void,
+      msg: Record<string, unknown>,
+      options?: { resubscribe?: boolean },
+    ): Promise<() => void>;
+    addEventListener?(event: "ready" | "disconnected", listener: () => void): void;
+    removeEventListener?(event: "ready" | "disconnected", listener: () => void): void;
   };
 }
 
@@ -21,6 +27,8 @@ export interface Settings {
   live: boolean;
   auto_start: boolean;
   running: boolean;
+  show_in_sidebar: boolean;
+  admin_only: boolean;
   revealed: string[];
   season: number;
   first_season: number;

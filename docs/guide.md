@@ -14,6 +14,7 @@ the first two sections and you are set; come back to the others when you need th
 - [TV delay](#tv-delay)
 - [No-spoiler mode](#no-spoiler-mode)
 - [F1TV and the live map](#f1tv-and-the-live-map)
+- [Dashboard cards](#dashboard-cards)
 - [Entities and automations](#entities-and-automations)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
@@ -60,6 +61,9 @@ The gear at the top right of the panel opens **Settings**:
   one, and *Remove* (see [F1TV](#f1tv-and-the-live-map)).
 - **Entities**: every entity of the integration with its state; click one for its
   history and settings.
+- **Panel** (administrators only): *Show Live Board in the sidebar*, and *Only
+  administrators can open the panel* — off by default, so every user of the house
+  sees it. See [who sees what](#who-sees-what).
 
 While live timing is paused the header shows a dashed **Paused** chip; it opens
 Settings. Calendar, results and standings do not depend on it.
@@ -222,6 +226,59 @@ diagnostics — only to F1.
 
 The circuit is drawn from the cars' positions in F1's archive of an earlier session at
 the same track; for a brand-new circuit it is drawn live after the first lap.
+
+## Dashboard cards
+
+![The dashboard cards](screenshots/cards.png)
+
+Every piece of the Live page is also a card for your own dashboards. There is nothing
+to install: after the integration is set up, *Edit dashboard → Add card* lists them
+under **Pit Lane**, each with a visual editor.
+
+| Card | Type | Options |
+|---|---|---|
+| Timing tower | `custom:pit-lane-tower-card` | `rows` (1–22), `columns` (`gap`, `interval`, `last`, `best`, `sectors`, `tyre`, `pits`), `highlight` (a driver's code or number) |
+| Track map | `custom:pit-lane-map-card` | — (live only, needs F1TV) |
+| Flags & stewards | `custom:pit-lane-stewards-card` | — |
+| Team radio | `custom:pit-lane-radio-card` | `count` |
+| Race control | `custom:pit-lane-race-control-card` | `count`, `filter` (`all`, `flags`, `penalties`, `other`) |
+| Session | `custom:pit-lane-session-card` | — |
+| Weather | `custom:pit-lane-weather-card` | — |
+| Championship | `custom:pit-lane-standings-card` | `kind` (`drivers`, `constructors`), `rows` |
+
+Every card also takes `title` (leave it empty for none).
+
+The cards show the same thing as the Live page: they follow the TV delay and
+no-spoiler mode, say when the feed is late or lost, offer a play button while live
+timing is paused, and after a session show its final state (the map comes back at the
+next session). All the cards on a page share one connection to Home Assistant.
+
+A compact race dashboard, in YAML:
+
+```yaml
+type: vertical-stack
+cards:
+  - type: custom:pit-lane-session-card
+  - type: custom:pit-lane-stewards-card
+  - type: custom:pit-lane-tower-card
+    rows: 10
+    columns: [gap, last, tyre]
+    highlight: LEC
+```
+
+### Who sees what
+
+- **The panel:** every user of the house, unless an administrator turns on *Only
+  administrators can open the panel* in Settings (or under *Configure*). Each user can
+  also hide it from their own sidebar (*Profile → Change the order and hide items from
+  the sidebar*).
+- **The cards:** whoever can see the dashboard they are on; Home Assistant decides
+  that, per dashboard.
+- **F1TV token and panel options:** administrators only.
+
+"Only administrators" hides the panel; it is not a lock on the data. Calendar,
+results and timing are public F1 information, and any signed-in user can still read
+them through a card or the entities.
 
 ## Entities and automations
 

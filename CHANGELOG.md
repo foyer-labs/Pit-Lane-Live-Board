@@ -6,6 +6,23 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-27
+
+### Added
+- **Dashboard cards.** Every piece of the Live page is now also a card: timing tower
+  (choose rows and columns, highlight a driver), track map, flags & stewards, team
+  radio, race control, session, weather and championship standings. They appear in
+  *Add card* under **Pit Lane** with a visual editor, with no resource to add by hand.
+  They follow the TV delay and no-spoiler mode like the panel, and all the cards on a
+  page share one connection.
+- **Only administrators can open the panel**: a new option, off by default, in the
+  panel's Settings and under *Configure*.
+- *Show Live Board in the sidebar* can now also be changed from the panel's Settings.
+
+### Fixed
+- An open panel no longer freezes on its last view when Home Assistant restarts:
+  it reconnects by itself as soon as the integration is back.
+
 ## [0.2.0] - 2026-09-26
 
 ### Changed — read before updating

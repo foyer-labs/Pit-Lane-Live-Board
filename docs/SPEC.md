@@ -491,6 +491,13 @@ mode hides it like the live session.
 - The first opening of a 2018+ race downloads its archive files once (a few MB), shows
   progress, and caches the derived detail. Later openings are instant.
 
+### 7.4 Standings
+
+- Drivers and constructors, any season, **after any round** (default: latest).
+- Columns: position, driver or team, points, wins, gap to leader, and the change since
+  the previous round.
+- Source: Jolpica.
+
 ### 7.5 Settings (decision 44)
 
 Behind the gear in the header:
@@ -504,13 +511,36 @@ Behind the gear in the header:
   flow does; the answer carries the status only (INV-3);
 - **Entities:** the integration's entities with their state; a click opens Home
   Assistant's more-info dialog.
+- **Panel** (administrators only): show in the sidebar, and only administrators can
+  open it (decisions 48, 49).
 
-### 7.4 Standings
+### 7.6 Dashboard cards (decision 47)
 
-- Drivers and constructors, any season, **after any round** (default: latest).
-- Columns: position, driver or team, points, wins, gap to leader, and the change since
-  the previous round.
-- Source: Jolpica.
+Each piece of the Live page is a Lovelace card, in its own module
+(`pit-lane-live-board-cards.js`) that the integration adds to every page of the
+frontend with `frontend.add_extra_js_url`: the cards are in the card picker with no
+resource to add, and a dashboard never loads the panel.
+
+| Card | Element | Options |
+|---|---|---|
+| Timing tower | `pit-lane-tower-card` | `rows`, `columns`, `highlight` |
+| Track map | `pit-lane-map-card` | — |
+| Flags & stewards | `pit-lane-stewards-card` | — |
+| Team radio | `pit-lane-radio-card` | `count` |
+| Race control | `pit-lane-race-control-card` | `count`, `filter` |
+| Session | `pit-lane-session-card` | — |
+| Weather | `pit-lane-weather-card` | — |
+| Championship | `pit-lane-standings-card` | `kind`, `rows` |
+
+- Every card takes `title` and has a visual editor (`getConfigForm`), labels
+  translated (INV-7).
+- The cards read the same `live/subscribe` stream as the panel, so the TV delay,
+  no-spoiler mode, INV-2 and the final view apply unchanged. One subscription per page
+  is shared by all its cards and closed 5 s after the last card goes. The map card
+  uses the panel's map element; the championship card reads `standings/get` every
+  10 minutes.
+- The stewards card sizes by its own width (container queries), not the window's.
+
 
 ---
 
@@ -588,6 +618,12 @@ For watching a session later.
 | `number.…_tv_delay` | number (s) | §8. |
 | `sensor.…_f1tv` | diagnostic enum | `not_configured`, `active`, `expiring`, `expired`, `invalid`. |
 
+**Who sees what** (decision 48): the panel, every user unless the `admin_only` option
+restricts it to administrators (off by default); the cards, whoever sees their
+dashboard; the F1TV token and the panel's options, administrators only. `admin_only`
+hides the panel; it is not an access control on data that is public anyway, and the
+guide says so.
+
 - Every live entity and event is released through the TV delay.
 - Every live entity goes `unavailable` per §6.3, and while live timing is paused.
 - No per-driver entities: 20 drivers × many fields would flood the registry, and the
@@ -637,8 +673,8 @@ Every command requires an authenticated Home Assistant user.
 - **Settings** (any user; they are household TV settings, §18 C):
   - `settings/set` (`tv_delay`, `no_spoiler`, `live`, `auto_start`);
   - `spoiler/reveal` (session).
-- **Admin only:** `f1tv/set` (token, validated, never returned) and `f1tv/remove`. The
-  options flow still works too.
+- **Admin only:** `f1tv/set` (token, validated, never returned), `f1tv/remove`, and
+  `panel/set` (`show_in_sidebar`, `admin_only`). The options flow still works too.
 
 ---
 
@@ -933,6 +969,17 @@ Decisions taken in chat with the owner.
   panel kept across a reload; the start-up never waiting on the network.
 46. **On a phone the stewards card is one row of chips** (UI review, 0.2): the four
   columns would push the tower below the fold during a race.
+
+47. **Dashboard cards** (asked by the owner, 0.3): §7.6. A separate module loaded on
+  every page, registered by the integration (no resource to add), one shared stream,
+  a visual editor for each card.
+48. **The panel for administrators only, as an option** (asked by the owner, 0.3): off
+  by default. It sets the panel's `require_admin`; it is not presented as a security
+  boundary (§10.2).
+49. **The sidebar option in Settings too** (asked by the owner, 0.3): administrators
+  change `show_in_sidebar` and `admin_only` from the panel as well as from *Configure*;
+  both write the entry's options, and the panel is registered again only when one of
+  them changes.
 
 ---
 

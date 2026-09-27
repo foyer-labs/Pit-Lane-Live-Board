@@ -322,3 +322,32 @@ async def test_the_entities_are_listed(hass, setup, hass_ws_client):
     entities = (await ws.receive_json())["result"]["entities"]
     keys = {e["key"] for e in entities}
     assert {"live_timing", "safety_car", "penalties", "stewards", "tv_delay"} <= keys
+
+
+async def test_admins_set_the_panel_options(
+    hass: HomeAssistant, setup, hass_ws_client, hass_admin_user
+):
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": f"{P}panel/set", "admin_only": True})
+    result = (await ws.receive_json())["result"]
+    assert result["admin_only"] is True and result["show_in_sidebar"] is True
+    await hass.async_block_till_done()
+    assert hass.data["frontend_panels"][URL_PATH].require_admin is True
+    await ws.send_json_auto_id({"type": f"{P}panel/set", "show_in_sidebar": False})
+    await ws.receive_json()
+    await hass.async_block_till_done()
+    panel = hass.data["frontend_panels"][URL_PATH]
+    assert panel.show_in_sidebar is False and panel.require_admin is True
+
+    hass_admin_user.groups = []
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": f"{P}panel/set", "admin_only": False})
+    reply = await ws.receive_json()
+    assert not reply["success"] and reply["error"]["code"] == "unauthorized"
+
+
+async def test_the_cards_module_is_on_every_page(hass: HomeAssistant, setup):
+    from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL
+
+    urls = list(hass.data[DATA_EXTRA_MODULE_URL].urls)
+    assert any("pit-lane-live-board-cards.js?v=" in url for url in urls)

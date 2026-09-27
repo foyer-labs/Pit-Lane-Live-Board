@@ -59,6 +59,8 @@ export function createHass() {
     no_spoiler: params.get("spoiler") === "true",
     live: params.get("playing") !== "false",
     auto_start: params.get("auto") === "true",
+    show_in_sidebar: true,
+    admin_only: params.get("adminOnly") === "true",
     running: ["race", "qualifying", "stale"].includes(params.get("live") ?? "race"),
     revealed: [],
     season: 2026,
@@ -90,6 +92,11 @@ export function createHass() {
         case "f1tv/set":
           if (!msg.token.startsWith("eyJ")) throw { code: "invalid_token", message: "token_invalid" };
           settings.f1tv = { status: "active", expires: "2026-10-16T10:00:00+00:00", product: "F1 TV Pro" };
+          pushSettings();
+          return { ...settings };
+        case "panel/set":
+          if ("show_in_sidebar" in msg) settings.show_in_sidebar = msg.show_in_sidebar;
+          if ("admin_only" in msg) settings.admin_only = msg.admin_only;
           pushSettings();
           return { ...settings };
         case "f1tv/remove":

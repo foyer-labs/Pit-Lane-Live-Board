@@ -232,7 +232,12 @@
       "token_no_subscription": "Questo account F1TV non ha un abbonamento attivo.",
       "token_missing": "Incolla un token.",
       "remove_failed": "Non è stato possibile rimuovere il token. Riprova tra un momento."
-    }
+    },
+    "panel": "Pannello",
+    "sidebar": "Mostra Live Board nella barra laterale",
+    "sidebarHelp": "Spento: il pannello si apre comunque dalla pagina del dispositivo dell'integrazione, e le card continuano a funzionare nelle plance.",
+    "adminPanel": "Solo gli amministratori possono aprire il pannello",
+    "adminPanelHelp": "Spento (predefinito): tutti gli utenti di casa vedono Live Board. Acceso: solo gli amministratori. Le card seguono la visibilità della plancia in cui si trovano."
   },
   "stewards": {
     "title": "Bandiere e commissari",
@@ -277,6 +282,55 @@
       "warning": "Ammonizione",
       "black_and_white_flag": "Bandiera bianconera",
       "lap_deleted": "Giro cancellato"
+    }
+  },
+  "cards": {
+    "stale": "IN RITARDO",
+    "lost": "NESSUN DATO",
+    "mapAfter": "La mappa è solo dal vivo: torna alla prossima sessione.",
+    "mapNeedsF1tv": "La mappa live richiede F1TV: un amministratore può aggiungere un token nelle Impostazioni del pannello.",
+    "tower": {
+      "title": "Tempi",
+      "name": "Classifica live",
+      "description": "Posizioni, distacchi, tempi, settori e gomme; scegli righe e colonne."
+    },
+    "map": {
+      "name": "Mappa della pista",
+      "description": "Le auto sul circuito, in diretta (richiede F1TV)."
+    },
+    "stewards": {
+      "name": "Bandiere e commissari",
+      "description": "Stato della pista, settori in giallo, safety car, penalità, investigazioni e limiti della pista."
+    },
+    "radio": {
+      "name": "Team radio",
+      "description": "Gli ultimi team radio, con play."
+    },
+    "race_control": {
+      "name": "Direzione gara",
+      "description": "Gli ultimi messaggi della direzione gara, filtrabili per bandiere o penalità."
+    },
+    "session": {
+      "name": "Sessione",
+      "description": "La sessione in corso, il giro o il tempo e lo stato della pista; dopo, il conto alla rovescia per la prossima."
+    },
+    "weather": {
+      "name": "Meteo",
+      "description": "Temperatura dell'aria e dell'asfalto, pioggia, umidità, vento e pressione al circuito."
+    },
+    "standings": {
+      "name": "Campionato",
+      "description": "Classifica piloti o costruttori, primi N."
+    },
+    "fields": {
+      "title": "Titolo",
+      "rows": "Righe",
+      "columns": "Colonne",
+      "highlight": "Pilota da evidenziare (es. LEC)",
+      "count": "Quanti",
+      "filter": "Mostra",
+      "kind": "Campionato",
+      "show_title": "Mostra il titolo"
     }
   }
 }

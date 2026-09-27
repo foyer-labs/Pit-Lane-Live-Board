@@ -46,11 +46,13 @@
         "data": {
           "show_in_sidebar": "Mostra Live Board nella barra laterale",
           "f1tv_token": "Token F1TV (lascia vuoto per tenere quello attuale)",
-          "remove_f1tv_token": "Rimuovi il token F1TV"
+          "remove_f1tv_token": "Rimuovi il token F1TV",
+          "admin_only": "Solo gli amministratori vedono il pannello"
         },
         "data_description": {
           "show_in_sidebar": "Se disattivato, il pannello si apre comunque dalla pagina del dispositivo.",
-          "f1tv_token": "Dopo il salvataggio il valore non viene più mostrato."
+          "f1tv_token": "Dopo il salvataggio il valore non viene più mostrato.",
+          "admin_only": "Spento: tutti gli utenti di casa vedono Live Board. Le card nelle plance seguono la visibilità di ciascuna plancia."
         }
       }
     },

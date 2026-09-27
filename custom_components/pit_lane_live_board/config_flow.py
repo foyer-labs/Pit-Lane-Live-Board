@@ -26,7 +26,13 @@ from homeassistant.helpers.selector import (
 from homeassistant.util import dt as dt_util
 import voluptuous as vol
 
-from .const import DATA_F1TV_TOKEN, DOMAIN, NAME, OPTION_SHOW_IN_SIDEBAR
+from .const import (
+    DATA_F1TV_TOKEN,
+    DOMAIN,
+    NAME,
+    OPTION_ADMIN_ONLY,
+    OPTION_SHOW_IN_SIDEBAR,
+)
 from .core.f1tv_token import acceptable, evaluate, extract_token
 
 FIELD_TOKEN = "f1tv_token"
@@ -80,13 +86,20 @@ class LiveBoardOptionsFlow(OptionsFlow):
                     if hub is not None:
                         await hub.hub.async_token_changed()
                 return self.async_create_entry(
-                    data={OPTION_SHOW_IN_SIDEBAR: user_input[OPTION_SHOW_IN_SIDEBAR]}
+                    data={
+                        OPTION_SHOW_IN_SIDEBAR: user_input[OPTION_SHOW_IN_SIDEBAR],
+                        OPTION_ADMIN_ONLY: user_input.get(OPTION_ADMIN_ONLY, False),
+                    }
                 )
 
         fields: dict[Any, Any] = {
             vol.Required(
                 OPTION_SHOW_IN_SIDEBAR,
                 default=entry.options.get(OPTION_SHOW_IN_SIDEBAR, True),
+            ): BooleanSelector(),
+            vol.Required(
+                OPTION_ADMIN_ONLY,
+                default=entry.options.get(OPTION_ADMIN_ONLY, False),
             ): BooleanSelector(),
             vol.Optional(FIELD_TOKEN): TextSelector(
                 TextSelectorConfig(type=TextSelectorType.PASSWORD, multiline=False)

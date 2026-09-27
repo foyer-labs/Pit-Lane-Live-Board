@@ -14,6 +14,7 @@ leggi le prime due sezioni e sei a posto; torna sulle altre quando ti servono.
 - [Ritardo TV](#ritardo-tv)
 - [Modalità senza spoiler](#modalità-senza-spoiler)
 - [F1TV e la mappa live](#f1tv-e-la-mappa-live)
+- [Card per le plance](#card-per-le-plance)
 - [Entità e automazioni](#entità-e-automazioni)
 - [Risoluzione dei problemi](#risoluzione-dei-problemi)
 - [Domande frequenti](#domande-frequenti)
@@ -63,6 +64,9 @@ L'ingranaggio in alto a destra nel pannello apre le **Impostazioni**:
   uno nuovo e *Rimuovi* (vedi [F1TV](#f1tv-e-la-mappa-live)).
 - **Entità**: tutte le entità dell'integrazione con il loro stato; cliccane una per la
   sua cronologia e le sue impostazioni.
+- **Pannello** (solo amministratori): *Mostra Live Board nella barra laterale* e *Solo
+  gli amministratori possono aprire il pannello* — spento di serie, così lo vedono tutti
+  gli utenti di casa. Vedi [chi vede cosa](#chi-vede-cosa).
 
 Mentre i tempi live sono in pausa, in alto compare l'etichetta tratteggiata **In
 pausa**, che apre le Impostazioni. Calendario, risultati e classifiche non ne dipendono.
@@ -235,6 +239,60 @@ entità, ai registri o alla diagnostica — solo alla F1.
 Il circuito è disegnato dalle posizioni delle auto nell'archivio della F1 di una
 sessione precedente sulla stessa pista; per un circuito nuovo viene disegnato dal vivo
 dopo il primo giro.
+
+## Card per le plance
+
+![Le card per le plance](screenshots/cards.it.png)
+
+Ogni pezzo della pagina Live è anche una card per le tue plance. Non c'è niente da
+installare: dopo aver configurato l'integrazione, *Modifica plancia → Aggiungi card* le
+elenca sotto **Pit Lane**, ognuna con il suo editor visuale.
+
+| Card | Tipo | Opzioni |
+|---|---|---|
+| Classifica live | `custom:pit-lane-tower-card` | `rows` (1–22), `columns` (`gap`, `interval`, `last`, `best`, `sectors`, `tyre`, `pits`), `highlight` (sigla o numero di un pilota) |
+| Mappa della pista | `custom:pit-lane-map-card` | — (solo dal vivo, richiede F1TV) |
+| Bandiere e commissari | `custom:pit-lane-stewards-card` | — |
+| Team radio | `custom:pit-lane-radio-card` | `count` |
+| Direzione gara | `custom:pit-lane-race-control-card` | `count`, `filter` (`all`, `flags`, `penalties`, `other`) |
+| Sessione | `custom:pit-lane-session-card` | — |
+| Meteo | `custom:pit-lane-weather-card` | — |
+| Campionato | `custom:pit-lane-standings-card` | `kind` (`drivers`, `constructors`), `rows` |
+
+Ogni card accetta anche `title` (lascialo vuoto per non avere titolo).
+
+Le card mostrano le stesse cose della pagina Live: seguono il ritardo TV e la modalità
+senza spoiler, dicono quando il flusso è in ritardo o perso, offrono un pulsante play
+mentre i tempi live sono in pausa e, dopo una sessione, ne mostrano lo stato finale (la
+mappa torna alla sessione successiva). Tutte le card di una pagina condividono un solo
+collegamento con Home Assistant.
+
+Una plancia compatta per la gara, in YAML:
+
+```yaml
+type: vertical-stack
+cards:
+  - type: custom:pit-lane-session-card
+  - type: custom:pit-lane-stewards-card
+  - type: custom:pit-lane-tower-card
+    rows: 10
+    columns: [gap, last, tyre]
+    highlight: LEC
+```
+
+### Chi vede cosa
+
+- **Il pannello:** tutti gli utenti di casa, a meno che un amministratore non attivi
+  *Solo gli amministratori possono aprire il pannello* nelle Impostazioni (o in
+  *Configura*). Ogni utente può anche nasconderlo dalla propria barra laterale
+  (*Profilo → Modifica l'ordine e nascondi elementi della barra laterale*).
+- **Le card:** chi può vedere la plancia in cui si trovano; lo decide Home Assistant,
+  plancia per plancia.
+- **Token F1TV e opzioni del pannello:** solo gli amministratori.
+
+"Solo amministratori" nasconde il pannello, non chiude a chiave i dati. Calendario,
+risultati e tempi sono informazioni pubbliche della F1, e qualsiasi utente collegato
+può comunque leggerli da una card o dalle entità.
 
 ## Entità e automazioni
 
