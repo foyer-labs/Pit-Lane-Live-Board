@@ -22,7 +22,7 @@ import voluptuous as vol
 
 from .clients.http import SourceError
 from .const import DOMAIN, OPTION_ADMIN_ONLY, OPTION_SHOW_IN_SIDEBAR
-from .core import pages
+from .core import circuit_history, pages
 from .core.f1tv_token import acceptable, evaluate, extract_token
 from .core.jolpica_parse import (
     add_changes,
@@ -531,6 +531,159 @@ async def ws_standings_get(hass, connection, msg):
     )
 
 
+# Circuit history (decision 58): a circuit's past for this season's drivers.
+
+CIRCUIT_ID = vol.All(str, vol.Match(r"^[a-z0-9_]{1,40}$"))
+DRIVER_ID = vol.All(str, vol.Match(r"^[a-z0-9_]{1,50}$"))
+
+
+def _standings_cap(hub: Hub) -> tuple[int, int] | None:
+    """The last round of this season no-spoiler mode lets the tables show."""
+    cap = standings_round_cap(hub.settings, hub.meetings, _now())
+    if hub.settings.no_spoiler and not hub.meetings:
+        cap = (hub.season, 0)  # no calendar: fail closed (INV-5)
+    return cap
+
+
+async def _entrants(hub: Hub) -> list[dict[str, Any]]:
+    """This season's drivers with their current team; before the first round (or
+    before the first round no-spoiler mode shows), last season's."""
+    cap = _standings_cap(hub)
+    rnd = cap[1] if cap and cap[0] == hub.season else None
+    if rnd is None or rnd >= 1:
+        drivers = circuit_history.entrants(
+            parse_standings(await hub.jolpica.standings(hub.season, rnd, "driver"))
+        )
+        if drivers:
+            return drivers
+    return circuit_history.entrants(
+        parse_standings(await hub.jolpica.standings(hub.season - 1, None, "driver"))
+    )
+
+
+async def _constructors(hub: Hub, season: int) -> dict[str, int]:
+    """A season's constructors' table (this season's as far as no-spoiler mode
+    shows it: the index must not move with a hidden race)."""
+    rnd = None
+    cap = _standings_cap(hub)
+    if cap and cap[0] == season:
+        if cap[1] < 1:
+            return {}
+        rnd = cap[1]
+    return circuit_history.constructor_positions(
+        parse_standings(await hub.jolpica.standings(season, rnd, "constructor"))
+    )
+
+
+async def _circuit_data(
+    hub: Hub, circuit_id: str, drivers: set[str] | None
+) -> tuple[Any, ...]:
+    """The circuit's results and qualifying with no-spoiler mode applied, this
+    season's drivers, and the constructors' tables the index needs."""
+    results_pages, quali_pages, entrants = await asyncio.gather(
+        hub.jolpica.circuit(circuit_id, "results"),
+        hub.jolpica.circuit(circuit_id, "qualifying"),
+        _entrants(hub),
+    )
+    meta, results = circuit_history.parse_circuit_results(results_pages)
+    quali = circuit_history.parse_circuit_qualifying(quali_pages)
+    results, quali = circuit_history.without_hidden(results, quali, _hidden(hub))
+    wanted = drivers if drivers is not None else {e["driver_id"] for e in entrants}
+    seasons = circuit_history.standings_seasons(results, wanted)
+    tables = await asyncio.gather(*(_constructors(hub, s) for s in seasons))
+    constructors = dict(zip(seasons, tables, strict=True))
+    return meta, results, quali, entrants, constructors
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/circuit/history",
+        vol.Required("circuit_id"): CIRCUIT_ID,
+    }
+)
+@websocket_api.async_response
+async def ws_circuit_history(hass, connection, msg):
+    if (hub := _ready(hass, connection, msg)) is None:
+        return
+    circuit_id = msg["circuit_id"]
+    try:
+        meta, results, quali, entrants, constructors = await _circuit_data(
+            hub, circuit_id, None
+        )
+    except SourceError as err:
+        _error(connection, msg["id"], err)
+        return
+    connection.send_result(
+        msg["id"],
+        circuit_history.history_payload(
+            circuit_id,
+            meta,
+            results,
+            quali,
+            drivers=entrants,
+            constructors=constructors,
+            current_season=hub.season,
+        ),
+    )
+
+
+async def _penalties(
+    hub: Hub, season: int, rnd: int, code: str | None, number: str | None
+) -> list[dict[str, Any]] | None:
+    """One race's penalties for one driver from F1's archive; None when the
+    archive has no detail for it or cannot be reached now."""
+    try:
+        detail = await _archive_detail(hub, season, rnd)
+    except SourceError:
+        return None
+    return circuit_history.penalties_for(detail, code, number)
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/circuit/driver",
+        vol.Required("circuit_id"): CIRCUIT_ID,
+        vol.Required("driver_id"): DRIVER_ID,
+    }
+)
+@websocket_api.async_response
+async def ws_circuit_driver(hass, connection, msg):
+    if (hub := _ready(hass, connection, msg)) is None:
+        return
+    circuit_id, driver_id = msg["circuit_id"], msg["driver_id"]
+    try:
+        _meta, results, quali, entrants, constructors = await _circuit_data(
+            hub, circuit_id, {driver_id}
+        )
+    except SourceError as err:
+        _error(connection, msg["id"], err)
+        return
+    entrant = next((e for e in entrants if e["driver_id"] == driver_id), None)
+    own = [r for r in results if r["driver_id"] == driver_id]
+    races = circuit_history.archive_races(own)
+    found = await asyncio.gather(
+        *(
+            _penalties(hub, row["season"], row["round"], row["code"], row["number"])
+            for row in races
+        )
+    )
+    connection.send_result(
+        msg["id"],
+        circuit_history.driver_payload(
+            circuit_id,
+            driver_id,
+            results,
+            quali,
+            constructors=constructors,
+            current_season=hub.season,
+            penalties={
+                (r["season"], r["round"]): p for r, p in zip(races, found, strict=True)
+            },
+            entrant=entrant,
+        ),
+    )
+
+
 # Live (SPEC §7.1): the hub encodes each view once for every open page; here it
 # is only wrapped in this subscription's envelope. The first message is complete,
 # the next ones carry the sections that changed (`full: false`).
@@ -586,6 +739,8 @@ COMMANDS = (
     ws_results_season,
     ws_results_detail,
     ws_standings_get,
+    ws_circuit_history,
+    ws_circuit_driver,
     ws_live_subscribe,
     ws_map_subscribe,
 )
