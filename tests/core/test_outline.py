@@ -119,3 +119,40 @@ def test_the_cap_keeps_the_shape():
     assert 0 <= x <= first.width and 0 <= y <= first.height
     assert first.points == ()
     assert provisional([]) is None
+
+
+def test_the_provisional_box_grows_with_the_cars():
+    """The first positions of a window are cars in the garages and on the grid: a
+    box fitted to them alone left most later positions off the map."""
+    from custom_components.pit_lane_live_board.core.outline import (
+        provisional,
+        widen_provisional,
+    )
+
+    lap = ellipse_laps(laps=1)
+    grid = lap[:20]  # a short stretch: the cars on the grid
+    first = provisional(grid)
+
+    def inside(outline, samples):
+        return all(
+            0 <= x <= outline.width and 0 <= y <= outline.height
+            for x, y in (outline.project(s[1], s[2]) for s in samples)
+        )
+
+    assert not inside(first, lap)
+    assert widen_provisional(first, grid[5:10]) is None  # nothing new
+    wider = widen_provisional(first, lap)
+    assert wider is not None and wider.points == ()
+    assert inside(wider, lap) and inside(wider, grid)
+    assert widen_provisional(wider, lap) is None
+    # Just past the edge, within the margin: no refit for every sample.
+    x_max = max(s[1] for s in lap)
+    x_min = min(s[1] for s in lap)
+    assert (
+        widen_provisional(wider, [("4", x_max + (x_max - x_min) * 0.01, 0, True)])
+        is None
+    )
+    # A drawn track is never replaced, and no box starts from nothing.
+    assert widen_provisional(build_outline(ellipse_laps()), lap) is None
+    assert widen_provisional(None, lap) == provisional(lap)
+    assert widen_provisional(wider, [("4", 0.0, 0.0, False)]) is None

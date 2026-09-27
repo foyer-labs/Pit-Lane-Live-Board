@@ -259,18 +259,27 @@ def position_samples(decoded: Any) -> list[tuple[str, float, float, bool]]:
     return out
 
 
-def provisional(samples: Iterable[tuple[str, float, float, bool]]) -> Outline | None:
-    """A projection fitted to where the cars have been, with no track drawn: on a
-    new circuit the map shows the dots until a lap closes (SPEC §6.5)."""
+# How far past a provisional box the cars may go before it is refitted: a share
+# of the box's span on that axis. The padding already holds about 4%.
+REFIT_MARGIN = 0.05
+
+Box = tuple[float, float, float, float]  # min x, max x, min y, max y (feed units)
+
+
+def _extent(samples: Iterable[tuple[str, float, float, bool]]) -> Box | None:
     xs: list[float] = []
     ys: list[float] = []
     for _, x, y, _on in samples:
         if not (x == 0 and y == 0):
             xs.append(x)
             ys.append(y)
-    if len(xs) < 2:
+    if not xs:
         return None
-    min_x, max_x, min_y, max_y = min(xs), max(xs), min(ys), max(ys)
+    return min(xs), max(xs), min(ys), max(ys)
+
+
+def _fit(box: Box) -> Outline:
+    min_x, max_x, min_y, max_y = box
     span_x = max(max_x - min_x, 1.0)
     span_y = max(max_y - min_y, 1.0)
     scale = (MAP_WIDTH - 2 * PADDING) / max(span_x, span_y)
@@ -285,4 +294,62 @@ def provisional(samples: Iterable[tuple[str, float, float, bool]]) -> Outline | 
         center=center,
         scale=scale,
         offset=(width / 2, height / 2),
+    )
+
+
+def _fitted_box(outline: Outline) -> Box:
+    """The feed-coordinate box a provisional outline was fitted to."""
+    half_x = (outline.width - 2 * PADDING) / outline.scale / 2
+    half_y = (outline.height - 2 * PADDING) / outline.scale / 2
+    cx, cy = outline.center
+    return cx - half_x, cx + half_x, cy - half_y, cy + half_y
+
+
+def provisional(samples: Iterable[tuple[str, float, float, bool]]) -> Outline | None:
+    """A projection fitted to where the cars have been, with no track drawn: on a
+    new circuit the map shows the dots until a lap closes (SPEC §6.5)."""
+    samples = list(samples)
+    if sum(1 for _, x, y, _on in samples if not (x == 0 and y == 0)) < 2:
+        return None
+    box = _extent(samples)
+    return _fit(box) if box else None
+
+
+def widen_provisional(
+    current: Outline | None, samples: Iterable[tuple[str, float, float, bool]]
+) -> Outline | None:
+    """A new provisional outline when `samples` (a new batch) reach past the box
+    `current` was fitted to by more than `REFIT_MARGIN` of its span, else None
+    (keep `current`).
+
+    The first positions of a window come from cars in the garages and on the grid:
+    a box fitted to them alone left most of the lap off the map. The new box holds
+    the old one and the new samples, so it only grows and settles once the cars
+    have been round. With no `current`, this is `provisional(samples)`; an outline
+    with a drawn track (`points`) is never replaced here.
+    """
+    if current is None:
+        return provisional(samples)
+    if current.points:
+        return None
+    new = _extent(samples)
+    if new is None:
+        return None
+    old = _fitted_box(current)
+    margin_x = (old[1] - old[0]) * REFIT_MARGIN
+    margin_y = (old[3] - old[2]) * REFIT_MARGIN
+    if (
+        new[0] >= old[0] - margin_x
+        and new[1] <= old[1] + margin_x
+        and new[2] >= old[2] - margin_y
+        and new[3] <= old[3] + margin_y
+    ):
+        return None
+    return _fit(
+        (
+            min(old[0], new[0]),
+            max(old[1], new[1]),
+            min(old[2], new[2]),
+            max(old[3], new[3]),
+        )
     )
