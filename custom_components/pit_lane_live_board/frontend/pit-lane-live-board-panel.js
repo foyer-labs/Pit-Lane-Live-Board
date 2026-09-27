@@ -1121,7 +1121,12 @@ var nt = {
 		compact: "Compact",
 		full: "Full",
 		compactHelp: "Podium, fastest lap, retirements, penalties and your drivers.",
-		fullHelp: "The same, then the whole classification with every driver's time: gap and best lap in a race, best lap and gap in qualifying and practice."
+		fullHelp: "The same, then the whole classification with every driver's time: gap and best lap in a race, best lap and gap in qualifying and practice.",
+		add: "Add",
+		remove: "Remove",
+		placeholder: "Type a notify service…",
+		none: "No service chosen yet.",
+		missing: "not found"
 	},
 	kiosk: {
 		enter: "Full screen",
@@ -1610,7 +1615,12 @@ var nt = {
 			compact: "Compatto",
 			full: "Esteso",
 			compactHelp: "Podio, giro veloce, ritirati, penalità e i tuoi piloti.",
-			fullHelp: "Lo stesso, poi la classifica completa con il tempo di ogni pilota: distacco e giro migliore in gara, giro migliore e distacco in qualifica e nelle libere."
+			fullHelp: "Lo stesso, poi la classifica completa con il tempo di ogni pilota: distacco e giro migliore in gara, giro migliore e distacco in qualifica e nelle libere.",
+			add: "Aggiungi",
+			remove: "Rimuovi",
+			placeholder: "Scrivi un servizio di notifica…",
+			none: "Nessun servizio scelto.",
+			missing: "non trovato"
 		},
 		kiosk: {
 			enter: "Schermo intero",
@@ -4217,6 +4227,35 @@ var Sn = {
 			this.testResult = "summary.testFailed";
 		}
 	}
+	renderTargets(e, t, n) {
+		let r = (e) => {
+			if (!e) return;
+			let r = e.value.trim().replace(/^notify\./, "");
+			t.includes(r) && (e.value = "", n.includes(r) || this.setHousehold({ notify_targets: [...n, r] }));
+		}, i = t.filter((e) => !n.includes(e));
+		return C`<div class="targets">
+      ${n.length ? C`<ul>${n.map((r) => C`<li>
+              <span class="who">notify.${r}</span>
+              ${t.includes(r) ? E : C`<span class="missing small">${e("summary.missing")}</span>`}
+              <button class="btn flat" ?disabled=${this.busy}
+                @click=${() => this.setHousehold({ notify_targets: n.filter((e) => e !== r) })}>${e("summary.remove")}</button>
+            </li>`)}</ul>` : C`<span class="muted small">${e("summary.none")}</span>`}
+      ${t.length ? C`<div class="add-row">
+            <input list="plb-notify-services" placeholder=${e("summary.placeholder")}
+              aria-label=${e("summary.placeholder")} ?disabled=${this.busy || !i.length}
+              @change=${(e) => {
+			let n = e.target;
+			t.includes(n.value.trim().replace(/^notify\./, "")) && r(n);
+		}}
+              @keydown=${(e) => {
+			e.key === "Enter" && r(e.target);
+		}} />
+            <button class="btn flat" ?disabled=${this.busy || !i.length}
+              @click=${(e) => r(e.target.previousElementSibling)}>${e("summary.add")}</button>
+          </div>
+          <datalist id="plb-notify-services">${i.map((e) => C`<option value=${`notify.${e}`}></option>`)}</datalist>` : C`<span class="muted">${e("summary.noServices")}</span>`}
+    </div>`;
+	}
 	renderSummary(e, t) {
 		let n = Object.keys(this.hass.services?.notify ?? {}).filter((e) => !["send_message"].includes(e)).sort(), r = t.notify_targets ?? [], i = t.summary_kinds ?? [];
 		return C`<section class="card">
@@ -4224,10 +4263,7 @@ var Sn = {
       <div class="body">
         <p>${e("summary.help")}</p>
         <b class="small">${e("summary.where")}</b>
-        ${n.length ? n.map((e) => C`<label class="line">
-                <input type="checkbox" .checked=${r.includes(e)} ?disabled=${this.busy}
-                  @change=${(t) => this.setHousehold({ notify_targets: this.toggle(r, e, t.target.checked) }, t.target)} />
-                <span>notify.${e}</span></label>`) : C`<span class="muted">${e("summary.noServices")}</span>`}
+        ${this.renderTargets(e, n, r)}
         <b class="small">${e("summary.which")}</b>
         <div class="chips">${[
 			"race",
@@ -4396,6 +4432,16 @@ var Sn = {
       .chips { display: flex; flex-wrap: wrap; gap: 6px; }
       .line { display: flex; align-items: center; gap: 10px; font-size: 14px; }
       .line input { width: 18px; height: 18px; accent-color: var(--primary-color); }
+      .targets { display: grid; gap: 6px; }
+      .targets ul { list-style: none; margin: 0; padding: 0; }
+      .targets li { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 14px;
+        border-bottom: 1px solid var(--divider-color, #e0e0e0); }
+      .targets .who { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+      .targets .missing { color: var(--error-color, #db4437); }
+      .add-row { display: flex; gap: 8px; align-items: center; }
+      .add-row input { flex: 1; min-width: 0; font: inherit; padding: 8px 10px; border-radius: 8px;
+        border: 1px solid var(--divider-color, #ccc); background: var(--card-background-color, #fff);
+        color: var(--primary-text-color); }
       .body > .btn { justify-self: start; }
       .live { display: flex; align-items: center; gap: 18px; padding: 18px 16px 8px; }
       .play-box { display: grid; justify-items: center; gap: 4px; flex: none; }
