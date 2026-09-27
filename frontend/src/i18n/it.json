@@ -343,5 +343,36 @@
     "bothHelp": "Accanto a ogni orario, in piccolo, l'altro: l'ora locale del circuito, o la tua se hai scelto quella del circuito.",
     "atTrack": "{time} al circuito",
     "yours": "{time} ora tua"
+  },
+  "drivers": {
+    "title": "I miei piloti",
+    "help": "Segui fino a cinque piloti: ognuno ha un sensore con posizione, distacco, gomme e soste, e l'evento «I miei piloti» scatta quando guadagna o perde una posizione, passa in testa, si ferma ai box, fa il giro veloce, si ritira o viene penalizzato. Nella classifica le loro righe hanno una ★.",
+    "max": "Fino a cinque piloti.",
+    "followed": "Un pilota che segui",
+    "stint": "Stint",
+    "laps": "Giri",
+    "bestInStint": "Giro migliore",
+    "lapRange": "{from}–{to}",
+    "fromLap": "dal giro {from}",
+    "onLap": "giro {lap}",
+    "rejoin": "Se si ferma ora: rientra P{position}",
+    "behindOf": "dietro {driver} (+{gap} s)",
+    "aheadOf": "davanti a {driver} ({gap} s)",
+    "lossCircuit": "Stima: una sosta costa circa {loss} s su questo circuito.",
+    "lossGeneric": "Stima: una sosta costa circa {loss} s (valore generico).",
+    "pitting": "{n} auto ai box: meno certa."
+  },
+  "summary": {
+    "title": "Riepilogo a fine sessione",
+    "help": "A fine sessione: podio, giro veloce, ritiri, penalità e i tuoi piloti, inviati ai servizi di notifica che scegli. È anche l'evento «Riepilogo della sessione», per le tue automazioni.",
+    "where": "Invia a",
+    "which": "Dopo",
+    "noServices": "Nessun servizio di notifica in questo Home Assistant (l'app per telefono ne aggiunge uno per telefono).",
+    "test": "Invia una prova",
+    "testSent": "Inviato: il riepilogo di ciò che mostra la pagina Live.",
+    "testNothing": "Ancora niente da riepilogare: serve una sessione nella pagina Live.",
+    "testFailed": "Non inviato.",
+    "spoiler": "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità.",
+    "testHidden": "Non inviato: la modalità senza spoiler nasconde la pagina Live."
   }
 }

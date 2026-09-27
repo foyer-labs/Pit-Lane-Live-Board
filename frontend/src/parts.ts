@@ -61,6 +61,12 @@ export function alsoTime(t: Translate, hass: Hass, iso: string | null, trackZone
   return html`<small class="also">${t(other.local ? "time.atTrack" : "time.yours", { time: other.time })}</small>`;
 }
 
+/** The mini-sectors of one sector as a thin strip of F1's colours. */
+export function segmentStrip(segments: string[] | undefined) {
+  if (!segments?.length || segments.every((s) => !s)) return nothing;
+  return html`<span class="seg" aria-hidden="true">${segments.map((s) => html`<i class=${s}></i>`)}</span>`;
+}
+
 export function loading(t: Translate) {
   return html`<div class="card loading">${t("common.loading")}</div>`;
 }

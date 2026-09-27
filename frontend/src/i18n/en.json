@@ -343,5 +343,36 @@
     "bothHelp": "Next to each time, in small, the other one: the track's local time, or yours when you chose the track's.",
     "atTrack": "{time} at the track",
     "yours": "{time} your time"
+  },
+  "drivers": {
+    "title": "My drivers",
+    "help": "Follow up to five drivers: each gets a sensor with position, gap, tyre and pits, and the “My drivers” event fires when they gain or lose a place, take the lead, pit, set the fastest lap, retire or get a penalty. Their rows have a ★ in the timing tower.",
+    "max": "Up to five drivers.",
+    "followed": "A driver you follow",
+    "stint": "Stint",
+    "laps": "Laps",
+    "bestInStint": "Best lap",
+    "lapRange": "{from}–{to}",
+    "fromLap": "from lap {from}",
+    "onLap": "lap {lap}",
+    "rejoin": "Pitting now: back out P{position}",
+    "behindOf": "behind {driver} (+{gap} s)",
+    "aheadOf": "ahead of {driver} ({gap} s)",
+    "lossCircuit": "Estimate: a stop costs about {loss} s at this circuit.",
+    "lossGeneric": "Estimate: a stop costs about {loss} s (a generic figure).",
+    "pitting": "{n} cars in the pits: less certain."
+  },
+  "summary": {
+    "title": "Summary at the end of a session",
+    "help": "When a session ends: podium, fastest lap, retirements, penalties and your drivers, sent to the notify services you choose. It is also the “Session summary” event, for your own automations.",
+    "where": "Send to",
+    "which": "After",
+    "noServices": "No notify service in this Home Assistant (the mobile app adds one per phone).",
+    "test": "Send a test",
+    "testSent": "Sent: the summary of what the Live page shows.",
+    "testNothing": "Nothing to summarise yet: it needs a session on the Live page.",
+    "testFailed": "Not sent.",
+    "spoiler": "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off.",
+    "testHidden": "Not sent: no-spoiler mode hides the Live page."
   }
 }

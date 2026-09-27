@@ -73,6 +73,13 @@ export const api = {
   // Admins only: the panel's place in the sidebar and who may open it.
   setPanel: (hass: Hass, values: { show_in_sidebar?: boolean; admin_only?: boolean }) =>
     hass.callWS<Settings>({ type: `${P}/panel/set`, ...values }),
+  // Admins only: the household's drivers and the session summary (decisions 52, 53).
+  setHousehold: (
+    hass: Hass,
+    values: { favourites?: string[]; notify_targets?: string[]; summary_kinds?: string[] },
+  ) => hass.callWS<Settings>({ type: `${P}/settings/set`, ...values }),
+  testSummary: (hass: Hass) =>
+    hass.callWS<{ result: "sent" | "nothing" | "hidden" }>({ type: `${P}/summary/test` }),
   entities: (hass: Hass) => hass.callWS<{ entities: LinkedEntity[] }>({ type: `${P}/entities` }),
   reveal: (hass: Hass, session: string) =>
     hass.callWS<Settings>({ type: `${P}/spoiler/reveal`, session }),

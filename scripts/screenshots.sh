@@ -35,6 +35,7 @@ cards() { # name width height query: the dashboard cards' bench page
 for lang in en it; do
   suffix=$([ "$lang" = en ] && echo "" || echo ".it")
   shot "live$suffix" 1440 1180 "page=live&live=race&lang=$lang"
+  shot "driver$suffix" 1440 1000 "page=live&live=race&lang=$lang&select=63"
   shot "qualifying$suffix" 1440 900 "page=live&live=qualifying&lang=$lang&theme=dark"
   shot "calendar$suffix" 1440 1000 "page=calendar&lang=$lang"
   shot "strategy$suffix" 1440 860 "page=results&round=14&tab=strategy&lang=$lang"

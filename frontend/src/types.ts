@@ -9,6 +9,7 @@ export interface Hass {
   themes?: { darkMode?: boolean };
   states?: Record<string, { state: string; attributes: Record<string, unknown> }>;
   /** Home Assistant's own state formatting, in the user's language and units. */
+  services?: Record<string, Record<string, unknown>>;
   formatEntityState?: (state: { state: string; attributes: Record<string, unknown> }) => string;
   callWS<T>(msg: Record<string, unknown>): Promise<T>;
   connection: {
@@ -30,6 +31,9 @@ export interface Settings {
   running: boolean;
   show_in_sidebar: boolean;
   admin_only: boolean;
+  favourites: string[];
+  notify_targets: string[];
+  summary_kinds: string[];
   revealed: string[];
   season: number;
   first_season: number;
@@ -169,6 +173,30 @@ export interface Row {
   gained: number | null;
   status: string;
   penalty?: number | null;
+  /** Every stint so far: its compound, laps and best lap (decision 51). */
+  stints?: {
+    compound: string;
+    new: boolean;
+    from_lap: number;
+    to_lap: number | null;
+    laps: number;
+    best: { time: string; lap: number | null } | null;
+  }[];
+  /** Per sector, the colour of each mini-sector: p, g, y, pit, o, or "". */
+  segments?: string[][];
+  /** Where a stop now would bring the driver back out: an estimate. */
+  pit_rejoin?: {
+    position: number;
+    ahead: string | null;
+    ahead_gap: number | null;
+    behind: string | null;
+    behind_gap: number | null;
+    loss: number;
+    /** The circuit's typical loss (true) or the generic one. */
+    known: boolean;
+    /** Cars in the pit lane now: they make the estimate less certain. */
+    pitting: number;
+  } | null;
   qualifying?: { part_bests: (string | null)[]; best: string | null; gap: string | null; cutoff: boolean };
 }
 

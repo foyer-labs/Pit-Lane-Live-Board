@@ -6,7 +6,7 @@ import { api } from "../api";
 import { clockTime, number, sessionClock, sessionTime, shortTime } from "../format";
 import type { Translate } from "../i18n";
 import { ICON, icon } from "../icons";
-import { alsoTime, gained, tyre } from "../parts";
+import { alsoTime, gained, segmentStrip, tyre } from "../parts";
 import { teamColour } from "../teams";
 import { stewardsCard, stewardsStyles, trackClass } from "../pages/stewards";
 import type { LiveView, Row, StandingsPage, Timed } from "../types";
@@ -74,6 +74,7 @@ export class PitLaneTowerCard extends LiveCard {
     const rows = (v.tower ?? []).slice(0, Math.max(1, Number(this.config.rows) || 10));
     const columns = new Set((this.config.columns as string[] | undefined) ?? []);
     const highlight = String(this.config.highlight ?? "").trim().toUpperCase();
+    const followed = new Set(this.followed);
     if (!rows.length) return html`<div class="empty">${t("common.noData")}</div>`;
     return html`<table class="tower">
       <thead><tr>
@@ -89,7 +90,7 @@ export class PitLaneTowerCard extends LiveCard {
       <tbody>${repeat(
         rows,
         (r) => r.number,
-        (r) => html`<tr class=${[r.tla === highlight || r.number === highlight ? "sel" : "", r.status === "retired" || r.status === "knocked_out" ? "out" : ""].join(" ")}>
+        (r) => html`<tr class=${[r.tla === highlight || r.number === highlight || (!highlight && followed.has(r.tla)) ? "sel" : "", r.status === "retired" || r.status === "knocked_out" ? "out" : ""].join(" ")}>
           <td class="pos num">${r.position ?? "—"}</td>
           <td><span class="drv"><span class="bar" style="background:${r.colour ?? "var(--divider-color)"}"></span>
             <span class="tla" title=${r.name ?? ""}>${r.tla}</span>
@@ -100,7 +101,7 @@ export class PitLaneTowerCard extends LiveCard {
           ${columns.has("interval") ? html`<td class="t">${r.interval ?? ""}</td>` : nothing}
           ${columns.has("last") ? html`<td>${timed(r.last_lap)}</td>` : nothing}
           ${columns.has("best") ? html`<td class="t">${r.qualifying?.best ?? r.best_lap?.time ?? ""}</td>` : nothing}
-          ${columns.has("sectors") ? r.sectors.map((s) => html`<td>${timed(s)}</td>`) : nothing}
+          ${columns.has("sectors") ? r.sectors.map((s, i) => html`<td>${timed(s)}${segmentStrip(r.segments?.[i])}</td>`) : nothing}
           ${columns.has("tyre") ? html`<td>${r.tyre ? tyre(t, r.tyre.compound, r.tyre.new, r.tyre.age) : ""}</td>` : nothing}
           ${columns.has("pits") ? html`<td class="num">${r.pit_stops}</td>` : nothing}
         </tr>`,
@@ -122,6 +123,13 @@ export class PitLaneTowerCard extends LiveCard {
       .pos { width: 24px; text-align: center; font-weight: 600; }
       .badge.pen { background: var(--error-color, #db4437); color: #fff; }
       .tyre-dot { width: 20px; height: 20px; font-size: 10px; }
+      .seg { display: flex; gap: 1px; margin-top: 2px; }
+      .seg i { flex: 1; height: 3px; min-width: 3px; border-radius: 1px; background: var(--divider-color); }
+      .seg i.p { background: var(--plb-purple); }
+      .seg i.g { background: var(--plb-green); }
+      .seg i.y { background: var(--plb-yellow); }
+      .seg i.pit { background: #1e88e5; }
+      .seg i.o { background: var(--secondary-text-color); }
     `,
   ];
 }

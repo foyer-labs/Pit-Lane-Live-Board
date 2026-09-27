@@ -50,15 +50,82 @@ def _sectors(line: dict[str, Any]) -> list[dict[str, Any] | None]:
     return [_timed(sectors[i]) if i < len(sectors) else None for i in range(3)]
 
 
-def _tyre(app_line: Any) -> dict[str, Any] | None:
+def _raw_stints(app_line: Any) -> list[dict[str, Any]]:
     if not isinstance(app_line, dict):
-        return None
+        return []
     stints = app_line.get("Stints")
     if isinstance(stints, dict):
         stints = [stints[k] for k in sorted(stints, key=lambda k: to_int(k) or 0)]
     if not isinstance(stints, list):
-        return None
-    stints = [s for s in stints if isinstance(s, dict)]
+        return []
+    return [s for s in stints if isinstance(s, dict)]
+
+
+def _stints(app_line: Any) -> list[dict[str, Any]]:
+    """The driver's stints so far, with the laps each covered and its best lap.
+
+    F1 sends, per stint, the laps on the set (`TotalLaps`, counting those it had
+    before when used: `StartLaps`) and the best lap of the stint (`LapTime`,
+    `LapNumber`). The laps driven in a stint are their difference; the ranges
+    follow one another from lap 1.
+    """
+    out: list[dict[str, Any]] = []
+    first = 1
+    for stint in _raw_stints(app_line):
+        total = to_int(stint.get("TotalLaps")) or 0
+        start = to_int(stint.get("StartLaps")) or 0
+        driven = max(0, total - start)
+        best = text(stint.get("LapTime"))
+        out.append(
+            {
+                "compound": _compound(stint.get("Compound")),
+                "new": to_bool(stint.get("New")),
+                "from_lap": first,
+                "to_lap": first + driven - 1 if driven else None,
+                "laps": driven,
+                "best": {"time": best, "lap": to_int(stint.get("LapNumber"))}
+                if best
+                else None,
+            }
+        )
+        first += driven
+    return out
+
+
+# Mini-sector (segment) statuses in TimingData: F1's colours of each segment.
+SEGMENT_STATUS = {2048: "y", 2049: "g", 2051: "p", 2064: "pit"}
+
+
+def _segments(line: dict[str, Any]) -> list[list[str]]:
+    """Per sector, the colour of each mini-sector of the current lap: `p` purple,
+    `g` green, `y` yellow, `pit`, `o` another status, `` not run yet."""
+    sectors = line.get("Sectors")
+    if isinstance(sectors, dict):
+        sectors = [sectors.get(str(i)) for i in range(3)]
+    if not isinstance(sectors, list):
+        return []
+    out: list[list[str]] = []
+    for sector in sectors[:3]:
+        segments = sector.get("Segments") if isinstance(sector, dict) else None
+        if isinstance(segments, dict):
+            segments = [
+                segments[k] for k in sorted(segments, key=lambda k: to_int(k) or 0)
+            ]
+        if not isinstance(segments, list):
+            out.append([])
+            continue
+        colours = []
+        for segment in segments:
+            status = (
+                to_int(segment.get("Status")) if isinstance(segment, dict) else None
+            )
+            colours.append(SEGMENT_STATUS.get(status or 0, "o" if status else ""))
+        out.append(colours)
+    return out
+
+
+def _tyre(app_line: Any) -> dict[str, Any] | None:
+    stints = _raw_stints(app_line)
     if not stints:
         return None
     current = stints[-1]
@@ -172,6 +239,8 @@ def build_tower(topics: dict[str, Any]) -> list[dict[str, Any]]:
             ),
             "sectors": _sectors(line),
             "tyre": _tyre(app_line),
+            "stints": _stints(app_line),
+            "segments": _segments(line),
             "pit_stops": to_int(line.get("NumberOfPitStops")) or 0,
             "in_pit": to_bool(line.get("InPit")),
             "pit_out": to_bool(line.get("PitOut")),

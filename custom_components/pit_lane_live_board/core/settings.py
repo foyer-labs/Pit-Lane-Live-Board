@@ -13,6 +13,30 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Any
 
+from .favourites import normalise
+
+SESSION_KINDS = ("practice", "qualifying", "sprint_qualifying", "sprint", "race")
+DEFAULT_SUMMARY_KINDS = ("sprint", "race")
+
+
+def _kinds(value: Any) -> tuple[str, ...]:
+    if not isinstance(value, (list, tuple)):
+        return DEFAULT_SUMMARY_KINDS
+    return tuple(k for k in SESSION_KINDS if k in {str(v) for v in value})
+
+
+def _targets(value: Any) -> tuple[str, ...]:
+    """Notify services by name (`mobile_app_pixel`), without the domain."""
+    if not isinstance(value, (list, tuple)):
+        return ()
+    out: list[str] = []
+    for item in value:
+        name = str(item).strip().removeprefix("notify.")
+        if name and name.replace("_", "").isalnum() and name not in out:
+            out.append(name)
+    return tuple(out[:10])
+
+
 MIN_DELAY = 0
 MAX_DELAY = 120
 
@@ -36,6 +60,10 @@ class Settings:
     revealed: frozenset[str] = field(default_factory=frozenset)
     live: bool = False
     auto_start: bool = False
+    # The household's drivers (decision 52) and the session summary (decision 53).
+    favourites: tuple[str, ...] = ()
+    notify_targets: tuple[str, ...] = ()
+    summary_kinds: tuple[str, ...] = DEFAULT_SUMMARY_KINDS
 
     def with_delay(self, value: Any) -> Settings:
         return replace(self, tv_delay=clamp_delay(value))
@@ -54,6 +82,18 @@ class Settings:
     def with_auto_start(self, on: bool) -> Settings:
         return replace(self, auto_start=bool(on))
 
+    def with_favourites(self, codes: Any) -> Settings:
+        return replace(self, favourites=normalise(codes))
+
+    def with_summary(self, targets: Any = None, kinds: Any = None) -> Settings:
+        return replace(
+            self,
+            notify_targets=self.notify_targets
+            if targets is None
+            else _targets(targets),
+            summary_kinds=self.summary_kinds if kinds is None else _kinds(kinds),
+        )
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "tv_delay": self.tv_delay,
@@ -61,6 +101,9 @@ class Settings:
             "revealed": sorted(self.revealed),
             "live": self.live,
             "auto_start": self.auto_start,
+            "favourites": list(self.favourites),
+            "notify_targets": list(self.notify_targets),
+            "summary_kinds": list(self.summary_kinds),
         }
 
     @classmethod
@@ -77,4 +120,9 @@ class Settings:
             else frozenset(),
             live=data.get("live") is True,
             auto_start=data.get("auto_start") is True,
+            favourites=normalise(data.get("favourites")),
+            notify_targets=_targets(data.get("notify_targets")),
+            summary_kinds=_kinds(
+                data.get("summary_kinds", list(DEFAULT_SUMMARY_KINDS))
+            ),
         )

@@ -13,7 +13,7 @@ import { ageLabel } from "../clock";
 import { clockTime, hassChanged, number, sessionClock, sessionTime, shortTime } from "../format";
 import { translator, type Translate } from "../i18n";
 import { ICON, icon } from "../icons";
-import { alsoTime, failure, gained, onKey, tyre } from "../parts";
+import { alsoTime, failure, gained, onKey, segmentStrip, tyre } from "../parts";
 import { tokens } from "../styles";
 import type { Hass, LiveView, Message, NextSession, Row, Settings, Timed } from "../types";
 import { pillStyles, stewardsCard, stewardsStyles } from "./stewards";
@@ -298,6 +298,7 @@ export class PlbLive extends LitElement {
         @click=${pick} @keydown=${onKey(pick)}>
       <td class="pos num">${r.position ?? "—"}</td>
       <td><div class="drv"><span class="bar" style="background:${r.colour ?? "var(--divider-color)"}"></span>
+        ${this.settings?.favourites?.includes(r.tla) ? html`<span class="fav" title=${t("drivers.followed")}>★</span>` : nothing}
         <span class="tla" title=${r.name ?? ""}>${r.tla}</span><small>${r.number}</small>
         ${r.penalty ? html`<span class="badge pen" title=${t("stewards.unserved")}>+${r.penalty}s</span>` : nothing}
         ${this.badge(t, r)}
@@ -309,24 +310,58 @@ export class PlbLive extends LitElement {
         : html`<td>${gained(r.gained)}</td><td class="t">${r.gap ?? ""}</td><td class="t col-int">${r.interval ?? ""}</td>
             <td>${this.timed(r.last_lap)}</td>
             <td class="col-best">${r.best_lap ? html`<span class="t">${r.best_lap.time}</span>` : ""}</td>`}
-      ${r.sectors.map((s) => html`<td class="col-s">${this.timed(s, "sector")}</td>`)}
+      ${r.sectors.map(
+        (s, i) => html`<td class="col-s">${this.timed(s, "sector")}${segmentStrip(r.segments?.[i])}</td>`,
+      )}
       <td>${r.tyre ? tyre(t, r.tyre.compound, r.tyre.new, r.tyre.age) : ""}</td>
       ${qualifying ? nothing : html`<td class="num col-pits">${r.pit_stops}</td>`}
     </tr>
     ${selected ? this.details(t, r, qualifying ? 10 : 12) : nothing}`;
   }
 
-  /** On a narrow screen the selected row opens: what its hidden columns say. */
+  /** The selected row opens: the driver's stints with the best lap of each, where
+   *  a stop now would bring them back out, and on a narrow screen what its hidden
+   *  columns say. */
   private details(t: Translate, r: Row, columns: number) {
     const sectors = r.sectors.map((s, i) => html`<span>S${i + 1} ${this.timed(s)}</span>`);
+    const stints = r.stints ?? [];
+    const rejoin = r.pit_rejoin;
     return html`<tr class="details"><td colspan=${columns}>
       <div><b>${r.name ?? r.tla}</b>${r.team ? html` · ${r.team}` : nothing}</div>
-      <div class="facts">
+      <div class="facts narrow">
         ${r.interval ? html`<span>${t("live.int")} <span class="t">${r.interval}</span></span>` : nothing}
         ${r.best_lap ? html`<span>${t("live.best")} <span class="t">${r.best_lap.time}</span></span>` : nothing}
         ${sectors}
         <span>${t("live.pits")} ${r.pit_stops}</span>
       </div>
+      ${stints.length
+        ? html`<table class="stints">
+            <tr><th>${t("drivers.stint")}</th><th>${t("live.tyre")}</th><th>${t("drivers.laps")}</th><th>${t("drivers.bestInStint")}</th></tr>
+            ${stints.map(
+              (s, i) => html`<tr>
+                <td class="num">${i + 1}</td>
+                <td>${tyre(t, s.compound, s.new, null)}</td>
+                <td class="num">${s.to_lap && s.to_lap !== s.from_lap
+                  ? t("drivers.lapRange", { from: s.from_lap, to: s.to_lap })
+                  : t("drivers.fromLap", { from: s.from_lap })}
+                  <small class="muted">(${s.laps})</small></td>
+                <td>${s.best ? html`<span class="t">${s.best.time}</span>${s.best.lap ? html` <small class="muted">${t("drivers.onLap", { lap: s.best.lap })}</small>` : nothing}` : "—"}</td>
+              </tr>`,
+            )}
+          </table>`
+        : nothing}
+      ${rejoin
+        ? html`<div class="rejoin">${icon(ICON.timer, 16)}
+            <span>${t("drivers.rejoin", { position: rejoin.position })}${rejoin.ahead
+              ? html` · ${t("drivers.behindOf", { driver: rejoin.ahead, gap: number(this.hass, rejoin.ahead_gap, 1) })}`
+              : nothing}${rejoin.behind
+              ? html` · ${t("drivers.aheadOf", { driver: rejoin.behind, gap: number(this.hass, rejoin.behind_gap, 1) })}`
+              : nothing}
+              <small class="muted">${t(rejoin.known ? "drivers.lossCircuit" : "drivers.lossGeneric", { loss: number(this.hass, rejoin.loss, 1) })}${rejoin.pitting
+                ? ` ${t("drivers.pitting", { n: rejoin.pitting })}`
+                : ""}</small></span>
+          </div>`
+        : nothing}
     </td></tr>`;
   }
 
@@ -470,8 +505,21 @@ export class PlbLive extends LitElement {
       .tower tr.details td { height: auto; padding: 8px 12px; white-space: normal; cursor: default; font-size: 13px;
         background: color-mix(in srgb, var(--primary-color) 6%, transparent); }
       .tower tr.details .facts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 4px; color: var(--secondary-text-color); }
-      .tower tr.details { display: none; }
-      @media (max-width: 900px) { .tower tr.details { display: table-row; } }
+      .tower tr.details .narrow { display: none; }
+      @media (max-width: 900px) { .tower tr.details .narrow { display: flex; } }
+      .tower .stints { border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+      .tower .stints th { font-size: 10px; padding: 2px 16px 2px 0; border: 0; }
+      .tower .stints td { height: 30px; padding: 0 16px 0 0; border: 0; background: none; cursor: default; }
+      .tower .rejoin { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; }
+      .tower .rejoin small { display: block; font-size: 11px; }
+      .fav { color: #f2c200; font-size: 12px; }
+      .seg { display: flex; gap: 1px; margin-top: 2px; }
+      .seg i { flex: 1; height: 3px; min-width: 3px; border-radius: 1px; background: var(--divider-color); }
+      .seg i.p { background: var(--plb-purple); }
+      .seg i.g { background: var(--plb-green); }
+      .seg i.y { background: var(--plb-yellow); }
+      .seg i.pit { background: #1e88e5; }
+      .seg i.o { background: var(--secondary-text-color); }
       .badge.pen { background: var(--error-color, #db4437); color: #fff; font-variant-numeric: tabular-nums; }
       .pos { width: 34px; text-align: center; font-weight: 600; font-size: 15px; }
       .tower .drv { min-width: 100px; }

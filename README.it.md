@@ -39,7 +39,9 @@ Un'installazione, tre modi di usarla:
   ultimo e miglior giro, i tre settori in viola e in verde, la gomma di ogni pilota e da
   quanti giri la usa, i pit stop, le posizioni guadagnate o perse dalla partenza.
 - **Qualifiche come si deve.** Q1, Q2 e Q3 con la linea di eliminazione, migliori giri e
-  distacchi.
+  distacchi, e i mini-settori nel viola, verde e giallo della F1.
+- **La gara di ogni pilota, a un clic.** I suoi stint con giri e giro migliore di
+  ciascuno, e dove rientrerebbe se si fermasse ora.
 - **Bandiere e commissari a colpo d'occhio.** Lo stato della pista, i settori in giallo,
   la safety car e il suo ultimo giro, ogni penalità (un `+5s` accanto al pilota finché non
   la sconta), gli incidenti sotto investigazione e i giri cancellati, in un'unica scheda
@@ -108,6 +110,8 @@ guida](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.it
 | `sensor` Penalità · Investigazioni · Messaggio della direzione gara | Cosa stanno guardando i commissari, con i dettagli negli attributi. |
 | `event` Direzione gara | Bandiera verde, gialla, safety car, VSC, rossa, a scacchi, inizio e fine sessione. |
 | `event` Commissari | Un evento per ogni decisione: penalità in tempo, drive-through, investigazione, ammonizione, giro cancellato… con pilota, secondi e motivo. |
+| `sensor` Pilota LEC · `event` I miei piloti | Fino a cinque piloti che segui: posizione, distacco, gomme e soste, e un evento quando guadagnano una posizione, passano in testa, si fermano, fanno il giro veloce o vengono penalizzati. |
+| `event` Riepilogo della sessione | Podio, giro veloce, penalità e i tuoi piloti a fine sessione — anche sui tuoi telefoni, se vuoi. |
 | `calendar` Sessioni · `sensor` Prossima sessione | "La gara parte tra 15 minuti", senza codice. |
 | `switch` Tempi live · Modalità senza spoiler · `number` Ritardo TV | Comanda il pannello dalle tue automazioni e dall'assistente vocale. |
 
