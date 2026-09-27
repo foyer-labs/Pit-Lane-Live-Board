@@ -6,6 +6,20 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-27
+
+### Added
+- **Circuit history**: open it from a weekend in the Calendar or a round in Results.
+  Every driver of this season at that circuit, all their years there — qualifying,
+  grid, finish, points, fastest lap, outcome and the stewards' penalties (2018+) — and
+  an **affinity index**: how the circuit suits the driver compared with how their car
+  went that year. 50 = as the car; higher = better than the car. Mechanical
+  retirements do not count against the driver, and one or two races are pulled
+  towards 50, so a single good afternoon does not top the list.
+
+### Fixed
+- The live connection's silence check no longer misreads a freshly started host.
+
 ## [0.8.0] - 2026-09-27
 
 A complete review of the code, by ten reviewers, for bugs and above all for resources:

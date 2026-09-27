@@ -93,6 +93,16 @@ That's it — the next session is on your board.
 
 ## A race weekend, the Pit Lane way
 
+**Thursday.** Who is at home here? The circuit history ranks this season's drivers by an
+**affinity index** — how they have gone at this track compared with their car that year —
+with every past race a click away: qualifying, finish, fastest lap, penalties.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/circuit-driver.png" alt="Circuit history for Baku: drivers ranked by affinity index, one driver opened on each of their years there with qualifying, grid, finish, points, the car's expected place and penalties" width="820">
+  <br>
+  <sub><em>50 = as the car. Above it, the circuit suits the driver.</em></sub>
+</p>
+
 **Friday.** The calendar shows every session in your own time zone — or the local time at
 the track, or both side by side — with a countdown to the next one and the podium of every
 weekend already run.
@@ -172,6 +182,8 @@ both championships after any round.
 **Around the weekend**
 - **Calendar** in your time zone, with a countdown; **results since 1950**; **both
   championships**, drivers and constructors, for any season.
+- **Circuit history** with an **affinity index**: how each driver goes at this track,
+  net of their car.
 - **No-spoiler mode** for when you watch later.
 - **English and Italian**, light and dark, phone or wall tablet.
 

@@ -94,6 +94,17 @@ Fatto: la prossima sessione è già sulla tua plancia.
 
 ## Un weekend di gara, visto dal muretto
 
+**Giovedì.** Chi si trova a casa su questa pista? Lo storico del circuito ordina i piloti
+della stagione per **indice di affinità** — come sono andati qui rispetto alla macchina che
+avevano quell'anno — con ogni gara passata a un clic: qualifica, arrivo, giro veloce,
+penalità.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/circuit-driver.it.png" alt="Storico del circuito di Baku: piloti ordinati per indice di affinità, un pilota aperto su ogni suo anno lì con qualifica, griglia, arrivo, punti, il posto atteso della macchina e le penalità" width="820">
+  <br>
+  <sub><em>50 = come la macchina. Sopra, il circuito si addice al pilota.</em></sub>
+</p>
+
 **Venerdì.** Il calendario mostra ogni sessione nel tuo fuso orario — o nell'ora locale del
 circuito, o entrambe affiancate — con il conto alla rovescia per la prossima e il podio di
 ogni weekend già corso.
@@ -177,6 +188,8 @@ dal 1950; i due campionati dopo qualunque gara.
 **Intorno al weekend**
 - **Calendario** nel tuo fuso orario, con il conto alla rovescia; **risultati dal 1950**;
   **i due campionati**, piloti e costruttori, di qualunque stagione.
+- **Storico del circuito** con un **indice di affinità**: come va ogni pilota su questa
+  pista, al netto della macchina.
 - **Modalità senza spoiler** per quando guardi la gara più tardi.
 - **Italiano e inglese**, tema chiaro e scuro, sul telefono o su un tablet a parete.
 

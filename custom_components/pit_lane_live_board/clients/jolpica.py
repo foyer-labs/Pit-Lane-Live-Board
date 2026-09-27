@@ -20,6 +20,7 @@ import aiohttp
 
 from ..cache import DiskCache
 from ..const import JOLPICA_BASE, USER_AGENT
+from ..core.circuit_history import row_count
 from ..core.jolpica_parse import page_info
 from .http import (
     BackingOff,
@@ -36,6 +37,9 @@ _LOGGER = logging.getLogger(__name__)
 CURRENT_MAX_AGE = 10 * 60
 PAST_MAX_AGE = 30 * 24 * 3600
 SEASONS_MAX_AGE = 24 * 3600
+# A circuit's history across seasons (§7.3 circuit history): refreshed daily, when
+# a race there this season may have added rows.
+CIRCUIT_MAX_AGE = 24 * 3600
 PAGE = 100
 # Laps, the longest resource, run to ~1,200 rows (13 pages): more than this is a
 # payload that lies about its total, not a race.
@@ -92,8 +96,11 @@ class JolpicaClient:
         offset: int = 0,
         fresh: bool = False,
         priority: bool = False,
+        max_age: float | None = None,
     ) -> Any:
-        """`path` like `2026/14/results`; returns the parsed JSON."""
+        """`path` like `2026/14/results`; returns the parsed JSON. `max_age`
+        overrides the age the season and round would give (resources that span
+        seasons)."""
         return await self._inflight.run(
             f"{path}?{offset}&{fresh}",
             lambda: self._get(
@@ -103,6 +110,7 @@ class JolpicaClient:
                 offset=offset,
                 fresh=fresh,
                 priority=priority,
+                max_age=max_age,
             ),
         )
 
@@ -115,6 +123,7 @@ class JolpicaClient:
         offset: int,
         fresh: bool,
         priority: bool,
+        max_age: float | None = None,
     ) -> Any:
         key = f"jolpica/{path}?offset={offset}"
         # A settled round's answer lives under its own key, written only once the
@@ -124,9 +133,8 @@ class JolpicaClient:
         settled = self._settled(season, rnd)
         write_key = settled_key if settled else key
         if not fresh:
-            cached = await self._run(
-                self._cache.read_json, write_key, self.max_age(season, rnd)
-            )
+            age = self.max_age(season, rnd) if max_age is None else max_age
+            cached = await self._run(self._cache.read_json, write_key, age)
             if cached is not None:
                 return cached
         try:
@@ -233,6 +241,37 @@ class JolpicaClient:
 
     async def laps(self, season: int, rnd: int) -> list[Any]:
         return await self.get_all(f"{season}/{rnd}/laps", season=season, rnd=rnd)
+
+    async def circuit(self, circuit_id: str, resource: str) -> list[Any]:
+        """Every page of `/circuits/{id}/results` or `/qualifying`, every season.
+
+        Rows come in date order, so only the last page gains rows (a race this
+        season) and only the first carries the total that says a page was added:
+        both are refreshed daily. The full pages in between are past races,
+        cached like a past season; one cached while it was still the last,
+        partial page is read again.
+        """
+        path = f"circuits/{circuit_id}/{resource}"
+        key = "QualifyingResults" if resource == "qualifying" else "Results"
+        first = await self.get(path, season=None, max_age=CIRCUIT_MAX_AGE)
+        pages = [first]
+        total, limit, _ = page_info(first)
+        step = limit if 0 < limit <= PAGE else PAGE
+        total = min(total, step * MAX_PAGES)
+        offset = step
+        while offset < total:
+            last = offset + step >= total
+            page = await self.get(
+                path,
+                season=None,
+                offset=offset,
+                max_age=CIRCUIT_MAX_AGE if last else PAST_MAX_AGE,
+            )
+            if not last and row_count(page, key) < step:
+                page = await self.get(path, season=None, offset=offset, fresh=True)
+            pages.append(page)
+            offset += step
+        return pages
 
     async def standings(self, season: int, rnd: int | None, kind: str) -> Any:
         """`kind` is `driver` or `constructor`; `rnd` None is the latest."""
