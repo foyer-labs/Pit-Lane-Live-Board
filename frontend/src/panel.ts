@@ -2,6 +2,7 @@
 // the no-spoiler switch, live timing's state and the settings behind the gear, and
 // the footer with the non-affiliation notice (INV-6).
 import { LitElement, css, html, nothing } from "lit";
+import { cache } from "lit/directives/cache.js";
 import { api } from "./api";
 import { define } from "./define";
 import { translator, type Translate } from "./i18n";
@@ -9,7 +10,6 @@ import { ICON, icon } from "./icons";
 import { failure } from "./parts";
 import { tokens } from "./styles";
 import { TIME_PREFS_EVENT, loadTimePrefs } from "./timeprefs";
-import { keyed } from "lit/directives/keyed.js";
 import type { Hass, Settings } from "./types";
 import { PlbAge, PlbCountdown } from "./clock";
 import { PlbCalendar } from "./pages/calendar";
@@ -24,6 +24,7 @@ export type Page = "live" | "calendar" | "results" | "standings" | "settings";
 const PAGES: Page[] = ["live", "calendar", "results", "standings"];
 const ALL_PAGES: Page[] = [...PAGES, "settings"];
 const STORAGE_KEY = "pit-lane-live-board-page";
+const SEASONS_RETRY = 30_000;
 
 /**
  * Kiosk mode (decision 55), from the address: `?kiosk` fills the screen with the
@@ -39,7 +40,7 @@ function query(): URLSearchParams {
 
 function kioskFromAddress(): boolean {
   const q = query();
-  return q.has("kiosk") && q.get("kiosk") !== "0";
+  return q.has("kiosk") && !["0", "false", "off", "no"].includes((q.get("kiosk") ?? "").toLowerCase());
 }
 
 function scale(): number {
@@ -63,6 +64,8 @@ export interface GoTo {
   round?: number;
 }
 
+type WakeLock = { release(): Promise<void> };
+
 export class PitLaneLiveBoardPanel extends LitElement {
   static override properties = {
     hass: { attribute: false },
@@ -75,6 +78,7 @@ export class PitLaneLiveBoardPanel extends LitElement {
     target: { state: true },
     clockVersion: { state: true },
     kiosk: { type: Boolean, reflect: true },
+    fullscreen: { state: true },
   };
 
   hass?: Hass;
@@ -85,28 +89,42 @@ export class PitLaneLiveBoardPanel extends LitElement {
   delayOpen = false;
   failed = false;
   target?: GoTo;
-  // Bumped when the user changes which clock times are shown in: the pages are
-  // drawn again (their own `hass` guard would otherwise skip it).
+  // Bumped when the user changes which clock times are shown in: handed to the
+  // pages, which draw their times again (their own `hass` guard would skip it).
   clockVersion = 0;
   kiosk = false;
+  /** The browser's full screen (the ⛶ button or Esc), apart from kiosk mode. */
+  fullscreen = false;
   private kioskAsked = false;
   private scale = 1;
   private idleTimer?: number;
-  private wakeLock?: { release(): Promise<void> };
+  private wakeLock?: WakeLock;
   private readonly moved = () => {
     this.classList.remove("idle");
     window.clearTimeout(this.idleTimer);
-    if (this.kiosk) this.idleTimer = window.setTimeout(() => this.classList.add("idle"), 3_000);
+    if (this.kiosk) {
+      this.idleTimer = window.setTimeout(() => {
+        if (this.kiosk) this.classList.add("idle");
+      }, 3_000);
+    }
   };
   private readonly fullscreenChanged = () => {
+    this.fullscreen = !!document.fullscreenElement;
     // Leaving full screen (Esc) leaves kiosk mode too, unless the address asked.
-    if (!document.fullscreenElement && !this.kioskAsked) this.kiosk = false;
+    if (!this.fullscreen && !this.kioskAsked && this.kiosk) this.endKiosk();
+  };
+  // The browser lets go of a wake lock whenever the page is hidden (tab switched,
+  // app in the background, screen off and on): ask again on return.
+  private readonly visibilityChanged = () => {
+    if (document.visibilityState === "visible" && this.kiosk) this.keepAwake();
   };
   private readonly clockChanged = () => this.clockVersion++;
   private unsubscribe?: () => void;
   private connecting = false;
   private retry?: number;
   private backoff = 5_000;
+  private seasonsTimer?: number;
+  private askingSeasons = false;
   // A delay chosen here and not yet confirmed: pushed settings do not undo it.
   private pendingDelay: number | null = null;
   private delayTimer?: number;
@@ -120,8 +138,10 @@ export class PitLaneLiveBoardPanel extends LitElement {
     window.addEventListener(TIME_PREFS_EVENT, this.clockChanged);
     window.addEventListener("pointermove", this.moved);
     document.addEventListener("fullscreenchange", this.fullscreenChanged);
+    document.addEventListener("visibilitychange", this.visibilityChanged);
     this.kioskAsked = kioskFromAddress();
     this.kiosk = this.kioskAsked;
+    this.fullscreen = !!document.fullscreenElement;
     this.scale = scale();
     const asked = query().get("page") as Page | null;
     if (asked && ALL_PAGES.includes(asked)) this.page = asked;
@@ -132,28 +152,54 @@ export class PitLaneLiveBoardPanel extends LitElement {
    *  hide the pointer when it rests. */
   private startKiosk(): void {
     this.moved();
-    const lock = (navigator as unknown as { wakeLock?: { request(kind: string): Promise<{ release(): Promise<void> }> } }).wakeLock;
-    lock?.request("screen").then(
-      (sentinel) => (this.wakeLock = sentinel),
+    this.keepAwake();
+  }
+
+  private endKiosk(): void {
+    this.kiosk = false;
+    window.clearTimeout(this.idleTimer);
+    this.classList.remove("idle");
+    this.letSleep();
+  }
+
+  private keepAwake(): void {
+    const lock = (navigator as unknown as { wakeLock?: { request(kind: string): Promise<WakeLock> } }).wakeLock;
+    if (!lock) return;
+    const old = this.wakeLock;
+    this.wakeLock = undefined;
+    void old?.release().catch(() => undefined);
+    lock.request("screen").then(
+      (sentinel) => {
+        // Kiosk ended while asking: let go at once.
+        if (this.kiosk && this.isConnected) this.wakeLock = sentinel;
+        else void sentinel.release().catch(() => undefined);
+      },
       () => undefined,
     );
   }
 
-  private async enterFullScreen(): Promise<void> {
-    this.kiosk = true;
-    this.startKiosk();
+  private letSleep(): void {
+    void this.wakeLock?.release().catch(() => undefined);
+    this.wakeLock = undefined;
+  }
+
+  /** The ⛶ button: the browser's full screen, with the kiosk layout. With
+   *  `?kiosk` in the address the layout stays when full screen is left. */
+  private async toggleFullScreen(): Promise<void> {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen().catch(() => undefined);
+      return; // fullscreenChanged ends the kiosk layout, unless the address asked
+    }
+    if (!this.kiosk) {
+      this.kiosk = true;
+      this.startKiosk();
+    }
     try {
       await document.documentElement.requestFullscreen();
     } catch {
-      /* the browser refused: kiosk layout without full screen */
+      /* the browser refused: kiosk layout without full screen, which the
+         button (now "Leave full screen") ends */
     }
-  }
-
-  private async leaveFullScreen(): Promise<void> {
-    this.kiosk = this.kioskAsked;
-    void this.wakeLock?.release().catch(() => undefined);
-    this.wakeLock = undefined;
-    if (document.fullscreenElement) await document.exitFullscreen().catch(() => undefined);
   }
 
   override disconnectedCallback(): void {
@@ -161,12 +207,15 @@ export class PitLaneLiveBoardPanel extends LitElement {
     window.removeEventListener(TIME_PREFS_EVENT, this.clockChanged);
     window.removeEventListener("pointermove", this.moved);
     document.removeEventListener("fullscreenchange", this.fullscreenChanged);
+    document.removeEventListener("visibilitychange", this.visibilityChanged);
     window.clearTimeout(this.idleTimer);
-    void this.wakeLock?.release().catch(() => undefined);
+    this.letSleep();
     this.unsubscribe?.();
     this.unsubscribe = undefined;
     window.clearTimeout(this.retry);
     this.retry = undefined;
+    window.clearTimeout(this.seasonsTimer);
+    this.seasonsTimer = undefined;
   }
 
   protected override updated(): void {
@@ -197,13 +246,33 @@ export class PitLaneLiveBoardPanel extends LitElement {
     } finally {
       this.connecting = false;
     }
-    if (!this.seasons.length) {
-      try {
-        this.seasons = (await api.seasons(this.hass)).seasons;
-      } catch {
-        this.seasons = this.settings ? [this.settings.season] : [];
-      }
+    void this.loadSeasons();
+  }
+
+  /** The seasons the selectors offer. Until they arrive (or when the source does
+   *  not answer, asked again every 30 s) the range the settings give stands in. */
+  private async loadSeasons(): Promise<void> {
+    if (!this.hass || this.seasons.length || this.askingSeasons) return;
+    this.askingSeasons = true;
+    try {
+      this.seasons = (await api.seasons(this.hass)).seasons;
+    } catch {
+      window.clearTimeout(this.seasonsTimer);
+      this.seasonsTimer = window.setTimeout(() => {
+        this.seasonsTimer = undefined;
+        void this.loadSeasons();
+      }, SEASONS_RETRY);
+    } finally {
+      this.askingSeasons = false;
     }
+  }
+
+  private get seasonList(): number[] {
+    if (this.seasons.length) return this.seasons;
+    const s = this.settings;
+    if (!s) return [];
+    const first = s.first_season || s.season;
+    return Array.from({ length: Math.max(1, s.season - first + 1) }, (_, i) => s.season - i);
   }
 
   private receive(settings: Settings): void {
@@ -282,21 +351,23 @@ export class PitLaneLiveBoardPanel extends LitElement {
           })
         : html`<div class="card loading">${this.t("common.loading")}</div>`;
     }
-    const common = { hass: this.hass, settings: this.settings, seasons: this.seasons };
+    const common = { hass: this.hass, settings: this.settings, seasons: this.seasonList, clock: this.clockVersion };
+    // `cache` keeps the pages' elements while another page is shown: going back
+    // finds its season, round and data as they were, without asking again.
     switch (this.page) {
       case "settings":
-        return html`<plb-settings .hass=${common.hass} .settings=${common.settings}
+        return html`<plb-settings .hass=${common.hass} .settings=${common.settings} .clock=${common.clock}
           @plb-delay=${(e: CustomEvent<number>) => this.setDelay(e.detail)}></plb-settings>`;
       case "calendar":
-        return html`<plb-calendar .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons}
+        return html`<plb-calendar .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons} .clock=${common.clock}
           @plb-go=${(e: CustomEvent<GoTo>) => this.go(e.detail)}></plb-calendar>`;
       case "results":
-        return html`<plb-results .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons}
+        return html`<plb-results .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons} .clock=${common.clock}
           .target=${this.target} @plb-reveal=${this.reveal}></plb-results>`;
       case "standings":
         return html`<plb-standings .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons}></plb-standings>`;
       default:
-        return html`<plb-live .hass=${common.hass} .settings=${common.settings}
+        return html`<plb-live .hass=${common.hass} .settings=${common.settings} .clock=${common.clock} ?kiosk=${this.kiosk}
           @plb-spoiler-off=${() => this.setSpoiler(false)}></plb-live>`;
     }
   }
@@ -305,47 +376,49 @@ export class PitLaneLiveBoardPanel extends LitElement {
     const t = this.t;
     const s = this.settings;
     const f1tv = s?.f1tv && s.f1tv.status !== "not_configured" ? s.f1tv.status : null;
+    const zoom = this.scale !== 1 ? `zoom:${this.scale}` : "";
+    const leave = this.fullscreen || (this.kiosk && !this.kioskAsked);
     return html`
-      <header class="appbar">
+      <div class="barwrap" style=${zoom}><header class="appbar">
         ${this.narrow && !this.kiosk
           ? html`<button class="icon-btn" @click=${this.toggleMenu} aria-label=${t("common.menu")}>${icon(ICON.menu, 24)}</button>`
           : nothing}
         <div class="brand"><span class="mark">${icon(ICON.board, 18)}</span><span class="name">${t("common.title")}</span></div>
         <nav class="tabs">
           ${PAGES.map(
-            (p) => html`<button class="tab ${this.page === p ? "active" : ""}" @click=${() => this.go({ page: p })}>
-              ${t(`tabs.${p}`)}
-            </button>`,
+            (p) => html`<button class="tab ${this.page === p ? "active" : ""}" aria-current=${this.page === p ? "page" : "false"}
+              @click=${() => this.go({ page: p })}>${t(`tabs.${p}`)}</button>`,
           )}
         </nav>
         <span class="spacer"></span>
         ${s && !s.live
-          ? html`<button class="chip paused" @click=${() => this.go({ page: "settings" })} title=${t("settings.pausedHelp")}>
+          ? html`<button class="chip paused" @click=${() => this.go({ page: "settings" })} title=${t("settings.pausedHelp")}
+              aria-label=${s.auto_start ? t("live.pausedAuto") : t("live.pausedShort")}>
               ${icon(ICON.pause, 16)}<span class="label">${s.auto_start ? t("live.pausedAuto") : t("live.pausedShort")}</span></button>`
           : nothing}
         ${f1tv
-          ? html`<span class="chip small ${f1tv === "active" ? "" : "warn"}" title=${t(`f1tv.${f1tv}`)}>F1TV</span>`
+          ? html`<span class="chip small f1tv ${f1tv === "active" ? "" : "warn"}" title=${t(`f1tv.${f1tv}`)}>F1TV</span>`
           : nothing}
-        <button class="chip ${s?.tv_delay ? "on" : ""}" @click=${() => (this.delayOpen = !this.delayOpen)}
+        <button class="chip delay ${s?.tv_delay ? "on" : ""}" @click=${() => (this.delayOpen = !this.delayOpen)}
           aria-expanded=${this.delayOpen ? "true" : "false"} aria-label=${t("delay.title")}>
           ${icon(ICON.clock, 18)}<span class="num">${t("delay.seconds", { n: s?.tv_delay ? `+${s.tv_delay}` : 0 })}</span>
           <span class="label">${t("delay.title")}</span>
         </button>
-        <button class="chip ${s?.no_spoiler ? "on" : ""}" @click=${() => this.setSpoiler(!s?.no_spoiler)}
+        <button class="chip spoiler ${s?.no_spoiler ? "on" : ""}" @click=${() => this.setSpoiler(!s?.no_spoiler)}
           title=${t("spoiler.help")} aria-pressed=${s?.no_spoiler ? "true" : "false"}
           aria-label=${s?.no_spoiler ? t("spoiler.on") : t("spoiler.off")}>
           ${icon(s?.no_spoiler ? ICON.eyeOff : ICON.eye, 18)}
           <span class="label">${s?.no_spoiler ? t("spoiler.on") : t("spoiler.off")}</span>
         </button>
-        <button class="icon-btn full" @click=${() => (this.kiosk ? this.leaveFullScreen() : this.enterFullScreen())}
-          aria-label=${t(this.kiosk ? "kiosk.leave" : "kiosk.enter")} title=${t(this.kiosk ? "kiosk.leave" : "kiosk.enter")}>
-          ${icon(this.kiosk ? ICON.exitFullscreen : ICON.fullscreen, 22)}</button>
+        <button class="icon-btn full" @click=${() => (leave && !this.fullscreen ? this.endKiosk() : this.toggleFullScreen())}
+          aria-label=${t(leave ? "kiosk.leave" : "kiosk.enter")} title=${t(leave ? "kiosk.leave" : "kiosk.enter")}>
+          ${icon(leave ? ICON.exitFullscreen : ICON.fullscreen, 22)}</button>
         <button class="icon-btn gear ${this.page === "settings" ? "active" : ""}" @click=${() => this.go({ page: "settings" })}
           aria-label=${t("settings.title")} title=${t("settings.title")}>${icon(ICON.cog, 22)}</button>
-      </header>
+      </header></div>
       ${this.delayOpen && s ? this.renderPopover(s) : nothing}
-      <main style=${this.scale !== 1 ? `zoom:${this.scale}` : ""}>${keyed(this.clockVersion, this.renderPage())}</main>
-      <footer>${t("common.disclaimer")}</footer>
+      <main style=${zoom}>${cache(this.renderPage())}</main>
+      <footer style=${zoom}>${t("common.disclaimer")}</footer>
     `;
   }
 
@@ -378,29 +451,35 @@ export class PitLaneLiveBoardPanel extends LitElement {
         overflow: auto; min-height: 0;
       }
       :host([kiosk]) main { max-width: none; }
-      :host([kiosk]) footer { max-width: none; font-size: 10px; }
+      :host([kiosk]) footer { max-width: none; font-size: 10px; padding-bottom: 8px; }
       :host([kiosk]) .gear, :host([kiosk]) .chip.paused { display: none; }
+      :host([kiosk]) .appbar { min-height: 48px; }
+      :host([kiosk]) main { padding-top: 10px; }
       :host(.idle) { cursor: none; }
+      /* The bar is sized by the panel's own width (Home Assistant's sidebar takes
+         a varying part of the window), and never wider than it. */
+      .barwrap { position: sticky; top: 0; z-index: 5; container-type: inline-size; }
       .appbar {
-        position: sticky; top: 0; z-index: 5;
         display: flex; align-items: center; gap: 12px;
-        min-height: 56px; padding: 0 16px;
+        min-height: 56px; padding: 0 16px; box-sizing: border-box; max-width: 100%;
         background: var(--app-header-background-color, var(--card-background-color));
         color: var(--app-header-text-color, var(--primary-text-color));
         border-bottom: 1px solid var(--divider-color);
       }
-      .icon-btn { border: 0; background: none; color: inherit; cursor: pointer; padding: 4px; display: grid; }
-      .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 500; white-space: nowrap; }
+      .icon-btn { border: 0; background: none; color: inherit; cursor: pointer; padding: 0; display: grid; place-items: center;
+        width: 40px; height: 40px; border-radius: 50%; flex: none; }
+      .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 500; white-space: nowrap; flex: none; }
       .mark {
         width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: #fff;
         background: linear-gradient(135deg, var(--primary-color), #7c4dff);
       }
-      .tabs { display: flex; gap: 4px; margin-left: 8px; }
-      .appbar .chip { color: inherit; }
-      .appbar .chip.on { color: var(--primary-color); }
+      /* Tabs scroll rather than push the actions off the bar. */
+      .tabs { display: flex; gap: 4px; margin-left: 8px; min-width: 0; flex: 0 1 auto; overflow-x: auto; scrollbar-width: none; }
+      .appbar .chip { color: inherit; flex: none; }
+      .appbar .chip.on { color: var(--plb-primary-text); }
       .chip.warn { color: var(--warning-color, #ffa600); }
       .chip.paused { border-style: dashed; color: var(--secondary-text-color); }
-      .gear.active { color: var(--primary-color); }
+      .gear.active { color: var(--plb-primary-text); }
       main { padding: var(--plb-gap); max-width: 1480px; margin: 0 auto; }
       footer {
         max-width: 1480px; margin: 8px auto 0; padding: 0 var(--plb-gap) 24px;
@@ -411,20 +490,31 @@ export class PitLaneLiveBoardPanel extends LitElement {
       .pop p { margin: 0; color: var(--secondary-text-color); font-size: 12px; line-height: 1.5; }
       .stepper { display: flex; align-items: center; gap: 10px; }
       .stepper button {
-        width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--divider-color);
+        width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--divider-color);
         background: none; color: inherit; font-size: 18px; cursor: pointer;
       }
       .stepper b { font-size: 22px; font-weight: 500; min-width: 110px; text-align: center; }
       input[type="range"] { width: 100%; accent-color: var(--primary-color); }
-      @media (max-width: 1180px) {
+      @container (max-width: 1180px) {
         .appbar .chip .label { display: none; }
         .appbar { gap: 8px; }
       }
-      @media (max-width: 640px) {
-        .appbar { flex-wrap: wrap; gap: 6px; padding: 8px 8px 0; }
-        .tabs { order: 3; width: 100%; margin: 0; overflow-x: auto; }
+      @container (max-width: 960px) {
+        .brand .name { display: none; }
+      }
+      /* Two rows: the tabs under the brand and the actions. */
+      @container (max-width: 760px) {
+        .appbar { flex-wrap: wrap; gap: 6px; padding: 6px 8px 0; }
+        .tabs { order: 3; width: 100%; flex-basis: 100%; margin: 0; }
         .tab { flex: 1; padding: 8px 6px; }
-        .chip .label { display: none; }
+      }
+      @container (max-width: 480px) {
+        .appbar .f1tv, .appbar .full { display: none; }
+        .appbar .chip { padding: 0 10px; }
+        .tabs { gap: 2px; }
+        .tab { padding: 8px 4px; font-size: 13px; letter-spacing: 0; }
+      }
+      @media (max-width: 640px) {
         main { padding: 10px; }
         .pop { left: 8px; right: 8px; width: auto; top: 112px; }
       }
