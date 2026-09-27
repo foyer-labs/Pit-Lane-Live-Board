@@ -383,10 +383,15 @@ async def ws_results_season(hass, connection, msg):
         _error(connection, msg["id"], err)
         return
     winners = parse_season_races(payload)
-    connection.send_result(
-        msg["id"],
-        pages.season_rounds(season, meetings, winners, _hidden(hub), _now()),
-    )
+    page = pages.season_rounds(season, meetings, winners, _hidden(hub), _now())
+    if season >= pages.FIRST_ARCHIVE_SEASON and season < hub.season:
+        try:
+            archived = await hub.archive.season_index(season) is not None
+        except SourceError:
+            archived = True  # unreachable now: keep the tabs, they say so if empty
+        if not archived:
+            page = pages.without_archive_tabs(page)
+    connection.send_result(msg["id"], page)
 
 
 async def _classification(hub: Hub, season: int, rnd: int) -> list[dict[str, Any]]:

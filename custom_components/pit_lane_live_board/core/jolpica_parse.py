@@ -260,6 +260,9 @@ def add_changes(current: dict[str, Any], previous: dict[str, Any] | None) -> Non
         row["change"] = was - row["position"] if was and row["position"] else None
 
 
+MAX_LAPS = 200  # the longest races ran about 200 laps (Indianapolis, 1950s)
+
+
 def parse_laps(pages: list[Any]) -> dict[str, list[int | None]]:
     """Position on every lap per driver id, from all pages of `/laps`."""
     positions: dict[str, dict[int, int]] = {}
@@ -268,8 +271,8 @@ def parse_laps(pages: list[Any]) -> dict[str, list[int | None]]:
         for race in _races(payload):
             for lap in race.get("Laps") or []:
                 number = to_int(lap.get("number")) if isinstance(lap, dict) else None
-                if number is None:
-                    continue
+                if number is None or not 0 < number <= MAX_LAPS:
+                    continue  # a hostile lap number must not size a list
                 last_lap = max(last_lap, number)
                 for timing in lap.get("Timings") or []:
                     if not isinstance(timing, dict):

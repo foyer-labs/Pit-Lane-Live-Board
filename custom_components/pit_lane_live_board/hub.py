@@ -306,7 +306,12 @@ class Hub:
             self.calendar_error = str(err)
             _LOGGER.warning("Calendar unavailable: %s", err)
             return
-        meetings = parse_schedule(payload)
+        try:
+            meetings = parse_schedule(payload)
+        except Exception:  # hostile or broken data must not stop the calendar
+            _LOGGER.exception("Calendar data could not be read")
+            self.calendar_error = "unreadable"
+            return
         self.calendar_error = None if meetings else "empty"
         if meetings and not self._stopped:
             self.meetings = meetings
@@ -451,7 +456,8 @@ class Hub:
             lambda topic, delta, utc: buffer.push(
                 time.monotonic(), ("feed", topic, delta, utc)
             ),
-            self._live_token,
+            # A development player never gets the real F1TV token.
+            (lambda: None) if self.dev_url else self._live_token,
             on_refused=self._token_refused_by_f1,
         )
         live = LiveSession(meeting, session, client, buffer)
