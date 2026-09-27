@@ -102,7 +102,50 @@
     "track": "Track temperature",
     "pitIn": "IN",
     "pitOut": "OUT",
-    "gridShort": "G"
+    "gridShort": "G",
+    "status": {
+      "finished": "Finished",
+      "lapped": "Lapped",
+      "retired": "Retired",
+      "disqualified": "Disqualified",
+      "did_not_start": "Did not start",
+      "did_not_qualify": "Did not qualify",
+      "did_not_prequalify": "Did not pre-qualify",
+      "withdrew": "Withdrew",
+      "not_classified": "Not classified",
+      "excluded": "Excluded",
+      "accident": "Accident",
+      "collision": "Collision",
+      "engine": "Engine",
+      "gearbox": "Gearbox",
+      "transmission": "Transmission",
+      "hydraulics": "Hydraulics",
+      "brakes": "Brakes",
+      "suspension": "Suspension",
+      "electrical": "Electrical",
+      "power_unit": "Power Unit",
+      "spun_off": "Spun off",
+      "puncture": "Puncture",
+      "overheating": "Overheating",
+      "fuel_pressure": "Fuel pressure",
+      "oil_leak": "Oil leak",
+      "water_leak": "Water leak",
+      "wheel": "Wheel",
+      "tyre": "Tyre",
+      "damage": "Damage",
+      "mechanical": "Mechanical",
+      "illness": "Illness"
+    },
+    "lapsDownOne": "+{n} lap",
+    "lapsDown": "+{n} laps",
+    "best": "Best",
+    "teammateDashed": "Dashed: the second driver of a team.",
+    "startEnd": "{start} → {end}",
+    "range": "min {min} · max {max}",
+    "dry": "Dry",
+    "wet": "Rain during the session",
+    "open": "Open the round",
+    "usedFaded": "A faded bar is a used set."
   },
   "standings": {
     "title": "Standings",
@@ -184,7 +227,11 @@
     "autoStart": "It starts by itself at the next session.",
     "final": "FINAL",
     "ended": "Ended {time} · data frozen",
-    "nextShort": "Next"
+    "nextShort": "Next",
+    "leader": "Leader",
+    "lappedOne": "+{n} lap",
+    "lapped": "+{n} laps",
+    "pausedHelp": "Nothing connects to F1 and nothing live is written to disk."
   },
   "f1tv": {
     "active": "F1TV active",
@@ -237,7 +284,9 @@
     "sidebar": "Show Live Board in the sidebar",
     "sidebarHelp": "Off: the panel still opens from the integration's device page, and the cards keep working on dashboards.",
     "adminPanel": "Only administrators can open the panel",
-    "adminPanelHelp": "Off (the default): every user of the house sees Live Board. On: only administrators do. The cards follow the visibility of the dashboard they are on."
+    "adminPanelHelp": "Off (the default): every user of the house sees Live Board. On: only administrators do. The cards follow the visibility of the dashboard they are on.",
+    "pauseShort": "Pause",
+    "startShort": "Start"
   },
   "stewards": {
     "title": "Flags & stewards",
@@ -330,8 +379,10 @@
       "count": "How many",
       "filter": "Show",
       "kind": "Championship",
-      "show_title": "Show the title"
-    }
+      "hide_title": "Hide the title"
+    },
+    "startFailed": "Could not start live timing. Try again in a moment.",
+    "backWith": "Back with {session}, {time}"
   },
   "time": {
     "title": "Times",
