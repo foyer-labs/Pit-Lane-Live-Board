@@ -97,6 +97,17 @@ async def test_events_of_a_followed_driver(hass: HomeAssistant, entry):
     unsub()
 
 
+async def until(condition, seconds: float = 3.0) -> None:
+    """Wait for background work (a delivery) without waiting for the live loop,
+    which never ends."""
+    import asyncio
+
+    for _ in range(int(seconds / 0.05)):
+        if condition():
+            return
+        await asyncio.sleep(0.05)
+
+
 async def test_the_summary_goes_to_the_chosen_services(hass: HomeAssistant, entry):
     hub = entry.runtime_data.hub
     sent: list[ServiceCall] = []
@@ -112,7 +123,7 @@ async def test_the_summary_goes_to_the_chosen_services(hass: HomeAssistant, entr
     await settle()
     client.feed("SessionStatus", {"Status": "Finalised"})
     await settle()
-    await hass.async_block_till_done()
+    await until(lambda: sent)
     assert len(sent) == 1
     assert sent[0].data["title"].endswith("Test Grand Prix — Race")
     assert sent[0].data["message"].splitlines()[0] == "1. NOR · 2. LEC +1.2"
@@ -136,7 +147,8 @@ async def test_no_spoiler_holds_the_summary_until_it_is_off(hass: HomeAssistant,
     await hass.async_block_till_done()
     assert sent == [] and len(hub.store.pending_summaries) == 1
     await hub.async_update_settings(hub.settings.with_no_spoiler(False))
-    await hass.async_block_till_done()
+    # Delivery runs off the caller's path, as a background task.
+    await until(lambda: sent)
     assert len(sent) == 1 and hub.store.pending_summaries == []
 
 
