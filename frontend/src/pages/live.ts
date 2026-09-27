@@ -4,27 +4,35 @@
 // (INV-2). Between sessions it shows the last session's final state, frozen.
 //
 // The backend sends the whole view once, then only the sections that changed: they
-// are merged here. The map and the ticking clocks are their own elements, so
-// neither redraws the page.
+// are merged here, keeping the identity of what did not change, and each section of
+// the page is guarded by what it shows, so a message that only ages the data redraws
+// nothing. The map and the ticking clocks are their own elements, so neither
+// redraws the page. While the tab is hidden nothing is drawn: the newest view is
+// kept and drawn once on return.
 import { LitElement, css, html, nothing } from "lit";
+import { guard } from "lit/directives/guard.js";
 import { repeat } from "lit/directives/repeat.js";
 import { api } from "../api";
 import { ageLabel } from "../clock";
 import { clockTime, hassChanged, number, sessionClock, sessionTime, shortTime } from "../format";
 import { translator, type Translate } from "../i18n";
 import { ICON, icon } from "../icons";
-import { alsoTime, failure, gained, onKey, segmentStrip, tyre } from "../parts";
-import { tokens } from "../styles";
+import { mergeLive } from "../merge";
+import { alsoTime, failure, gained, gapText, onKey, segmentStrip, sessionName, tyre } from "../parts";
+import { feedStyles, tokens } from "../styles";
 import type { Hass, LiveView, Message, NextSession, Row, Settings, Timed } from "../types";
 import { pillStyles, stewardsCard, stewardsStyles } from "./stewards";
 
 const FILTER_KIND: Record<string, string | null> = { all: null, flags: "flag", penalties: "penalty", other: "other" };
 const BOARD_STATES = new Set(["live", "stale", "lost", "final"]);
+const RACES = new Set(["race", "sprint"]);
 
 export class PlbLive extends LitElement {
   static override properties = {
     hass: { attribute: false, hasChanged: hassChanged },
     settings: { attribute: false },
+    kiosk: { type: Boolean, reflect: true },
+    clock: { attribute: false },
     view: { state: true },
     selected: { state: true },
     filter: { state: true },
@@ -36,6 +44,10 @@ export class PlbLive extends LitElement {
 
   hass!: Hass;
   settings!: Settings;
+  /** On a TV (kiosk mode): tighter rows and the one-line stewards strip. */
+  kiosk = false;
+  /** Bumped by the panel when the user picks another clock for the times. */
+  clock = 0;
   view?: LiveView;
   selected = "";
   filter = "all";
@@ -49,14 +61,32 @@ export class PlbLive extends LitElement {
   // When the current view arrived: while the feed is quiet, the data keeps ageing.
   private receivedAt = Date.now();
   private audio?: HTMLAudioElement;
+  // The tower by racing number, rebuilt only when the tower changes.
+  private byNumber = new Map<string, Row>();
+  private byNumberOf?: Row[];
+  private readonly visibility = () => {
+    if (document.visibilityState === "visible") this.requestUpdate();
+  };
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    document.addEventListener("visibilitychange", this.visibility);
+  }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    document.removeEventListener("visibilitychange", this.visibility);
     window.clearTimeout(this.retry);
     this.retry = undefined;
     this.unsubscribe?.();
     this.unsubscribe = undefined;
     this.stopAudio();
+  }
+
+  /** Nothing is drawn in a hidden tab; the view keeps arriving and is drawn on
+   *  return (the visibility listener asks for it). */
+  protected override shouldUpdate(): boolean {
+    return document.visibilityState !== "hidden" || !this.hasUpdated;
   }
 
   protected override willUpdate(): void {
@@ -90,7 +120,7 @@ export class PlbLive extends LitElement {
 
   /** A full view replaces; a partial one carries the sections that changed. */
   private receive(message: LiveView): void {
-    this.view = message.full || !this.view ? message : { ...this.view, ...message };
+    this.view = mergeLive(this.view, message);
     this.receivedAt = Date.now();
   }
 
@@ -155,13 +185,13 @@ export class PlbLive extends LitElement {
     switch (v.state) {
       case "hidden":
         return html`<div class="card state">${icon(ICON.eyeOff, 56)}<h2>${t("live.hidden")}</h2>
-          <div>${t("live.hiddenHelp", { meeting: v.header?.meeting ?? "", session: v.header?.session ?? "" })}</div>
+          <div>${t("live.hiddenHelp", { meeting: v.header?.meeting ?? "", session: sessionName(t, v.header?.kind, v.header?.session) })}</div>
           <button class="btn" @click=${() => this.dispatchEvent(new CustomEvent("plb-spoiler-off", { bubbles: true, composed: true }))}>${t("live.showAll")}</button></div>`;
       case "syncing":
         return html`<div class="card state">${icon(ICON.clock, 56)}<h2>${t("live.syncing")}</h2>
           <div>${t("live.syncingHelp", { n: v.delay })}</div></div>`;
       case "connecting":
-        return html`<div class="card state">${icon(ICON.timer, 56)}<h2>${t("live.connecting")}</h2></div>`;
+        return html`<div class="card state"><span class="spin">${icon(ICON.timer, 56)}</span><h2>${t("live.connecting")}</h2></div>`;
       case "paused":
         return this.renderPaused(t, v);
       default:
@@ -173,8 +203,9 @@ export class PlbLive extends LitElement {
     if (!next) return html`<div>${t("live.noNext")}</div>`;
     return html`<div>${t("live.next", { meeting: next.meeting, session: t(`sessions.${next.kind}`) })}</div>
       ${next.start
-        ? html`<div class="big num"><plb-countdown .to=${next.start}></plb-countdown></div>
-            <div>${t("live.startsIn")} · ${sessionTime(this.hass, next.start, next.date, next.timezone)}
+        ? html`<div class="starts">${t("live.startsIn")}</div>
+            <div class="big num"><plb-countdown .to=${next.start}></plb-countdown></div>
+            <div>${sessionTime(this.hass, next.start, next.date, next.timezone)}
               ${alsoTime(t, this.hass, next.start, next.timezone)}</div>`
         : nothing}`;
   }
@@ -186,7 +217,7 @@ export class PlbLive extends LitElement {
 
   private renderPaused(t: Translate, v: LiveView) {
     return html`<div class="card state">${icon(ICON.pause, 56)}<h2>${t("live.paused")}</h2>
-      <div>${t("settings.pausedHelp")}</div>
+      <div>${t("live.pausedHelp")}</div>
       ${this.playButton(t)}
       ${v.auto_start ? html`<div class="muted">${t("live.autoStart")}</div>` : nothing}
       <div class="next">${this.nextBlock(t, v.next_session)}</div>
@@ -213,6 +244,25 @@ export class PlbLive extends LitElement {
     </div>`;
   }
 
+  private stripStart(t: Translate, v: LiveView) {
+    const h = v.header;
+    const final = v.state === "final";
+    const qualifying = h?.kind === "qualifying" || h?.kind === "sprint_qualifying";
+    return html`<div><h1>${h?.meeting ?? ""}</h1><div class="sub">${sessionName(t, h?.kind, h?.session)}${h?.circuit ? ` · ${h.circuit}` : ""}</div></div>
+      ${qualifying && h?.part
+        ? html`<div class="laps num">Q${h.part}${!final && h.remaining !== null ? html`<small> · ${sessionClock(h.remaining)} ${t("live.remaining")}</small>` : nothing}</div>`
+        : h?.lap
+          ? html`<div class="laps num">${t("common.lap")} ${h.lap}${h.total_laps ? html`<small> / ${h.total_laps}</small>` : nothing}</div>`
+          : !final && h?.remaining !== null && h?.remaining !== undefined
+            ? html`<div class="laps num">${sessionClock(h.remaining)} <small>${t("live.remaining")}</small></div>`
+            : nothing}
+      ${final
+        ? html`<span class="final-pill">${t("live.final")}</span>
+            <span class="sub">${t("live.ended", { time: shortTime(this.hass, v.ended) })}</span>`
+        : nothing}
+      ${final && v.paused ? html`<span class="paused-pill">${t("live.pausedShort")}</span>${this.playButton(t)}` : nothing}`;
+  }
+
   private renderBoard(t: Translate, v: LiveView) {
     const h = v.header;
     const final = v.state === "final";
@@ -224,32 +274,30 @@ export class PlbLive extends LitElement {
           : nothing;
     const qualifying = h?.kind === "qualifying" || h?.kind === "sprint_qualifying";
     const live = v.state === "live" || v.state === "stale";
+    const hass = this.hass;
+    const tower = v.tower ?? [];
+    const favourites = this.settings?.favourites;
+    // Each section is drawn again only when what it shows changed.
     return html`${banner}
       <div class="card strip">
-        <div><h1>${h?.meeting ?? ""}</h1><div class="sub">${h?.session ?? ""}${h?.circuit ? ` · ${h.circuit}` : ""}</div></div>
-        ${qualifying && h?.part
-          ? html`<div class="laps num">Q${h.part}${!final && h.remaining !== null ? html`<small> · ${sessionClock(h.remaining)} ${t("live.remaining")}</small>` : nothing}</div>`
-          : h?.lap
-            ? html`<div class="laps num">${t("common.lap")} ${h.lap}${h.total_laps ? html`<small> / ${h.total_laps}</small>` : nothing}</div>`
-            : !final && h?.remaining !== null && h?.remaining !== undefined
-              ? html`<div class="laps num">${sessionClock(h.remaining)} <small>${t("live.remaining")}</small></div>`
-              : nothing}
-        ${final
-          ? html`<span class="final-pill">${t("live.final")}</span>
-              <span class="sub">${t("live.ended", { time: shortTime(this.hass, v.ended) })}</span>`
-          : nothing}
-        ${final && v.paused ? html`<span class="paused-pill">${t("live.pausedShort")}</span>${this.playButton(t)}` : nothing}
+        ${guard([hass, this.clock, h, v.state, v.ended, v.paused, this.starting], () => this.stripStart(t, v))}
         <span class="spacer"></span>
         ${this.stripEnd(t, v)}
       </div>
-      ${stewardsCard(t, v.stewards, h?.track_status, this.stewardsOpen, () => (this.stewardsOpen = !this.stewardsOpen))}
+      ${guard([hass, this.clock, v.stewards, h?.track_status, this.stewardsOpen, final], () =>
+        stewardsCard(t, v.stewards, h?.track_status, this.stewardsOpen, () => (this.stewardsOpen = !this.stewardsOpen), final),
+      )}
       <div class="grid ${v.state === "lost" ? "dim" : ""}">
         <div class="col">
-          <div class="card scroll">${this.renderTower(t, v.tower ?? [], qualifying)}</div>
-          <div class="pair">${this.renderWeather(t, v)}${this.renderPits(t, v)}</div>
+          <div class="card scroll">${guard([hass, this.clock, tower, qualifying, h?.part, this.selected, favourites], () =>
+            this.renderTower(t, tower, qualifying),
+          )}</div>
+          ${guard([hass, this.clock, v.weather, v.pits, tower, h?.kind], () => html`<div class="pair">${this.renderWeather(t, v)}${this.renderPits(t, v)}</div>`)}
         </div>
         <div class="col">
-          ${final ? nothing : this.renderMap(t, v, live)}${this.renderRaceControl(t, v.race_control ?? [])}${this.renderRadio(t, v)}
+          ${final ? nothing : guard([hass, this.clock, v.map_available, v.map_reason, live, tower, this.selected, this.settings?.is_admin], () => this.renderMap(t, v, live))}
+          ${guard([hass, this.clock, v.race_control, this.filter], () => this.renderRaceControl(t, v.race_control ?? []))}
+          ${guard([hass, this.clock, v.radio, this.playing, this.selected, tower], () => this.renderRadio(t, v))}
         </div>
       </div>`;
   }
@@ -276,7 +324,7 @@ export class PlbLive extends LitElement {
         <th class="pos">${t("common.pos")}</th><th>${t("common.driver")}</th>
         ${qualifying
           ? html`${[1, 2, 3].map((p) => html`<th class=${p === part ? "" : "col-s"}>Q${p}</th>`)}<th>${t("live.gap")}</th>`
-          : html`<th></th><th>${t("live.gap")}</th><th class="col-int">${t("live.int")}</th><th>${t("live.last")}</th><th class="col-best">${t("live.best")}</th>`}
+          : html`<th class="col-gain"></th><th>${t("live.gap")}</th><th class="col-int">${t("live.int")}</th><th class="col-last">${t("live.last")}</th><th class="col-best">${t("live.best")}</th>`}
         <th class="col-s">S1</th><th class="col-s">S2</th><th class="col-s">S3</th>
         <th>${t("live.tyre")}</th>${qualifying ? nothing : html`<th class="col-pits">${t("live.pits")}</th>`}
       </tr></thead>
@@ -307,8 +355,8 @@ export class PlbLive extends LitElement {
         ? html`${[0, 1, 2].map(
               (p) => html`<td class="t ${p + 1 === part ? "" : "col-s muted"}">${q.part_bests[p] ?? ""}</td>`,
             )}<td class="t">${q.gap ?? ""}</td>`
-        : html`<td>${gained(r.gained)}</td><td class="t">${r.gap ?? ""}</td><td class="t col-int">${r.interval ?? ""}</td>
-            <td>${this.timed(r.last_lap)}</td>
+        : html`<td class="col-gain">${gained(r.gained)}</td><td class="t">${gapText(t, r.gap)}</td><td class="t col-int">${gapText(t, r.interval, true)}</td>
+            <td class="col-last">${this.timed(r.last_lap)}</td>
             <td class="col-best">${r.best_lap ? html`<span class="t">${r.best_lap.time}</span>` : ""}</td>`}
       ${r.sectors.map(
         (s, i) => html`<td class="col-s">${this.timed(s, "sector")}${segmentStrip(r.segments?.[i])}</td>`,
@@ -326,10 +374,10 @@ export class PlbLive extends LitElement {
     const sectors = r.sectors.map((s, i) => html`<span>S${i + 1} ${this.timed(s)}</span>`);
     const stints = r.stints ?? [];
     const rejoin = r.pit_rejoin;
-    return html`<tr class="details"><td colspan=${columns}>
-      <div><b>${r.name ?? r.tla}</b>${r.team ? html` · ${r.team}` : nothing}</div>
+    return html`<tr class="details"><td colspan=${columns}><div class="dwrap">
+      <div class="dhead"><b>${r.name ?? r.tla}</b>${r.team ? html` · ${r.team}` : nothing}</div>
       <div class="facts narrow">
-        ${r.interval ? html`<span>${t("live.int")} <span class="t">${r.interval}</span></span>` : nothing}
+        ${r.interval ? html`<span>${t("live.int")} <span class="t">${gapText(t, r.interval, true) || "—"}</span></span>` : nothing}
         ${r.best_lap ? html`<span>${t("live.best")} <span class="t">${r.best_lap.time}</span></span>` : nothing}
         ${sectors}
         <span>${t("live.pits")} ${r.pit_stops}</span>
@@ -362,11 +410,16 @@ export class PlbLive extends LitElement {
                 : ""}</small></span>
           </div>`
         : nothing}
-    </td></tr>`;
+    </div></td></tr>`;
   }
 
   private driver(number: string | null): Row | undefined {
-    return this.view?.tower?.find((r) => r.number === number);
+    const tower = this.view?.tower;
+    if (tower !== this.byNumberOf) {
+      this.byNumberOf = tower;
+      this.byNumber = new Map((tower ?? []).map((r) => [r.number, r]));
+    }
+    return number === null ? undefined : this.byNumber.get(number);
   }
 
   private renderMap(t: Translate, v: LiveView, live: boolean) {
@@ -386,22 +439,25 @@ export class PlbLive extends LitElement {
     }
     return html`<div class="card">${head}
       <plb-live-map .hass=${this.hass} .tower=${v.tower ?? []} .selected=${this.selected}
+        .favourites=${this.settings?.favourites ?? []}
         @plb-select=${(e: CustomEvent<string>) => this.select(e.detail)}></plb-live-map></div>`;
   }
 
   private renderRaceControl(t: Translate, messages: Message[]) {
     const want = FILTER_KIND[this.filter];
     const shown = messages.filter((m) => !want || m.kind === want);
+    // Practice and qualifying messages have no lap: the time takes its place.
     return html`<div class="card">
       <div class="card-head">${t("live.raceControl")}</div>
       <div class="filters">${Object.keys(FILTER_KIND).map(
-        (k) => html`<button class="chip small ${this.filter === k ? "on" : ""}" @click=${() => (this.filter = k)}>${t(`live.${k}`)}</button>`,
+        (k) => html`<button class="chip small ${this.filter === k ? "on" : ""}" aria-pressed=${this.filter === k ? "true" : "false"}
+          @click=${() => (this.filter = k)}>${t(`live.${k}`)}</button>`,
       )}</div>
       <div class="feed">${repeat(
         shown,
         (m) => `${m.utc}|${m.message}`,
-        (m) => html`<div class="msg ${m.kind}"><span class="lap num">${m.lap ? `${t("common.lap")} ${m.lap}` : ""}</span>
-          <span>${m.message}<time>${clockTime(this.hass, m.utc)}</time></span></div>`,
+        (m) => html`<div class="msg ${m.kind}"><span class="lap num">${m.lap ? `${t("common.lap")} ${m.lap}` : clockTime(this.hass, m.utc, true)}</span>
+          <span>${m.message}${m.lap ? html`<time>${clockTime(this.hass, m.utc)}</time>` : nothing}</span></div>`,
       )}</div>
     </div>`;
   }
@@ -417,11 +473,12 @@ export class PlbLive extends LitElement {
             (c) => {
               const who = this.driver(c.number);
               const on = this.playing === c.url;
+              const time = clockTime(this.hass, c.utc);
               return html`<div class="radio ${c.number === this.selected ? "sel" : ""}">
                 <button class="play" @click=${() => this.play(c.url)}
-                  aria-label=${t(on ? "live.pause" : "live.play", { driver: who?.tla ?? c.number ?? "", time: clockTime(this.hass, c.utc) })}>${icon(on ? ICON.pause : ICON.play, 18)}</button>
+                  aria-label=${t(on ? "live.pause" : "live.play", { driver: who?.tla ?? c.number ?? "", time })}>${icon(on ? ICON.pause : ICON.play, 18)}</button>
                 <span class="bar" style="background:${who?.colour ?? "var(--divider-color)"}"></span><b>${who?.tla ?? c.number}</b>
-                <time>${clockTime(this.hass, c.utc)}</time></div>`;
+                <time>${time}</time></div>`;
             },
           )}</div>`
         : html`<div class="empty">${t("live.noRadio")}</div>`}
@@ -446,6 +503,8 @@ export class PlbLive extends LitElement {
   }
 
   private renderPits(t: Translate, v: LiveView) {
+    // Outside races the pit lane times are time spent in the garage: meaningless.
+    if (!RACES.has(v.header?.kind ?? "")) return nothing;
     const pits = v.pits ?? [];
     return html`<div class="card">
       <div class="card-head">${t("live.pitStops")}<span class="spacer"></span><small>${t("live.pitLane")}</small></div>
@@ -467,8 +526,11 @@ export class PlbLive extends LitElement {
     tokens,
     pillStyles,
     stewardsStyles,
+    feedStyles,
     css`
-      :host { display: block; }
+      /* Sized by the panel's own width, not the window's: Home Assistant's sidebar
+         takes a varying part of the window. */
+      :host { display: block; container-type: inline-size; }
       .strip { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 14px 18px; margin-bottom: var(--plb-gap); }
       .strip h1 { margin: 0; font-size: 20px; font-weight: 500; }
       .sub { color: var(--secondary-text-color); font-size: 13px; }
@@ -486,13 +548,19 @@ export class PlbLive extends LitElement {
       .play-live { display: inline-flex; align-items: center; gap: 6px; }
       .state .play-live svg { width: 18px; height: 18px; opacity: 1; }
       .state .next { display: grid; gap: 8px; justify-items: center; margin-top: 12px; }
+      .state .starts { margin-bottom: -10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+      .spin { display: grid; }
+      .spin svg { animation: plb-spin 1.6s linear infinite; }
+      @keyframes plb-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .spin svg { animation: none; } }
       .banner { display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin-bottom: var(--plb-gap); border-radius: 10px; font-size: 14px;
         background: color-mix(in srgb, var(--warning-color, #ffa600) 16%, transparent); }
       .banner.lost { background: color-mix(in srgb, var(--error-color, #db4437) 16%, transparent); }
       .dim { opacity: 0.45; filter: grayscale(0.6); }
       .grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--plb-gap); align-items: start; }
       .col { display: grid; gap: var(--plb-gap); align-content: start; min-width: 0; }
-      .pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--plb-gap); align-items: start; }
+      .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--plb-gap); align-items: start; }
+      .pair:empty { display: none; }
       .tower { width: 100%; border-collapse: collapse; font-size: 14px; }
       .tower th { text-align: left; font-weight: 500; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
         color: var(--secondary-text-color); padding: 8px 6px; border-bottom: 1px solid var(--divider-color); white-space: nowrap; }
@@ -502,14 +570,17 @@ export class PlbLive extends LitElement {
       .tower tr.out td { color: var(--plb-muted); }
       .tower tr.zone td { border-bottom: 2px dashed var(--error-color, #db4437); }
       .tower tr:focus-visible td { outline: 2px solid var(--primary-color); outline-offset: -2px; }
-      .tower tr.details td { height: auto; padding: 8px 12px; white-space: normal; cursor: default; font-size: 13px;
-        background: color-mix(in srgb, var(--primary-color) 6%, transparent); }
+      .tower tr.details td { height: auto; padding: 10px 12px 12px; white-space: normal; cursor: default; font-size: 13px;
+        background: color-mix(in srgb, var(--primary-text-color) 4%, transparent); }
+      .tower .dwrap { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 32px; align-items: start; }
+      .tower .dhead { grid-column: 1 / -1; }
+      .tower .dwrap .stints { grid-column: 1; grid-row: 2 / span 2; }
+      .tower .dwrap .rejoin { grid-column: 2; }
       .tower tr.details .facts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 4px; color: var(--secondary-text-color); }
       .tower tr.details .narrow { display: none; }
-      @media (max-width: 900px) { .tower tr.details .narrow { display: flex; } }
-      .tower .stints { border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+      .tower .stints { border-collapse: collapse; margin-top: 4px; font-size: 13px; }
       .tower .stints th { font-size: 10px; padding: 2px 16px 2px 0; border: 0; }
-      .tower .stints td { height: 30px; padding: 0 16px 0 0; border: 0; background: none; cursor: default; }
+      .tower tr.details .stints td { height: 30px; padding: 0 16px 0 0; border: 0; background: none; cursor: default; }
       .tower .rejoin { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; }
       .tower .rejoin small { display: block; font-size: 11px; }
       .fav { color: #f2c200; font-size: 12px; }
@@ -547,16 +618,40 @@ export class PlbLive extends LitElement {
       .pits div { display: flex; align-items: center; gap: 10px; padding: 7px 16px; border-bottom: 1px solid var(--divider-color); font-size: 13px; }
       .pits .end { margin-left: auto; }
       .empty { padding: 14px 16px; color: var(--secondary-text-color); font-size: 13px; }
-      @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
-      @media (max-width: 900px) { .col-s { display: none; } }
-      @media (max-width: 640px) {
+      @media (pointer: coarse) {
+        .play { width: 40px; height: 40px; }
+      }
+      /* A TV: 22 rows fit in 1080 lines, and the stewards card is one strip. */
+      :host([kiosk]) .tower td { height: 32px; }
+      :host([kiosk]) .tower th { padding: 4px 6px; }
+      :host([kiosk]) .strip { padding: 8px 18px; margin-bottom: 10px; }
+      :host([kiosk]) .grid, :host([kiosk]) .col { gap: 10px; }
+      :host([kiosk]) .stewards { margin-bottom: 10px; }
+      :host([kiosk]) .stewards .card-head { display: none; }
+      :host([kiosk]) .stewards .compact { display: flex; }
+      :host([kiosk]) .stewards .cols { display: none; }
+      :host([kiosk]) .stewards.open .cols { display: grid; }
+      @container (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+      @container (max-width: 900px) {
+        .col-s { display: none; }
+        .tower tr.details .narrow { display: flex; }
+        .tower .dwrap { grid-template-columns: 1fr; }
+        .tower .dwrap .stints, .tower .dwrap .rejoin { grid-column: 1; grid-row: auto; }
+      }
+      @container (max-width: 640px) {
         .col-best, .col-int, .col-pits, .tower .drv small { display: none; }
         .tower td, .tower th { padding: 0 4px; }
         .tower td { height: 44px; }
+        .tower .drv { min-width: 0; gap: 6px; }
         .pos { width: 26px; }
-        .pair { grid-template-columns: 1fr; }
         .strip { padding: 12px 14px; }
         .next-slot { width: 100%; text-align: left; }
+      }
+      /* A phone: position, driver, gap, last lap and tyre (SPEC §7). */
+      @container (max-width: 480px) {
+        .col-gain { display: none; }
+        .tyre .used { display: none; }
+        .tower { font-size: 13px; }
       }
     `,
   ];
