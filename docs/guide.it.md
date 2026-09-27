@@ -371,6 +371,8 @@ spoiler attiva aspetta che tu scopra la sessione o spenga la modalità.
 
 ## Schermi dedicati
 
+![La modalità kiosk su una TV](screenshots/tv.it.png)
+
 **Una TV, un monitor con un Raspberry Pi, un tablet a parete.** Aggiungi `?kiosk`
 all'indirizzo del pannello (le Impostazioni lo mostrano, pronto da copiare): il pannello
 riempie tutto lo schermo, sopra la barra laterale e l'intestazione di Home Assistant, e
