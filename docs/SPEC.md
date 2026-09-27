@@ -166,7 +166,9 @@ here was checked against source code or a live request; the unverified ones are 
 - **Our rules:**
   - Download once and keep on disk under `<config>/.cache/pit_lane_live_board/` with a
     500 MB cap and least-recently-used eviction.
-  - Parse in the executor, line by line; never load a whole stream into memory at once.
+  - Parse in the executor. Files are downloaded whole and parsed from memory (decision
+    45): at most 2 builds at a time and 48 MB per file; derived forms are cached with a
+    version in their key, so a parser fix reaches races opened before.
   - `Position.z` for past sessions is downloaded **only** to build a track outline
     (§6.5), never for replay.
 
@@ -1029,6 +1031,18 @@ Decisions taken in chat with the owner.
   (the default) or full, which appends the whole classification: gap and best lap in
   races and sprints, best lap and gap in qualifying and practice, retirements with
   their last lap. Chosen by administrators with the rest of the summary.
+
+57. **A full review before 0.8** (asked by the owner): ten review agents (live backend,
+  live client, history and cache, storage, Home Assistant layer, frontend performance,
+  cards and pages, visuals, core logic against real data, security), fixed by four.
+  What changed in the design: the tower travels as row patches (`tower_patch: {order,
+  rows}` in partial messages; full messages keep `tower`); identical partial views are
+  not sent again; sections are computed once per publish; entities write only when
+  their own state changed; the live client never stops on bad data and backs off with
+  jitter and `Retry-After`; Jolpica is held back after a 429 or an outage; settled
+  rounds have their own cache key; the panel follows its own width, not the window's.
+  Session events: `session_started` on the first start only, `session_ended` at the
+  end of the last part; a red-flag stoppage stays red while the session is aborted.
 
 ---
 

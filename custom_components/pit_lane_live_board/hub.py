@@ -997,8 +997,14 @@ class Hub:
             return json_bytes({"full": True, "outline": None, "cars": [], "utc": None})
         outline = live.outline
         cars = []
+        drivers = live.state.get("DriverList")
+        # Only the session's cars: F1's position feed also carries entries for
+        # cars that are not racing (reserve numbers, a car already withdrawn).
+        entered = set(drivers) if isinstance(drivers, dict) and drivers else None
         if outline is not None:
             for number, pos in live.state.positions.items():
+                if entered is not None and number not in entered:
+                    continue
                 x, y = outline.project(pos.x, pos.y)
                 cars.append(
                     {"number": number, "x": x, "y": y, "on_track": pos.on_track}

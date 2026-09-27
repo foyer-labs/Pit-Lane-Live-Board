@@ -328,9 +328,9 @@ può comunque leggerli da una card o dalle entità.
 Segui fino a cinque piloti dalle Impostazioni. Per ognuno:
 
 - un sensore, **Pilota LEC**, con la posizione come stato e, negli attributi, miglior
-  giro, gomma e giri della gomma, stint, soste, penalità, stato e posizioni guadagnate
-  (distacchi e tempi sul giro cambiano ogni pochi secondi: restano nella pagina e nelle
-  card, così il registro non viene scritto due volte al secondo);
+  giro, gomma, stint, soste, penalità, stato e posizioni guadagnate (distacchi, tempi
+  sul giro e giri della gomma cambiano a ogni giro o più spesso: restano nella pagina e
+  nelle card, così il registro non viene scritto di continuo);
 - una ★ accanto alla sigla nella classifica, e la riga evidenziata nella card della
   classifica se non ha un pilota suo;
 - l'evento **I miei piloti**: `position_gained`, `position_lost`, `took_lead`, `pit_in`,
@@ -398,7 +398,16 @@ escluderlo dal registro). Il suo stato è quello della pagina Live (`live`, `fin
 | `next_meeting`, `next_session`, `next_start` | la prossima sessione, per un conto alla rovescia |
 
 Lo schermo non parla mai con la F1: il ritardo TV e la modalità senza spoiler sono già
-applicati.
+applicati. Scrive solo quando ciò che mostra cambia, ma durante una sessione succede
+ogni pochi secondi: per tenerlo fuori dalla cronologia di Home Assistant, aggiungi a
+`configuration.yaml`:
+
+```yaml
+recorder:
+  exclude:
+    entities:
+      - sensor.pit_lane_live_board_small_screen
+```
 
 ```yaml
 # ESPHome: legge da Home Assistant quello che serve allo schermo.

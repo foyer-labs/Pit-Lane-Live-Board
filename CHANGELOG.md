@@ -6,6 +6,60 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-27
+
+A complete review of the code, by ten reviewers, for bugs and above all for resources:
+less sent, less written, less work in the browser.
+
+### Changed — read before updating
+- **Session events:** `session_started` fires at the first start of a session only, and
+  `session_ended` at the end of its last part (qualifying no longer fires them for every
+  part). The chequered flag still fires once per part.
+- The **Driver** sensors no longer carry `laps` and `tyre_age` (they changed every lap
+  and filled the history).
+
+### Improved
+- **Much less data during a race:** the timing tower travels as the rows that changed,
+  not whole twice a second (about a quarter of the data), and nothing is sent again
+  when nothing changed. Each open page and card benefits.
+- **A lighter Live page:** only the parts that changed are redrawn; the cars on the map
+  move on the graphics card; nothing is drawn while the tab is hidden.
+- **Fewer writes to disk and to the history:** entities write only when their own value
+  changes; settings are saved only when they change; event marks at most every 30 s;
+  the cache no longer touches files on every read and does not rewrite identical data.
+- **Fewer requests:** the cards share one settings subscription; pages keep what they
+  loaded when you switch tab; old seasons no longer use the calendar's reserve.
+- **The layout follows the panel's own width**, so it fits with Home Assistant's
+  sidebar open; the header never overflows; phone tables keep their key column; better
+  contrast for green and purple times; bigger touch targets on phones.
+- **Track map:** labels no longer overlap, retired cars and cars not in the session are
+  not drawn, and the provisional map of a new circuit widens as the cars go round.
+- **Kiosk:** the screen stays awake after the tab comes back, 22 rows fit on a 1080p
+  TV, `scale=` enlarges the header too, `?kiosk=0` turns it off.
+- The Italian panel translates "Leader", laps down and the session names.
+
+### Fixed
+- Stewards: "investigated after the session/sprint", "stop-and-go" penalties, `UPDATE:`
+  messages, deleted laps for other reasons and VSC messages are read correctly.
+- A red-flag stoppage no longer reads green when F1 sets the track clear while the cars
+  are still stopped.
+- Retirements are detected like F1's classification (cars stopped and hidden, or under
+  90% of the winner's laps), in the tower and in the summary.
+- "My drivers" `pit_out` reports the new tyre, and no pit events fire before the start.
+- The qualifying drop zone is the real one.
+- Lapped cars show "+1 lap" in race results instead of a time.
+- A settled round is never served from a copy cached before the race; an archive
+  missing its index is read anyway; seasons F1's archive does not serve (2022) no
+  longer offer tabs that are always empty; standings with more than 100 rows are
+  complete; Jolpica is given a rest after a 429.
+- The live connection never stops for a malformed message or a bad reply; a 403 from
+  F1's servers is no longer blamed on your F1TV token; the connection gives up a stalled
+  opening after 20 s; retries are spread out.
+- The Live page picks up the newest finished session while it stays open; open pages
+  are refreshed after a reload; removing the integration also removes its saved data.
+- The calendar and standings refresh while open; the standings card follows no-spoiler
+  mode at once.
+
 ## [0.7.0] - 2026-09-27
 
 ### Added

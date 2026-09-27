@@ -218,6 +218,9 @@ async def test_a_403_for_everyone_is_not_the_tokens_fault():
 
 async def test_silence_is_a_failure_and_checked_on_time():
     live = client(FakeSession([{"connectionToken": "c"}]))
+    # Silence counts from the later of the connection and the last message:
+    # make the connection the only clock, 2 s before the limit.
+    live.last_message = None
     live._connected_at = livetiming.time.monotonic() - livetiming.SILENCE_LIMIT + 2
     timeouts: list[float] = []
 
