@@ -16,6 +16,9 @@ from typing import Any
 
 DEFAULT_PIT_LOSS = 22.0
 # Typical time lost by a stop, in seconds, by Jolpica circuit id (approximate).
+# Madring and Sepang (on the 2026 calendar, missing at first) from their races'
+# in-lap plus out-lap against the laps around them: the 2026 Spanish GP's
+# green-flag stops, and Jolpica's laps of the 2017 Malaysian GP.
 CIRCUIT_PIT_LOSS: dict[str, float] = {
     "albert_park": 19.0,
     "americas": 21.0,
@@ -27,12 +30,14 @@ CIRCUIT_PIT_LOSS: dict[str, float] = {
     "interlagos": 21.0,
     "jeddah": 20.0,
     "losail": 25.0,
+    "madring": 25.0,
     "marina_bay": 29.0,
     "miami": 20.0,
     "monaco": 20.0,
     "monza": 24.0,
     "red_bull_ring": 21.0,
     "rodriguez": 22.0,
+    "sepang": 22.0,
     "shanghai": 23.0,
     "silverstone": 20.0,
     "spa": 19.0,

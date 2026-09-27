@@ -85,6 +85,37 @@ def test_pit_loss_is_the_circuits_typical_and_cheaper_under_a_safety_car():
     assert strategy.pit_loss("monza", "safety_car") == (13.2, True)  # 24 x 0.55
 
 
+def test_every_2026_circuit_has_its_pit_loss():
+    """The 2026 calendar's Jolpica circuit ids; Madring and Sepang were missing and
+    fell back to the generic 22 s marked unknown."""
+    circuits = [
+        "albert_park",
+        "americas",
+        "baku",
+        "catalunya",
+        "hungaroring",
+        "interlagos",
+        "losail",
+        "madring",
+        "marina_bay",
+        "miami",
+        "monaco",
+        "monza",
+        "red_bull_ring",
+        "rodriguez",
+        "sepang",
+        "shanghai",
+        "silverstone",
+        "spa",
+        "suzuka",
+        "vegas",
+        "villeneuve",
+        "yas_marina",
+        "zandvoort",
+    ]
+    assert [c for c in circuits if not strategy.pit_loss(c, "clear")[1]] == []
+
+
 def test_rejoin_position_and_neighbours():
     rows = [
         {
