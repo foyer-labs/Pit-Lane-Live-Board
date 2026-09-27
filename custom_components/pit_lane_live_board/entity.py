@@ -1,15 +1,17 @@
 """What every entity shares (SPEC §10.2): one service device, the hub, and updates
 pushed by the hub's signals rather than polled.
 
-Each entity listens only to the signals of what it shows, and the hub sends
-`SIGNAL_LIVE` only when the live entities' snapshot changed: during a race the
-recorder sees a few hundred writes, not two a second per entity.
+Each entity listens only to the signals of what it shows, the hub sends
+`SIGNAL_LIVE` only when the live entities' snapshot changed, and each entity then
+writes only when its own part did: during a race the recorder sees a few hundred
+writes, not two a second per entity.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
+from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
@@ -39,12 +41,26 @@ class LiveBoardEntity(Entity):
             configuration_url=f"homeassistant://{URL_PATH}",
         )
 
+    _written: tuple[Any, ...] | None = None
+
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         for signal in self.signals:
             self.async_on_remove(
-                async_dispatcher_connect(self.hass, signal, self.async_write_ha_state)
+                async_dispatcher_connect(self.hass, signal, self.async_write_if_changed)
             )
+
+    @callback
+    def async_write_if_changed(self) -> None:
+        """A signal says something this integration shows changed, not that this
+        entity's part did: it writes only when its own state, attributes or
+        availability did (a lap of a followed driver no longer rewrites twenty
+        entities)."""
+        shown = (self.available, self.state, self.extra_state_attributes)
+        if shown == self._written:
+            return
+        self._written = shown
+        self.async_write_ha_state()
 
 
 class LiveEntity(LiveBoardEntity):

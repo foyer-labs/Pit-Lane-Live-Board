@@ -7,7 +7,11 @@ current released state and returns the events to fire plus the new marks. Rules:
 * the first observation of a session only records, never fires: connecting in the
   middle of a race must not announce a safety car that came out ten minutes ago;
 * marks belong to one session: a new session key starts clean;
-* because marks survive restarts, a reconnect never fires an event twice.
+* because marks survive restarts, a reconnect never fires an event twice;
+* a session starts once and ends once: a restart after a red flag is not a new
+  start, and qualifying ends after its last part (or when F1 finalises it, which
+  also covers a session abandoned under a red flag), not after Q1. The chequered
+  flag, from race control, is shown at the end of every part and fires each time.
 """
 
 from __future__ import annotations
@@ -59,6 +63,24 @@ def _last_chequered(topics: dict[str, Any]) -> str:
     return ""
 
 
+def _is_end(status: str, topics: dict[str, Any]) -> bool:
+    """Whether this status ends the whole session: finalised always; finished
+    unless more parts follow (qualifying: `SessionPart` below the number of parts,
+    from `NoEntries`)."""
+    if status == "finalised":
+        return True
+    if status != "finished":
+        return False
+    timing = topics.get("TimingData")
+    if not isinstance(timing, dict):
+        return True
+    part = to_int(timing.get("SessionPart"))
+    parts = timing.get("NoEntries")
+    if part is None or not isinstance(parts, (list, dict)):
+        return True
+    return part >= len(parts)
+
+
 def derive(
     marks: dict[str, Any], topics: dict[str, Any]
 ) -> tuple[list[str], dict[str, Any]]:
@@ -72,20 +94,28 @@ def derive(
 
     status = session_status(topics.get("SessionStatus"))
     if status is not None:
-        if "session" in marks and marks["session"] != status:
-            if status == "started":
+        # Marks written before these two existed: a session already under way.
+        started = marks.get("started", marks.get("session") not in (None, "inactive"))
+        ended = marks.get("ended", marks.get("session") == "finalised")
+        if "session" not in marks:
+            ended = _is_end(status, topics)
+        elif status != marks["session"]:
+            if status == "started" and not started:
                 events.append("session_started")
-            elif status == "finished" and marks["session"] not in (
-                "finished",
-                "finalised",
-            ):
+            # On the change of status only: F1 moves `SessionPart` on while the
+            # previous part is still Finished.
+            if not ended and _is_end(status, topics):
                 events.append("session_ended")
+                ended = True
         new["session"] = status
+        new["started"] = started or status != "inactive"
+        new["ended"] = ended
 
-    # The track code alone, without the chequered override: the flag has its own
-    # event from race control.
-    track = track_status(topics.get("TrackStatus"), None)
-    if track is not None:
+    # As the track status sensor reads it (a red flag lasts while the session is
+    # stopped), except the chequered flag: that has its own event from race
+    # control, and after it the track codes are no news.
+    track = track_status(topics.get("TrackStatus"), status)
+    if track is not None and track != "chequered":
         if "track" in marks and marks["track"] != track:
             events.append(_TRACK_EVENTS[track])
         new["track"] = track

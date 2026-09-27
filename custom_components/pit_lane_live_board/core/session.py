@@ -71,10 +71,14 @@ def session_status(value: Any) -> str | None:
 def track_status(value: Any, status: str | None) -> str | None:
     """`TrackStatus.Status` code → one of TRACK_STATUSES.
 
-    A finished session shows the chequered flag whatever the last code was.
+    A finished session shows the chequered flag whatever the last code was. A
+    session stopped by a red flag is `Aborted` until it restarts, while the track
+    code goes back to AllClear as soon as the track is clear: the flag is still red.
     """
     if status in ("finished", "finalised"):
         return "chequered"
+    if status == "aborted":
+        return "red_flag"
     if not isinstance(value, dict):
         return None
     return _TRACK_CODES.get(str(value.get("Status") or ""))

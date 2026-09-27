@@ -7,8 +7,13 @@ import re
 from typing import Any
 
 _HEX = re.compile(r"^#?([0-9A-Fa-f]{6})$")
-_CLOCK = re.compile(r"^(\d+):(\d{2}):(\d{2})(?:\.(\d+))?$")
-_LAP = re.compile(r"^(?:(\d+):)?(\d+)\.(\d+)$")
+# Bounded widths: `int()` raises past 4,300 digits.
+_CLOCK = re.compile(r"^(\d{1,6}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?$")
+_LAP = re.compile(r"^(?:(\d{1,6}):)?(\d{1,6})\.(\d{1,9})$")
+# ASCII digits only, and a sane length: `str.isdigit` also accepts `²` and other
+# Unicode digits that `int()` refuses, and `int()` refuses more than 4,300 digits.
+# Either would turn one bad value from a source into an exception in every parser.
+_INT = re.compile(r"-?[0-9]{1,18}")
 
 
 def text(value: Any) -> str | None:
@@ -23,8 +28,8 @@ def to_int(value: Any) -> int | None:
         return None
     if isinstance(value, int):
         return value
-    if isinstance(value, str) and value.strip().lstrip("-").isdigit():
-        return int(value.strip())
+    if isinstance(value, str) and _INT.fullmatch(stripped := value.strip()):
+        return int(stripped)
     return None
 
 

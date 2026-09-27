@@ -312,10 +312,10 @@ them through a card or the entities.
 
 Follow up to five drivers in Settings. For each one:
 
-- a sensor, **Driver LEC**, whose state is the position, with best lap, tyre and its
-  age, stint, pit stops, penalty, status and places gained as attributes (gaps and lap
-  times move every few seconds: they stay on the page and the cards, so the recorder is
-  not written twice a second);
+- a sensor, **Driver LEC**, whose state is the position, with best lap, tyre, stint,
+  pit stops, penalty, status and places gained as attributes (gaps, lap times and the
+  laps on a tyre move every lap or faster: they stay on the page and the cards, so the
+  recorder is not written all the time);
 - a ★ next to their code in the timing tower, and their row highlighted in the tower
   card when it has no driver of its own;
 - the **My drivers** event: `position_gained`, `position_lost`, `took_lead`, `pit_in`,
@@ -381,6 +381,15 @@ are short and flat, ready to print:
 | `next_meeting`, `next_session`, `next_start` | the next session, for a countdown |
 
 The screen never talks to F1: the TV delay and no-spoiler mode are already applied.
+It writes only when what it shows changed, but during a session that is every few
+seconds: to keep it out of Home Assistant's history, add this to `configuration.yaml`:
+
+```yaml
+recorder:
+  exclude:
+    entities:
+      - sensor.pit_lane_live_board_small_screen
+```
 
 ```yaml
 # ESPHome: read what the screen needs from Home Assistant.
