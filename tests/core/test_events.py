@@ -7,13 +7,16 @@ from custom_components.pit_lane_live_board.core.events import derive
 from .feed import session_info
 
 
-def topics(status="Started", track="1", key=9001, messages=None):
-    return {
+def topics(status="Started", track="1", key=9001, messages=None, part=None):
+    out = {
         "SessionInfo": session_info(key=key),
         "SessionStatus": {"Status": status},
         "TrackStatus": {"Status": track},
         "RaceControlMessages": {"Messages": messages or []},
     }
+    if part is not None:
+        out["TimingData"] = {"NoEntries": [22, 16, 10], "SessionPart": part}
+    return out
 
 
 def test_the_first_observation_only_records():
@@ -22,6 +25,8 @@ def test_the_first_observation_only_records():
     assert marks == {
         "session_key": 9001,
         "session": "started",
+        "started": True,
+        "ended": False,
         "track": "safety_car",
         "chequered": "",
     }
@@ -78,3 +83,79 @@ def test_a_new_session_starts_clean():
 
 def test_no_session_no_events():
     assert derive({"a": 1}, {}) == ([], {"a": 1})
+
+
+def test_a_red_flag_lasts_while_the_session_is_stopped():
+    """Spain 2026 FP3: the track code went back to AllClear three minutes after the
+    red flag, while the session stayed Aborted for half an hour, then ended
+    without a restart (Aborted, then Finalised)."""
+    _, marks = derive({}, topics())
+    events, marks = derive(marks, topics(status="Aborted", track="5"))
+    assert events == ["red_flag"]
+    events, marks = derive(marks, topics(status="Aborted", track="1"))
+    assert events == []
+    events, marks = derive(marks, topics(status="Finalised", track="1"))
+    assert events == ["session_ended"]
+
+
+def test_a_restart_after_a_red_flag_is_not_a_new_session():
+    _, marks = derive({}, topics(status="Inactive"))
+    events, marks = derive(marks, topics())
+    assert events == ["session_started"]
+    events, marks = derive(marks, topics(status="Aborted", track="5"))
+    assert events == ["red_flag"]
+    events, marks = derive(marks, topics(status="Inactive", track="1"))
+    assert events == ["green_flag"]
+    events, marks = derive(marks, topics(status="Started", track="1"))
+    assert events == []
+
+
+def test_qualifying_ends_after_its_last_part():
+    """Started, Finished, Inactive for each part: one start, one end, and the
+    chequered flag of each part."""
+
+    def chequered(minute):
+        return {
+            "Utc": f"2026-09-12T14:{minute}:00",
+            "Category": "Flag",
+            "Flag": "CHEQUERED",
+            "Message": "CHEQUERED FLAG",
+        }
+
+    _, marks = derive({}, topics(status="Inactive", part=1))
+    fired = []
+    flags = []
+    for part, minute in ((1, 18), (2, 40), (3, 59)):
+        for status in ("Started", "Finished"):
+            if status == "Finished":
+                flags.append(chequered(minute))
+            events, marks = derive(
+                marks, topics(status=status, part=part, messages=list(flags))
+            )
+            fired += events
+        if part < 3:
+            # F1 moves on to the next part while this one still reads Finished.
+            for step in (
+                topics(status="Finished", part=part + 1, messages=list(flags)),
+                topics(status="Inactive", part=part + 1, messages=list(flags)),
+            ):
+                events, marks = derive(marks, step)
+                fired += events
+    events, marks = derive(
+        marks, topics(status="Finalised", part=3, messages=list(flags))
+    )
+    fired += events
+    assert fired == [
+        "session_started",
+        "chequered_flag",
+        "chequered_flag",
+        "session_ended",
+        "chequered_flag",
+    ]
+
+
+def test_the_track_status_sensor_reads_red_while_aborted():
+    from custom_components.pit_lane_live_board.core.session import track_status
+
+    assert track_status({"Status": "1"}, "aborted") == "red_flag"
+    assert track_status({"Status": "1"}, "started") == "clear"
