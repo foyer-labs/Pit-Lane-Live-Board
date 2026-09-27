@@ -185,23 +185,11 @@
           "number": {
             "name": "Number"
           },
-          "gap": {
-            "name": "Gap"
-          },
-          "interval": {
-            "name": "Interval"
-          },
-          "last_lap": {
-            "name": "Last lap"
-          },
           "best_lap": {
             "name": "Best lap"
           },
           "tyre": {
             "name": "Tyre"
-          },
-          "tyre_age": {
-            "name": "Tyre age"
           },
           "stint": {
             "name": "Stint"
@@ -212,9 +200,6 @@
           "in_pit": {
             "name": "In the pits"
           },
-          "laps": {
-            "name": "Laps"
-          },
           "status": {
             "name": "Status"
           },
@@ -223,9 +208,6 @@
           },
           "gained": {
             "name": "Places gained"
-          },
-          "pit_rejoin": {
-            "name": "Rejoin after a stop"
           }
         }
       },

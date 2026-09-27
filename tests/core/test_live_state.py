@@ -67,3 +67,33 @@ def test_pit_log_keeps_entries_f1_deletes():
         "PitTimes": {"3": {"RacingNumber": "3", "Duration": "31.0", "Lap": "14"}}
     }
     assert state.pit_log == [{"number": "3", "lap": "14", "duration": "31.0"}]
+
+
+def test_a_list_index_far_past_the_end_is_dropped():
+    """A broken or hostile delta must not allocate a list of millions of Nones."""
+    state = LiveState()
+    state.apply_keyframes({"TimingData": {"Lines": {"1": {"Sectors": [{}, {}]}}}})
+    state.apply(
+        "TimingData",
+        {"Lines": {"1": {"Sectors": {"2": {"Value": "30.1"}, "20000000": {"V": 1}}}}},
+    )
+    sectors = state.get("TimingData")["Lines"]["1"]["Sectors"]
+    assert len(sectors) == 3 and sectors[2] == {"Value": "30.1"}
+
+
+def test_indexes_no_list_can_take_are_dropped():
+    state = LiveState()
+    state.apply_keyframes({"TeamRadio": {"Captures": [{"Path": "a"}]}})
+    state.apply(
+        "TeamRadio",
+        {"Captures": {"²": {"Path": "b"}, "1": {"Path": "c"}, "_deleted": ["³"]}},
+    )
+    assert state.get("TeamRadio")["Captures"] == [{"Path": "a"}, {"Path": "c"}]
+
+
+def test_f1s_own_deltas_pass_untouched():
+    from custom_components.pit_lane_live_board.core.live_state import bounded
+
+    target = {"Lines": {"1": {"Sectors": [{}, {}]}}}
+    delta = {"Lines": {"1": {"Sectors": {"2": {"Value": "1"}}}, "2": {"X": 1}}}
+    assert bounded(target, delta) is delta

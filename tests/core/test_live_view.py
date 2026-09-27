@@ -64,3 +64,26 @@ def test_hidden_sends_only_the_session_name():
         "kind": "race",
     }
     assert not {"tower", "race_control", "radio", "weather", "pits"} & set(view)
+
+
+def test_the_session_clock_moves_by_whole_seconds():
+    """A header that moved by a fraction of a second would travel again at every
+    publish."""
+    from datetime import timedelta
+
+    state = LiveState()
+    state.apply_keyframes(
+        {
+            **race_topics(),
+            "ExtrapolatedClock": {
+                "Utc": "2026-05-10T13:29:00Z",
+                "Remaining": "00:17:00",
+                "Extrapolating": True,
+            },
+        }
+    )
+    builder = live_view.LiveViewBuilder()
+    first = builder.sections(state, NOW + timedelta(seconds=0.2))["header"]
+    again = builder.sections(state, NOW + timedelta(seconds=0.4))["header"]
+    assert first[1]["remaining"] == 16 * 60 and isinstance(first[1]["remaining"], int)
+    assert first[0] == again[0]

@@ -141,6 +141,10 @@ class LiveViewBuilder:
         self._sync(state)
         out: dict[str, tuple[Any, Any]] = {}
         head = header(state.topics, now)
+        if isinstance(head.get("remaining"), float):
+            # Whole seconds: the clock is shown to the second, and a header
+            # that moved by a fraction would travel again at every publish.
+            head["remaining"] = round(head["remaining"])
         out["header"] = (repr(sorted(head.items())), head)
         for name in SECTIONS[1:]:
             out[name] = self._section(name, state)

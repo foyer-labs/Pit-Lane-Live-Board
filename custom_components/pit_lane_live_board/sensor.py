@@ -76,9 +76,10 @@ def _follow_favourites(
 
 
 class DriverSensor(LiveEntity, SensorEntity):
-    """A driver the household follows: their position, and the rest as attributes."""
+    """A driver the household follows: their position, and the rest as attributes.
 
-    _unrecorded_attributes = frozenset({"tyre_age", "laps"})
+    Slow fields only (decision 52): laps and tyre age change every lap, and would
+    make a recorder row per lap for each followed driver; the tower shows them."""
 
     def __init__(self, entry: LiveBoardConfigEntry, code: str) -> None:
         super().__init__(entry, "driver")
@@ -104,11 +105,9 @@ class DriverSensor(LiveEntity, SensorEntity):
                 "number",
                 "best_lap",
                 "tyre",
-                "tyre_age",
                 "stint",
                 "pit_stops",
                 "in_pit",
-                "laps",
                 "status",
                 "penalty",
                 "gained",

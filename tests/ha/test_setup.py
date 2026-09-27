@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from unittest.mock import patch
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
@@ -111,4 +112,89 @@ async def test_diagnostics_never_contain_the_token(
     assert secret not in text
     assert "c2VjcmV0LXNpZ25hdHVyZQ" not in text
     assert diagnostics["hub"]["f1tv"]["status"] == "active"
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_removing_the_integration_deletes_its_store(
+    hass: HomeAssistant, hass_storage, aioclient_mock, race_start
+):
+    from custom_components.pit_lane_live_board import async_remove_entry
+
+    aioclient_mock.get(
+        f"{JOLPICA_BASE}{race_start.year}.json", json=schedule_payload(race_start)
+    )
+    entry = MockConfigEntry(domain=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    hub = entry.runtime_data.hub
+    await hub.async_update_settings(hub.settings.with_delay(30))
+    assert DOMAIN in hass_storage
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    await async_remove_entry(hass, entry)
+    assert DOMAIN not in hass_storage
+
+
+async def test_the_options_form_names_the_f1tv_status(
+    hass: HomeAssistant, aioclient_mock, race_start
+):
+    aioclient_mock.get(
+        f"{JOLPICA_BASE}{race_start.year}.json", json=schedule_payload(race_start)
+    )
+    entry = MockConfigEntry(domain=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["description_placeholders"]["status"] == "Not configured"
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_unload_stops_the_hub_before_the_entities(
+    hass: HomeAssistant, aioclient_mock, race_start
+):
+    """While the platforms unload no live loop may advance the event marks: the
+    events would be lost after the reload (SPEC §10.3)."""
+    aioclient_mock.get(
+        f"{JOLPICA_BASE}{race_start.year}.json", json=schedule_payload(race_start)
+    )
+    entry = MockConfigEntry(domain=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    hub = entry.runtime_data.hub
+    seen: list[bool] = []
+    unload = hass.config_entries.async_unload_platforms
+
+    async def watch(*args, **kwargs):
+        seen.append(hub._stopped)
+        return await unload(*args, **kwargs)
+
+    with patch.object(hass.config_entries, "async_unload_platforms", watch):
+        assert await hass.config_entries.async_unload(entry.entry_id)
+    assert seen == [True]
+
+
+async def test_open_pages_hear_from_a_reloaded_entry(
+    hass: HomeAssistant, aioclient_mock, race_start
+):
+    from custom_components.pit_lane_live_board.hub import listen_live
+
+    aioclient_mock.get(
+        f"{JOLPICA_BASE}{race_start.year}.json", json=schedule_payload(race_start)
+    )
+    entry = MockConfigEntry(domain=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    received: list[dict] = []
+    unsub = listen_live(hass, lambda payload: received.append(json.loads(payload)))
+    with patch(
+        "custom_components.pit_lane_live_board.hub.Hub.async_refresh_calendar"
+    ):  # a source down: the new hub must speak all the same
+        assert await hass.config_entries.async_reload(entry.entry_id)
+        await hass.async_block_till_done()
+    assert len(received) >= 2  # the old hub's last word, the new hub's first
+    assert received[-1]["full"] is True and received[-1]["state"] == "paused"
+    unsub()
     assert await hass.config_entries.async_unload(entry.entry_id)

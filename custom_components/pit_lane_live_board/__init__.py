@@ -83,10 +83,13 @@ async def async_unload_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -
     receive from the new hub. It goes when the entry is removed or disabled."""
     from . import panel
 
+    # The hub first: while the platforms unload, a live loop still running would
+    # advance the event marks for events no entity is left to fire, and after the
+    # reload they would count as fired (SPEC §10.3).
+    await entry.runtime_data.hub.async_stop()
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if not unloaded:
         return False
-    await entry.runtime_data.hub.async_stop()
     if entry.disabled_by is not None:
         panel.async_remove(hass)
     return True
@@ -95,10 +98,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -
 async def async_remove_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -> None:
     from homeassistant.helpers import issue_registry as ir
 
-    from . import panel
+    from . import panel, store
     from .const import DOMAIN
     from .hub import ISSUE_F1TV, ISSUE_LIVE
 
     panel.async_remove(hass)
     for issue in (ISSUE_F1TV, ISSUE_LIVE):
         ir.async_delete_issue(hass, DOMAIN, issue)
+    await store.async_remove(hass)
