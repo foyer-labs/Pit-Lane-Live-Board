@@ -21,6 +21,14 @@ Live Board gives you the dashboard: install it, open **Live Board** in the sideb
 the whole weekend is there — the timing tower during the session, the calendar before it,
 the results and standings after it. Free, with no account.
 
+One install, three ways to use it:
+
+| | |
+|---|---|
+| 🏁 **A ready-made panel** | Live timing, calendar, results since 1950 and both championships, in the sidebar. |
+| 🧩 **Eight dashboard cards** | The timing tower, the track map, flags & stewards, team radio and more, for your own dashboards. Nothing to install, a visual editor for each. |
+| ⚡ **Sensors and events** | Safety car, red flag, yellow sectors, penalties, every stewards' decision: triggers for your lights, speakers and phone. |
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/live.png" alt="The Live page during a race: the timing tower with gaps, sectors in purple and green and tyres, the track map, race control and team radio" width="900">
 </p>
@@ -50,16 +58,9 @@ the results and standings after it. Free, with no account.
 - **Both championships.** Drivers and constructors, for any season, after any round.
 - **After the flag.** Between sessions the Live page keeps the final classification,
   the stewards' decisions and the pit stops, with a countdown to the next session.
-- **Automations.** A calendar of sessions, the track status, safety car, VSC, red and
-  yellow flag sensors, penalties and investigations, and events for race control and
-  every stewards' decision: the lights turn yellow with the safety car, your phone
-  tells you your driver got a penalty or that the race starts in 15 minutes.
 - **Easy on a Raspberry Pi.** Live timing starts paused: nothing connects to F1 and
   nothing is written to disk until you press play, or let it start by itself at each
   session.
-- **Cards for your own dashboards.** Timing tower, track map, flags & stewards, team
-  radio, race control, session, weather and championship, each a card with a visual
-  editor, ready in the card picker with nothing to install.
 - **You decide who sees it.** The panel is for the whole house, or for administrators
   only; each dashboard keeps its own visibility.
 - **English and Italian**, light and dark, on a phone or a wall tablet.
@@ -67,6 +68,58 @@ the results and standings after it. Free, with no account.
 <p align="center">
   <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/strategy.png" alt="Results: the tyre strategy of every driver in a race, stints coloured by compound" width="820">
 </p>
+
+## Your dashboard, your cards
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/cards.png" alt="The dashboard cards: session, timing tower, flags and stewards, track map, race control, team radio, weather and drivers' standings" width="900">
+</p>
+
+Every piece of the Live page is also a card. *Edit dashboard → Add card → Pit Lane*,
+and pick what you want where you want it:
+
+| Card | What it shows |
+|---|---|
+| **Timing tower** | Positions, gaps, lap times, sectors and tyres; choose the rows and columns, highlight your driver. |
+| **Track map** | Every car on the circuit, live (with F1TV). |
+| **Flags & stewards** | Track status, yellow sectors, safety car, penalties, investigations, track limits. |
+| **Team radio** | The latest clips, with play. |
+| **Race control** | The latest messages, filtered by flags or penalties. |
+| **Session** | The session, its lap or clock and track status; afterwards, the countdown to the next one. |
+| **Weather** | Air and track temperature, rain, humidity, wind. |
+| **Championship** | Drivers' or constructors' standings, top N. |
+
+No resource to add by hand, a visual editor for every card, and the same TV delay and
+no-spoiler mode as the panel. A wall tablet with the tower and the flags, a phone
+view with just the session and your driver: [the guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md#dashboard-cards)
+has examples.
+
+## Sensors and events for automations
+
+| Entity | Use it for |
+|---|---|
+| `binary_sensor` Safety car · Virtual safety car · Red flag · Yellow flag | Lights that follow the track: amber under the safety car, red for a red flag. |
+| `sensor` Track status · Session status · Lap | The state of the session, on any card or in any condition. |
+| `sensor` Penalties · Investigations · Race control message | What the stewards are looking at, with the details as attributes. |
+| `event` Race control | Green, yellow, safety car, VSC, red, chequered flag, session started and ended. |
+| `event` Stewards | One event per decision: time penalty, drive-through, investigation, warning, deleted lap… with driver, seconds and reason. |
+| `calendar` Sessions · `sensor` Next session | "The race starts in 15 minutes", with no code. |
+| `switch` Live timing · No-spoiler mode · `number` TV delay | Control the board from your own automations and voice assistant. |
+
+Everything is released through the TV delay, so the lights change when *your* screen
+shows it. Ready-made automations are [in the guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md#entities-and-automations):
+
+```yaml
+triggers:
+  - trigger: state
+    entity_id: event.pit_lane_live_board_stewards
+conditions:
+  - "{{ 'LEC' in trigger.to_state.attributes.drivers }}"
+actions:
+  - action: notify.mobile_app_my_phone
+    data:
+      message: "Penalty for Leclerc: {{ trigger.to_state.attributes.reason }}"
+```
 
 ## Get started
 
