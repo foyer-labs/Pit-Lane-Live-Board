@@ -355,6 +355,8 @@ waits until you reveal the session or turn the mode off.
 
 ## Dedicated screens
 
+![Kiosk mode on a TV](screenshots/tv.png)
+
 **A TV, a monitor with a Raspberry Pi, a wall tablet.** Add `?kiosk` to the panel's
 address (Settings shows it, ready to copy): the panel fills the whole screen, over
 Home Assistant's sidebar and header, and the pointer hides when it rests. On a

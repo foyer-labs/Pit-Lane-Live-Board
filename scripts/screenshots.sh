@@ -34,7 +34,9 @@ cards() { # name width height query: the dashboard cards' bench page
 
 for lang in en it; do
   suffix=$([ "$lang" = en ] && echo "" || echo ".it")
-  shot "live$suffix" 1440 1180 "page=live&live=race&lang=$lang"
+  # The hero: a race, a followed driver (★ LEC) and Russell's row open on his stints.
+  shot "live$suffix" 1440 1300 "page=live&live=race&lang=$lang&select=63"
+  shot "tv$suffix" 1920 1080 "page=live&live=race&lang=$lang&kiosk&scale=1.2&theme=dark"
   shot "driver$suffix" 1440 1000 "page=live&live=race&lang=$lang&select=63"
   shot "qualifying$suffix" 1440 900 "page=live&live=qualifying&lang=$lang&theme=dark"
   shot "calendar$suffix" 1440 1000 "page=calendar&lang=$lang"
