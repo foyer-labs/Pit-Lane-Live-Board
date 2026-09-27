@@ -54,7 +54,7 @@ from .const import (
     ENV_DEV_LIVE_URL,
     LIVE_BASE,
 )
-from .core import live_view
+from .core import favourites as fav, live_view, summary as session_summary
 from .core.delay import DelayBuffer
 from .core.events import derive
 from .core.f1tv_token import TokenStatus, evaluate
@@ -72,7 +72,7 @@ from .core.schedule import (
     next_session,
     parse_schedule,
 )
-from .core.session import session_kind, session_status
+from .core.session import RACE_LIKE, session_kind, session_status
 from .core.settings import Settings
 from .core.spoiler import hidden_sessions, live_hidden
 from .core.stewards import PENALTIES
@@ -84,6 +84,8 @@ _LOGGER = logging.getLogger(__name__)
 SIGNAL_LIVE = f"{DOMAIN}_live"  # live entities: what they show changed
 SIGNAL_EVENT = f"{DOMAIN}_event"  # the race-control event entity: (event type)
 SIGNAL_STEWARDS = f"{DOMAIN}_stewards"  # the stewards event entity: (decision)
+SIGNAL_FAVOURITE = f"{DOMAIN}_favourite"  # the drivers event entity: (type, data)
+SIGNAL_SUMMARY = f"{DOMAIN}_summary"  # the summary event entity: (summary)
 SIGNAL_SETTINGS = f"{DOMAIN}_settings"
 SIGNAL_CALENDAR = f"{DOMAIN}_calendar"
 
@@ -160,6 +162,9 @@ class LiveSession:
     archive_outline: asyncio.Task[None] | None = None
     live_samples: list[Sample] = field(default_factory=list)
     next_outline_try: float = 0.0
+    # The household's drivers as last seen: the baseline of their events.
+    favourites_seen: dict[str, dict[str, Any]] | None = None
+    favourites_session: int | None = None
 
 
 @dataclass
@@ -314,14 +319,18 @@ class Hub:
 
     async def async_update_settings(self, settings: Settings) -> None:
         playing = settings.live != self.settings.live
+        favourites_changed = settings.favourites != self.settings.favourites
         await self.store.async_save(settings)
         if self.live is not None:
             self.live.buffer.set_delay(settings.tv_delay)
             self.live.dirty = True
+        if favourites_changed and self.live is not None:
+            self.live.favourites_seen = None  # a new baseline for the new drivers
         async_dispatcher_send(self.hass, SIGNAL_SETTINGS)
         self._update_entities()
         self.publish_full()
         self._notify_map(self.map_payload(broadcast=True, full=True))
+        self.release_summaries()
         if playing:
             # Play and pause take effect now, not at the next tick.
             await self._async_tick(dt_util.utcnow())
@@ -341,6 +350,7 @@ class Hub:
         async with self._lock:
             if not self._stopped:
                 await self._async_tick_locked(now)
+        self.release_summaries()
         self._update_entities()
 
     def _window(self, now: datetime) -> tuple[Meeting | None, Session | None] | None:
@@ -397,6 +407,7 @@ class Hub:
             on_refused=self._token_refused_by_f1,
         )
         live = LiveSession(meeting, session, client, buffer)
+        live.builder.circuit_id = meeting.circuit_id if meeting else None
         self.live = live
         live.task = self.entry.async_create_background_task(
             self.hass, client.run(), f"{DOMAIN} live timing"
@@ -586,6 +597,9 @@ class Hub:
         if status == "finalised":
             if live.finalised_at is None:
                 live.finalised_at = dt_util.utcnow()
+                self.entry.async_create_background_task(
+                    self.hass, self._async_summarise(live), f"{DOMAIN} summary"
+                )
         else:
             live.finalised_at = None
 
@@ -611,12 +625,45 @@ class Hub:
             marks = {**marks, "rcm_seen": max(first_new, book.seen)}
         if marks != self.store.marks:
             self.store.save_marks(marks)
+        # The household's drivers: compared with what was last seen, also while
+        # events are withheld, so nothing fires late.
+        drivers: list[tuple[str, dict[str, Any]]] = []
+        if self.settings.favourites and live.state.topics:
+            rows = live.builder.sections(live.state, dt_util.utcnow())["tower"][1]
+            seen = fav.snapshot(rows, self.settings.favourites)
+            kind = session_kind(live.state.get("SessionInfo"))
+            session = _session_key(live.state.topics)
+            if session != live.favourites_session:
+                # Another session in the feed (the previous one early in a
+                # window, then this one): a new baseline, not a burst of events.
+                live.favourites_session, live.favourites_seen = session, None
+            drivers = fav.derive(live.favourites_seen, seen, kind in RACE_LIKE)
+            live.favourites_seen = seen
+            wanted = set(self.settings.favourites)
+            for record in new_decisions:
+                cars = record.get("cars") or []
+                if record["kind"] in PENALTIES and cars and cars[0]["tla"] in wanted:
+                    drivers.append(
+                        (
+                            "penalty",
+                            {
+                                "driver": cars[0]["tla"],
+                                "number": cars[0]["number"],
+                                "kind": record["kind"],
+                                "seconds": record.get("seconds"),
+                                "reason": record.get("reason"),
+                                "lap": record.get("lap"),
+                            },
+                        )
+                    )
         if live.health != "ok" or live_hidden(self.settings):
             return
         for event in events:
             async_dispatcher_send(self.hass, SIGNAL_EVENT, event)
         for record in new_decisions:
             async_dispatcher_send(self.hass, SIGNAL_STEWARDS, record)
+        for event_type, data in drivers:
+            async_dispatcher_send(self.hass, SIGNAL_FAVOURITE, event_type, data)
 
     def _update_entities(self) -> None:
         """Entities write only when what they show changed: a race writes a few
@@ -667,6 +714,12 @@ class Hub:
             ],
             "investigations": [_brief(i) for i in stewards["investigations"]],
             "last_message": messages[0] if messages else None,
+            "drivers": {
+                code: fav.for_entity(driver)
+                for code, driver in fav.snapshot(
+                    sections["tower"][1], self.settings.favourites
+                ).items()
+            },
         }
 
     # The live view.
@@ -911,6 +964,126 @@ class Hub:
             return
         self.final = FinalView(session.key, state, session.end, session.start)
         self.publish_full()
+
+    # The session summary (decision 53).
+
+    async def _summary_texts(self) -> dict[str, str]:
+        from homeassistant.helpers.translation import async_get_translations
+
+        translations = await async_get_translations(
+            self.hass, self.hass.config.language, "selector", {DOMAIN}
+        )
+        prefix = f"component.{DOMAIN}.selector.summary.options."
+        return {
+            key.removeprefix(prefix): value
+            for key, value in translations.items()
+            if key.startswith(prefix)
+        }
+
+    def _summary_of(self, state: LiveState, builder: LiveViewBuilder) -> dict[str, Any]:
+        sections = builder.sections(state, dt_util.utcnow())
+        return session_summary.build(
+            sections["header"][1],
+            sections["tower"][1],
+            sections["stewards"][1],
+            self.settings.favourites,
+        )
+
+    async def _async_summarise(self, live: LiveSession) -> None:
+        """Once per session, when it is finalised: to the chosen notify services
+        and to the summary event. Held back while no-spoiler mode hides it."""
+        key = (
+            live.session.key
+            if live.session
+            else f"feed-{_session_key(live.state.topics)}"
+        )
+        facts = self._summary_of(live.state, live.builder)
+        kind = (
+            "practice" if str(facts["kind"]).startswith("practice") else facts["kind"]
+        )
+        if kind not in self.settings.summary_kinds:
+            return
+        if key in self.store.summaries_sent:
+            return
+        title, message = session_summary.render(facts, await self._summary_texts())
+        record = {"key": key, "title": title, "message": message, "facts": facts}
+        self.store.summaries_sent = [*self.store.summaries_sent, key][-30:]
+        if self._summary_hidden(key):
+            self.store.pending_summaries = [
+                *[p for p in self.store.pending_summaries if p.get("key") != key],
+                record,
+            ][-10:]
+            await self.store.async_save()
+            return
+        await self.store.async_save()
+        self._deliver_later(record)
+
+    def _summary_hidden(self, key: str | None) -> bool:
+        """Hidden exactly like the session on the Results page (SPEC §9)."""
+        if not self.settings.no_spoiler:
+            return False
+        if key is None or key.startswith("feed-") or not self.meetings:
+            return True  # not a session of the calendar: fail closed (INV-5)
+        return key in hidden_sessions(self.settings, self.meetings, dt_util.utcnow())
+
+    def _deliver_later(self, record: dict[str, Any]) -> None:
+        """Off the caller's path: a slow phone never holds up a reply."""
+        self.entry.async_create_background_task(
+            self.hass, self._async_deliver(record), f"{DOMAIN} summary delivery"
+        )
+
+    @callback
+    def release_summaries(self) -> None:
+        """Held summaries whose session is no longer hidden: revealed, no-spoiler
+        switched off, or the next weekend begun. Called on each change of settings
+        and on the 30 s tick."""
+        pending = self.store.pending_summaries
+        if not pending:
+            return
+        ready = [p for p in pending if not self._summary_hidden(p.get("key"))]
+        if not ready:
+            return
+        self.store.pending_summaries = [p for p in pending if p not in ready]
+        self.hass.async_create_task(self.store.async_save())
+        for record in ready:
+            self._deliver_later(record)
+
+    async def _async_deliver(self, record: dict[str, Any], event: bool = True) -> None:
+        if event:
+            async_dispatcher_send(self.hass, SIGNAL_SUMMARY, record)
+        for target in self.settings.notify_targets:
+            if not self.hass.services.has_service("notify", target):
+                _LOGGER.warning("Summary not sent: notify.%s does not exist", target)
+                continue
+            try:
+                await self.hass.services.async_call(
+                    "notify",
+                    target,
+                    {"title": record["title"], "message": record["message"]},
+                    blocking=True,
+                )
+            except Exception as err:  # a phone offline must not stop the others
+                _LOGGER.warning("Summary not sent to notify.%s: %s", target, err)
+
+    async def async_send_test_summary(self) -> str:
+        """From Settings: the summary of what the Live page shows, sent now to
+        the notify services only (not the event: automations would take it for a
+        real one), and never while no-spoiler mode hides the Live page."""
+        if self._live_page_hidden():
+            return "hidden"
+        source = self.live or self.final
+        if source is None or not source.state.topics:
+            return "nothing"
+        facts = self._summary_of(source.state, source.builder)
+        title, message = session_summary.render(facts, await self._summary_texts())
+        await self._async_deliver(
+            {"key": None, "title": title, "message": message, "facts": facts},
+            event=False,
+        )
+        return "sent"
+
+    def _live_page_hidden(self) -> bool:
+        return self._view_parts()[0]["state"] == "hidden"
 
     # The panel's listeners.
 
