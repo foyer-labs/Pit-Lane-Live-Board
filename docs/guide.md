@@ -57,6 +57,11 @@ The gear at the top right of the panel opens **Settings**:
 - **Start automatically at each session.** Live timing turns itself on as each session
   window opens. If you pause it during a session, it stays paused until the next one.
 - **TV delay**, the same control as the clock in the header (see [TV delay](#tv-delay)).
+- **Times** (each user for themselves): which clock the calendar and the countdowns
+  use — *as in my Home Assistant profile* (the default: the server's time zone, or your
+  device's if your profile says so), *this device's time zone*, or *local time at the
+  track* — and *Show both times*, which adds the other clock in small ("15:00 at the
+  track"). Kept with your Home Assistant user, so it follows you to every device.
 - **F1TV** (administrators only): the token's status and expiry, a field to paste a new
   one, and *Remove* (see [F1TV](#f1tv-and-the-live-map)).
 - **Entities**: every entity of the integration with its state; click one for its
