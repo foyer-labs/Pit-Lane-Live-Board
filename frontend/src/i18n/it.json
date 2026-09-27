@@ -429,7 +429,12 @@
     "compact": "Compatto",
     "full": "Esteso",
     "compactHelp": "Podio, giro veloce, ritirati, penalità e i tuoi piloti.",
-    "fullHelp": "Lo stesso, poi la classifica completa con il tempo di ogni pilota: distacco e giro migliore in gara, giro migliore e distacco in qualifica e nelle libere."
+    "fullHelp": "Lo stesso, poi la classifica completa con il tempo di ogni pilota: distacco e giro migliore in gara, giro migliore e distacco in qualifica e nelle libere.",
+    "add": "Aggiungi",
+    "remove": "Rimuovi",
+    "placeholder": "Scrivi un servizio di notifica…",
+    "none": "Nessun servizio scelto.",
+    "missing": "non trovato"
   },
   "kiosk": {
     "enter": "Schermo intero",

@@ -957,7 +957,12 @@ var Ie = {
 		compact: "Compact",
 		full: "Full",
 		compactHelp: "Podium, fastest lap, retirements, penalties and your drivers.",
-		fullHelp: "The same, then the whole classification with every driver's time: gap and best lap in a race, best lap and gap in qualifying and practice."
+		fullHelp: "The same, then the whole classification with every driver's time: gap and best lap in a race, best lap and gap in qualifying and practice.",
+		add: "Add",
+		remove: "Remove",
+		placeholder: "Type a notify service…",
+		none: "No service chosen yet.",
+		missing: "not found"
 	},
 	kiosk: {
 		enter: "Full screen",
@@ -1446,7 +1451,12 @@ var Ie = {
 			compact: "Compatto",
 			full: "Esteso",
 			compactHelp: "Podio, giro veloce, ritirati, penalità e i tuoi piloti.",
-			fullHelp: "Lo stesso, poi la classifica completa con il tempo di ogni pilota: distacco e giro migliore in gara, giro migliore e distacco in qualifica e nelle libere."
+			fullHelp: "Lo stesso, poi la classifica completa con il tempo di ogni pilota: distacco e giro migliore in gara, giro migliore e distacco in qualifica e nelle libere.",
+			add: "Aggiungi",
+			remove: "Rimuovi",
+			placeholder: "Scrivi un servizio di notifica…",
+			none: "Nessun servizio scelto.",
+			missing: "non trovato"
 		},
 		kiosk: {
 			enter: "Schermo intero",

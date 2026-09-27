@@ -233,6 +233,49 @@ export class PlbSettings extends LitElement {
     }
   }
 
+  // The chosen services with Remove, and a field that suggests the others as a
+  // name is typed (like Home Defender's entity lists): a row of tick-boxes per
+  // service stops being readable in a house with a phone and a tablet each.
+  private renderTargets(t: Translate, services: string[], targets: string[]) {
+    const add = (input: HTMLInputElement | null): void => {
+      if (!input) return;
+      const name = input.value.trim().replace(/^notify\./, "");
+      if (!services.includes(name)) return;
+      input.value = "";
+      if (!targets.includes(name)) void this.setHousehold({ notify_targets: [...targets, name] });
+    };
+    const free = services.filter((name) => !targets.includes(name));
+    return html`<div class="targets">
+      ${targets.length
+        ? html`<ul>${targets.map(
+            (name) => html`<li>
+              <span class="who">notify.${name}</span>
+              ${services.includes(name) ? nothing : html`<span class="missing small">${t("summary.missing")}</span>`}
+              <button class="btn flat" ?disabled=${this.busy}
+                @click=${() => this.setHousehold({ notify_targets: targets.filter((v) => v !== name) })}>${t("summary.remove")}</button>
+            </li>`,
+          )}</ul>`
+        : html`<span class="muted small">${t("summary.none")}</span>`}
+      ${services.length
+        ? html`<div class="add-row">
+            <input list="plb-notify-services" placeholder=${t("summary.placeholder")}
+              aria-label=${t("summary.placeholder")} ?disabled=${this.busy || !free.length}
+              @change=${(e: Event) => {
+                // Picking a suggestion adds it at once; a half-typed name waits for Enter.
+                const input = e.target as HTMLInputElement;
+                if (services.includes(input.value.trim().replace(/^notify\./, ""))) add(input);
+              }}
+              @keydown=${(e: KeyboardEvent) => {
+                if (e.key === "Enter") add(e.target as HTMLInputElement);
+              }} />
+            <button class="btn flat" ?disabled=${this.busy || !free.length}
+              @click=${(e: Event) => add((e.target as HTMLElement).previousElementSibling as HTMLInputElement | null)}>${t("summary.add")}</button>
+          </div>
+          <datalist id="plb-notify-services">${free.map((name) => html`<option value=${`notify.${name}`}></option>`)}</datalist>`
+        : html`<span class="muted">${t("summary.noServices")}</span>`}
+    </div>`;
+  }
+
   private renderSummary(t: Translate, s: Settings) {
     const services = Object.keys(this.hass.services?.notify ?? {})
       .filter((name) => !["send_message"].includes(name))
@@ -245,14 +288,7 @@ export class PlbSettings extends LitElement {
       <div class="body">
         <p>${t("summary.help")}</p>
         <b class="small">${t("summary.where")}</b>
-        ${services.length
-          ? services.map(
-              (name) => html`<label class="line">
-                <input type="checkbox" .checked=${targets.includes(name)} ?disabled=${this.busy}
-                  @change=${(e: Event) => this.setHousehold({ notify_targets: this.toggle(targets, name, (e.target as HTMLInputElement).checked) }, e.target)} />
-                <span>notify.${name}</span></label>`,
-            )
-          : html`<span class="muted">${t("summary.noServices")}</span>`}
+        ${this.renderTargets(t, services, targets)}
         <b class="small">${t("summary.which")}</b>
         <div class="chips">${allKinds.map((kind) => {
           const on = kinds.includes(kind);
@@ -437,6 +473,16 @@ export class PlbSettings extends LitElement {
       .chips { display: flex; flex-wrap: wrap; gap: 6px; }
       .line { display: flex; align-items: center; gap: 10px; font-size: 14px; }
       .line input { width: 18px; height: 18px; accent-color: var(--primary-color); }
+      .targets { display: grid; gap: 6px; }
+      .targets ul { list-style: none; margin: 0; padding: 0; }
+      .targets li { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 14px;
+        border-bottom: 1px solid var(--divider-color, #e0e0e0); }
+      .targets .who { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+      .targets .missing { color: var(--error-color, #db4437); }
+      .add-row { display: flex; gap: 8px; align-items: center; }
+      .add-row input { flex: 1; min-width: 0; font: inherit; padding: 8px 10px; border-radius: 8px;
+        border: 1px solid var(--divider-color, #ccc); background: var(--card-background-color, #fff);
+        color: var(--primary-text-color); }
       .body > .btn { justify-self: start; }
       .live { display: flex; align-items: center; gap: 18px; padding: 18px 16px 8px; }
       .play-box { display: grid; justify-items: center; gap: 4px; flex: none; }

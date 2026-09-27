@@ -6,6 +6,13 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-09-27
+
+### Changed
+- **Session summary, Send to:** the notify services are chosen from a field that
+  suggests them as you type, with *Add* and *Remove*, instead of one tick-box per
+  service — tidy even in a house with many phones and tablets.
+
 ## [0.9.0] - 2026-09-27
 
 ### Added
