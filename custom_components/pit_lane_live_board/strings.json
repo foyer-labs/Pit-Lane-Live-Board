@@ -50,7 +50,10 @@
         "kind_stop_go": "stop and go",
         "kind_grid_penalty": "grid penalty",
         "kind_disqualified": "disqualified",
-        "kind_time_penalty": "time penalty"
+        "kind_time_penalty": "time penalty",
+        "classification": "Classification:",
+        "out": "out",
+        "out_lap": "out (lap {lap})"
       }
     }
   },
