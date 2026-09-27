@@ -76,8 +76,26 @@ def race_meta(race: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _lapped(out: list[dict[str, Any]]) -> None:
+    """Lapped cars show the laps they are down, not a time.
+
+    Jolpica now sends a `Time` for a lapped car too (2026 round 14: LIN, P9,
+    "Lapped", 56 laps to the winner's 57, `+10.408`), which read as a gap on the
+    lead lap. Its status used to be `+1 Lap`; it is now `Lapped`, so the laps
+    down come from the winner's lap count, in the old form.
+    """
+    leader = max((row["laps"] or 0 for row in out), default=0)
+    for row in out:
+        status, laps = row["status"] or "", row["laps"]
+        behind = leader - laps if laps is not None and leader else 0
+        if status == "Lapped" or (behind > 0 and status.startswith("+")):
+            row["time"] = None
+            if status == "Lapped" and behind > 0:
+                row["status"] = f"+{behind} Lap" + ("s" if behind > 1 else "")
+
+
 def _classification(rows: Any) -> list[dict[str, Any]]:
-    out = []
+    out: list[dict[str, Any]] = []
     for row in rows if isinstance(rows, list) else []:
         if not isinstance(row, dict):
             continue
@@ -115,6 +133,7 @@ def _classification(rows: Any) -> list[dict[str, Any]]:
                 ),
             }
         )
+    _lapped(out)
     return out
 
 
