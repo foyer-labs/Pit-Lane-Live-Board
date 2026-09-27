@@ -22,8 +22,9 @@ from typing import Any
 
 from .live_state import PITS, LiveState
 from .panels import header, race_control, team_radio, weather
-from .session import session_status, track_status
+from .session import RACE_LIKE, session_kind, session_status, track_status
 from .stewards import StewardsBook, penalty_seconds
+from .strategy import pit_loss, pit_rejoin
 from .timing import build_tower
 from .values import to_int
 
@@ -37,6 +38,9 @@ _READS: dict[str, tuple[str, ...]] = {
         "DriverList",
         "SessionInfo",
         "RaceControlMessages",
+        "TrackStatus",
+        "SessionStatus",
+        PITS,
     ),
     "race_control": ("RaceControlMessages",),
     "stewards": ("RaceControlMessages", "TrackStatus", "SessionStatus"),
@@ -65,6 +69,8 @@ class LiveViewBuilder:
         self._state: LiveState | None = None
         self._cache: dict[str, tuple[tuple[int, ...], Any]] = {}
         self.book = StewardsBook()
+        # The circuit, for the typical cost of a pit stop (set by the hub).
+        self.circuit_id: str | None = None
 
     def sync(self, state: LiveState) -> None:
         """Feed the book the messages it has not seen (also done by `sections`)."""
@@ -97,9 +103,12 @@ class LiveViewBuilder:
         topics = state.topics
         if name == "tower":
             value = build_tower(topics)
-            penalties = penalty_seconds(self.book.summary(self._track(topics)))
+            track = self._track(topics)
+            penalties = penalty_seconds(self.book.summary(track))
+            rejoin = self._rejoin(state, value, track)
             for row in value:
                 row["penalty"] = penalties.get(row["number"])
+                row["pit_rejoin"] = rejoin.get(row["number"])
         elif name == "race_control":
             value = race_control(topics)
         elif name == "stewards":
@@ -112,6 +121,19 @@ class LiveViewBuilder:
             value = list(reversed(state.pit_log))
         self._cache[name] = (key, value)
         return key, value
+
+    def _rejoin(
+        self, state: LiveState, rows: list[dict[str, Any]], track: str | None
+    ) -> dict[str, dict[str, Any]]:
+        """Where each driver would rejoin after a stop now: races and sprints
+        while they run (decision 51)."""
+        topics = state.topics
+        kind = session_kind(topics.get("SessionInfo"))
+        running = session_status(topics.get("SessionStatus")) == "started"
+        if kind not in RACE_LIKE or not running or track in ("red_flag", "chequered"):
+            return {}
+        loss, known = pit_loss(self.circuit_id, track)
+        return pit_rejoin(rows, loss, known)
 
     def sections(self, state: LiveState, now: datetime) -> dict[str, tuple[Any, Any]]:
         """`{section: (version key, value)}`; the header is always rebuilt (its

@@ -990,6 +990,25 @@ Decisions taken in chat with the owner.
   IANA name per circuit in `core/circuits.py` (Jolpica has none), else per country when
   the country has one zone; unknown means no track time rather than a wrong one.
 
+51. **A driver's race in the tower** (asked by the owner, 0.5): the selected row opens
+  on every screen with the stints (from `TimingAppData`: compound, laps as
+  `TotalLaps − StartLaps` following one another from lap 1, best lap per stint) and,
+  in races and sprints while running, the rejoin estimate of `core/strategy.py`: the
+  circuit's typical pit loss (a table by Jolpica circuit id, else 22 s; not F1's pit
+  lane time, which includes the stretch driven anyway), × 0.55 under a safety car and
+  × 0.65 under a VSC, against the gaps of the cars on the same lap. Mini-sectors come
+  from `TimingData` segment statuses (2051 purple, 2049 green, 2048 yellow, 2064 pit).
+52. **The household's drivers** (asked by the owner, 0.5): up to five codes, a sensor
+  each (added and removed as the list changes), a ★ in the tower, and the "My drivers"
+  event from consecutive snapshots (the first one of a session is the baseline;
+  position events in races and sprints only; penalties from the stewards' decisions).
+  Administrators choose them: they create entities for the house.
+53. **The session summary** (asked by the owner, 0.5): built when the followed session
+  is finalised, once per session (keys persisted), for the kinds chosen; sent to the
+  chosen notify services and as the "Session summary" event; held while no-spoiler mode
+  hides the session and released when revealed. Texts from the integration's
+  translations (`selector.summary`). Administrators choose the services.
+
 ---
 
 ## 18. Choices awaiting confirmation

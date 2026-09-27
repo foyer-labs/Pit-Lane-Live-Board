@@ -36,6 +36,9 @@
       },
       "race_control_message": {
         "default": "mdi:message-alert-outline"
+      },
+      "driver": {
+        "default": "mdi:racing-helmet"
       }
     },
     "binary_sensor": {
@@ -64,6 +67,12 @@
       },
       "stewards": {
         "default": "mdi:gavel"
+      },
+      "drivers": {
+        "default": "mdi:account-star"
+      },
+      "summary": {
+        "default": "mdi:flag-checkered"
       }
     },
     "switch": {

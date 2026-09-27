@@ -6,6 +6,25 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-27
+
+### Added
+- **Click a driver in the timing tower** to see their race so far: every stint with its
+  compound, the laps it covered and the best lap of each ("laps 1–24, medium, best
+  1:33.1 on lap 18"), and where a stop now would bring them back out ("back out P9,
+  behind BOR, ahead of COL"), an estimate from the circuit's typical pit loss, lower
+  under a safety car or VSC.
+- **Mini-sectors**: under each sector time, the strip of F1's purple, green and yellow
+  mini-sectors, in the panel and in the tower card.
+- **My drivers**: follow up to five drivers in Settings. Each gets a sensor (position,
+  gap, tyre and its age, pits, penalty, where a stop would bring them out), their rows
+  get a ★, and the **My drivers** event fires when they gain or lose a place, take the
+  lead, pit, set the fastest lap, retire or get a penalty.
+- **Session summary**: when a session ends, podium, fastest lap, retirements, penalties
+  and your drivers, sent to the notify services you choose in Settings (for the races,
+  sprints, qualifying or practice you pick), and as the **Session summary** event. With
+  no-spoiler mode on it waits until you reveal the session. *Send a test* tries it.
+
 ## [0.4.0] - 2026-09-27
 
 ### Added

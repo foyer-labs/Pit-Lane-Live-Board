@@ -18,6 +18,8 @@ export class PlbSettings extends LitElement {
     hass: { attribute: false },
     settings: { attribute: false },
     entities: { state: true },
+    drivers: { state: true },
+    testResult: { state: true },
     token: { state: true },
     tokenError: { state: true },
     saving: { state: true },
@@ -28,6 +30,8 @@ export class PlbSettings extends LitElement {
   hass!: Hass;
   settings!: Settings;
   entities?: LinkedEntity[];
+  drivers?: { code: string; name: string | null; team_id: string | null }[];
+  testResult = "";
   token = "";
   tokenError = "";
   saving = false;
@@ -39,6 +43,19 @@ export class PlbSettings extends LitElement {
     if (this.hass && !this.asked) {
       this.asked = true;
       void this.loadEntities();
+      if (this.settings?.is_admin) void this.loadDrivers();
+    }
+  }
+
+  /** The season's drivers, to pick from: the championship lists them all. */
+  private async loadDrivers(): Promise<void> {
+    try {
+      const page = await api.standings(this.hass, this.settings.season, null, "drivers");
+      this.drivers = page.rows
+        .filter((r) => r.code)
+        .map((r) => ({ code: r.code as string, name: r.name ?? null, team_id: r.team_id }));
+    } catch {
+      this.drivers = [];
     }
   }
 
@@ -108,6 +125,8 @@ export class PlbSettings extends LitElement {
       ${this.renderLive(t, s)}
       ${this.renderDelay(t, s)}
       ${this.renderClock(t)}
+      ${s.is_admin ? this.renderDrivers(t, s) : nothing}
+      ${s.is_admin ? this.renderSummary(t, s) : nothing}
       ${s.is_admin ? this.renderPanel(t, s) : nothing}
       ${s.is_admin ? this.renderF1tv(t, s) : nothing}
       ${this.renderEntities(t)}
@@ -133,6 +152,93 @@ export class PlbSettings extends LitElement {
           @change=${(e: Event) => this.set({ auto_start: (e.target as HTMLInputElement).checked }, e.target)} />
         <span><b>${t("settings.autoStart")}</b><small>${t("settings.autoStartHelp")}</small></span>
       </label>
+    </section>`;
+  }
+
+  private async setHousehold(
+    values: { favourites?: string[]; notify_targets?: string[]; summary_kinds?: string[] },
+    box?: EventTarget | null,
+  ): Promise<void> {
+    this.busy = true;
+    try {
+      await api.setHousehold(this.hass, values);
+      // The entity list gains or loses a driver's sensor.
+      if (values.favourites) void this.loadEntities();
+    } catch {
+      if (box instanceof HTMLInputElement) box.checked = !box.checked;
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  private toggle(list: string[], value: string, on: boolean): string[] {
+    return on ? [...list.filter((v) => v !== value), value] : list.filter((v) => v !== value);
+  }
+
+  private renderDrivers(t: Translate, s: Settings) {
+    const chosen = s.favourites ?? [];
+    const full = chosen.length >= 5;
+    const drivers = this.drivers;
+    return html`<section class="card">
+      <div class="card-head">${t("drivers.title")}<span class="spacer"></span><small>${t("settings.adminOnly")}</small></div>
+      <div class="body">
+        <p>${t("drivers.help")}</p>
+        ${!drivers
+          ? html`<span class="muted">${t("common.loading")}</span>`
+          : html`<div class="chips">${drivers.map((d) => {
+              const on = chosen.includes(d.code);
+              return html`<button class="chip ${on ? "on" : ""}" ?disabled=${this.busy || (!on && full)}
+                title=${d.name ?? d.code} aria-pressed=${on ? "true" : "false"}
+                @click=${() => this.setHousehold({ favourites: this.toggle(chosen, d.code, !on) })}>
+                ${on ? "★ " : ""}${d.code}</button>`;
+            })}</div>`}
+        <small class="muted">${t("drivers.max")}</small>
+      </div>
+    </section>`;
+  }
+
+  private async testSummary(): Promise<void> {
+    this.testResult = "";
+    try {
+      const { sent } = await api.testSummary(this.hass);
+      this.testResult = sent ? "summary.testSent" : "summary.testNothing";
+    } catch {
+      this.testResult = "summary.testFailed";
+    }
+  }
+
+  private renderSummary(t: Translate, s: Settings) {
+    const services = Object.keys(this.hass.services?.notify ?? {})
+      .filter((name) => !["send_message"].includes(name))
+      .sort();
+    const targets = s.notify_targets ?? [];
+    const kinds = s.summary_kinds ?? [];
+    const allKinds = ["race", "sprint", "qualifying", "sprint_qualifying", "practice"];
+    return html`<section class="card">
+      <div class="card-head">${t("summary.title")}<span class="spacer"></span><small>${t("settings.adminOnly")}</small></div>
+      <div class="body">
+        <p>${t("summary.help")}</p>
+        <b class="small">${t("summary.where")}</b>
+        ${services.length
+          ? services.map(
+              (name) => html`<label class="line">
+                <input type="checkbox" .checked=${targets.includes(name)} ?disabled=${this.busy}
+                  @change=${(e: Event) => this.setHousehold({ notify_targets: this.toggle(targets, name, (e.target as HTMLInputElement).checked) }, e.target)} />
+                <span>notify.${name}</span></label>`,
+            )
+          : html`<span class="muted">${t("summary.noServices")}</span>`}
+        <b class="small">${t("summary.which")}</b>
+        <div class="chips">${allKinds.map((kind) => {
+          const on = kinds.includes(kind);
+          return html`<button class="chip ${on ? "on" : ""}" ?disabled=${this.busy}
+            @click=${() => this.setHousehold({ summary_kinds: this.toggle(kinds, kind, !on) })}>${t(`sessions.${kind}`)}</button>`;
+        })}</div>
+        <div class="line">
+          <button class="btn flat" ?disabled=${!targets.length} @click=${() => this.testSummary()}>${t("summary.test")}</button>
+          ${this.testResult ? html`<span class="muted small">${t(this.testResult)}</span>` : nothing}
+        </div>
+        <small class="muted">${t("summary.spoiler")}</small>
+      </div>
     </section>`;
   }
 
@@ -278,6 +384,9 @@ export class PlbSettings extends LitElement {
       .body { padding: 14px 16px; display: grid; gap: 12px; }
       .body p { margin: 0; color: var(--secondary-text-color); font-size: 13px; line-height: 1.5; }
       .small { font-size: 12px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+      .line { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+      .line input { width: 18px; height: 18px; accent-color: var(--primary-color); }
       .body > .btn { justify-self: start; }
       .live { display: flex; align-items: center; gap: 18px; padding: 18px 16px 8px; }
       .big-play { width: 72px; height: 72px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; flex: none;

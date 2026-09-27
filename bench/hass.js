@@ -60,6 +60,9 @@ export function createHass() {
     live: params.get("playing") !== "false",
     auto_start: params.get("auto") === "true",
     show_in_sidebar: true,
+    favourites: (params.get("fav") ?? "LEC").split(",").filter(Boolean),
+    notify_targets: ["mobile_app_pixel"],
+    summary_kinds: ["sprint", "race"],
     admin_only: params.get("adminOnly") === "true",
     running: ["race", "qualifying", "stale"].includes(params.get("live") ?? "race"),
     revealed: [],
@@ -80,6 +83,7 @@ export function createHass() {
     locale: { language: params.get("lang") ?? "en" },
     config: { time_zone: "Europe/Rome" },
     states: {},
+    services: { notify: { mobile_app_pixel: {}, mobile_app_tablet: {}, persistent_notification: {} } },
     user: { is_admin: admin },
     async callWS(msg) {
       const type = msg.type.replace(P, "");
@@ -91,6 +95,9 @@ export function createHass() {
           if ("no_spoiler" in msg) settings.no_spoiler = msg.no_spoiler;
           if ("live" in msg) settings.live = msg.live;
           if ("auto_start" in msg) settings.auto_start = msg.auto_start;
+          for (const key of ["favourites", "notify_targets", "summary_kinds"]) {
+            if (key in msg) settings[key] = msg[key];
+          }
           pushSettings();
           return { ...settings };
         case "f1tv/set":
@@ -103,6 +110,8 @@ export function createHass() {
         case "frontend/set_user_data":
           userData[msg.key] = msg.value;
           return null;
+        case "summary/test":
+          return { sent: true };
         case "panel/set":
           if ("show_in_sidebar" in msg) settings.show_in_sidebar = msg.show_in_sidebar;
           if ("admin_only" in msg) settings.admin_only = msg.admin_only;

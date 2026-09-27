@@ -14,6 +14,8 @@ the first two sections and you are set; come back to the others when you need th
 - [TV delay](#tv-delay)
 - [No-spoiler mode](#no-spoiler-mode)
 - [F1TV and the live map](#f1tv-and-the-live-map)
+- [My drivers](#my-drivers)
+- [Session summary](#session-summary)
 - [Dashboard cards](#dashboard-cards)
 - [Entities and automations](#entities-and-automations)
 - [Troubleshooting](#troubleshooting)
@@ -66,6 +68,10 @@ The gear at the top right of the panel opens **Settings**:
   one, and *Remove* (see [F1TV](#f1tv-and-the-live-map)).
 - **Entities**: every entity of the integration with its state; click one for its
   history and settings.
+- **My drivers** (administrators): up to five drivers the house follows, picked from
+  the season's drivers. See [My drivers](#my-drivers).
+- **Summary at the end of a session** (administrators): the notify services to send
+  it to, and after which sessions. See [Session summary](#session-summary).
 - **Panel** (administrators only): *Show Live Board in the sidebar*, and *Only
   administrators can open the panel* — off by default, so every user of the house
   sees it. See [who sees what](#who-sees-what).
@@ -147,7 +153,23 @@ retired, `STOP` stopped on track, `KO` knocked out of qualifying.
 A red `+5s` after a driver's number is a time penalty not served yet.
 
 Click a row to follow a driver: the row, their dot on the map and their team radio are
-highlighted. Race control can be filtered to flags or to penalties.
+highlighted, and the row opens:
+
+![A driver's stints and where a stop would bring them out](screenshots/driver.png)
+
+
+- **Stints:** each set of tyres so far, with its compound, the laps it covered and the
+  best lap on it — laps 1–24 on mediums, best 1:33.1 on lap 18, then softs from lap 25.
+- **If they stopped now** (races and sprints): the position they would come back out
+  in, and the cars just ahead and behind. It is an estimate: the typical time a stop
+  costs at that circuit (22 s where it is not known), less under a safety car or a VSC,
+  compared with the gaps of the cars on the same lap.
+
+Under each sector time a thin strip shows the **mini-sectors** of the current lap in
+F1's colours: purple for the fastest of the session, green for a personal best, yellow
+otherwise.
+
+Race control can be filtered to flags or to penalties.
 
 When the feed goes quiet, a banner says so after 30 seconds and the page greys out
 after 60: nothing that is not live is ever shown as live.
@@ -285,6 +307,44 @@ cards:
 results and timing are public F1 information, and any signed-in user can still read
 them through a card or the entities.
 
+## My drivers
+
+Follow up to five drivers in Settings. For each one:
+
+- a sensor, **Driver LEC**, whose state is the position, with gap, interval, last and
+  best lap, tyre and its age, stint, pit stops, penalty and where a stop now would bring
+  them out as attributes;
+- a ★ next to their code in the timing tower, and their row highlighted in the tower
+  card when it has no driver of its own;
+- the **My drivers** event: `position_gained`, `position_lost`, `took_lead`, `pit_in`,
+  `pit_out`, `fastest_lap`, `retired`, `penalty`, with `driver` (the code), `position`,
+  `previous_position` and `lap`. Positions count in races and sprints only.
+
+```yaml
+alias: Leclerc takes the lead
+triggers:
+  - trigger: state
+    entity_id: event.pit_lane_live_board_my_drivers
+conditions:
+  - "{{ trigger.to_state.attributes.event_type == 'took_lead' }}"
+  - "{{ trigger.to_state.attributes.driver == 'LEC' }}"
+actions:
+  - action: light.turn_on
+    target: { entity_id: light.living_room }
+    data: { color_name: red, flash: long }
+```
+
+## Session summary
+
+When a session ends, the integration writes a short summary — podium, fastest lap,
+retirements, penalties, your drivers — and sends it to the notify services chosen in
+Settings (one per phone with the mobile app, or `persistent_notification`), after the
+kinds of session you pick. *Send a test* sends the summary of what the Live page shows.
+
+It is also the **Session summary** event, with `title` and `message` ready to send or
+speak and the facts behind them, for your own automations. With no-spoiler mode on it
+waits until you reveal the session or turn the mode off.
+
 ## Entities and automations
 
 The integration adds one device, **Pit Lane Live Board**, with these entities (their
@@ -307,6 +367,9 @@ ids follow Home Assistant's language when you install; find them on the device p
 | `sensor.pit_lane_live_board_race_control_message` | The latest race control message, in English as F1 writes it. |
 | `event.pit_lane_live_board_race_control` | `green_flag`, `yellow_flag`, `safety_car`, `virtual_safety_car`, `vsc_ending`, `red_flag`, `chequered_flag`, `session_started`, `session_ended`. |
 | `event.pit_lane_live_board_stewards` | One event per stewards' decision: `time_penalty`, `drive_through`, `stop_go`, `grid_penalty`, `penalty_served`, `disqualified`, `noted`, `investigation`, `investigation_after_race`, `no_further_action`, `warning`, `black_and_white_flag`, `lap_deleted`; attributes `drivers`, `numbers`, `seconds`, `places`, `reason`, `turn`, `lap`, `message`. |
+| `sensor.pit_lane_live_board_driver_lec` (one per followed driver) | The driver's position; the rest as attributes. See [My drivers](#my-drivers). |
+| `event.pit_lane_live_board_my_drivers` | The followed drivers' events. |
+| `event.pit_lane_live_board_session_summary` | The summary when a session ends. |
 | `switch.pit_lane_live_board_live_timing` | Live timing on (play) or paused. |
 | `switch.pit_lane_live_board_no_spoiler_mode` | No-spoiler mode. |
 | `number.pit_lane_live_board_tv_delay` | TV delay in seconds. |

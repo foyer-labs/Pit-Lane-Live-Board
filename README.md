@@ -38,7 +38,10 @@ One install, three ways to use it:
 - **The live timing tower.** Position, gap to the leader and to the car ahead, last and
   best lap, the three sectors in purple and green, the tyre each driver is on and how
   many laps it has done, pit stops, and places gained or lost since the start.
-- **Qualifying done right.** Q1, Q2 and Q3 with the knockout line, best laps and gaps.
+- **Qualifying done right.** Q1, Q2 and Q3 with the knockout line, best laps and gaps,
+  and the mini-sectors in F1's purple, green and yellow.
+- **Every driver's race, one click away.** Their stints with the laps and best lap of
+  each, and where a stop now would bring them back out.
 - **Flags and stewards at a glance.** The track status, yellow sectors, the safety car
   and its last lap, every penalty (a `+5s` next to the driver until it is served),
   incidents under investigation and deleted laps, in one card above the tower.
@@ -103,6 +106,8 @@ has examples.
 | `sensor` Penalties · Investigations · Race control message | What the stewards are looking at, with the details as attributes. |
 | `event` Race control | Green, yellow, safety car, VSC, red, chequered flag, session started and ended. |
 | `event` Stewards | One event per decision: time penalty, drive-through, investigation, warning, deleted lap… with driver, seconds and reason. |
+| `sensor` Driver LEC · `event` My drivers | Up to five drivers you follow: position, gap, tyre and pits, and an event when they gain a place, take the lead, pit, set the fastest lap or get a penalty. |
+| `event` Session summary | Podium, fastest lap, penalties and your drivers when a session ends — also sent to your phones if you choose. |
 | `calendar` Sessions · `sensor` Next session | "The race starts in 15 minutes", with no code. |
 | `switch` Live timing · No-spoiler mode · `number` TV delay | Control the board from your own automations and voice assistant. |
 

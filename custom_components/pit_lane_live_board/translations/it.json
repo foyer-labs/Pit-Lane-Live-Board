@@ -36,6 +36,22 @@
       "options": {
         "round": "Tappa {round}"
       }
+    },
+    "summary": {
+      "options": {
+        "title": "🏁 {meeting} — {session}",
+        "place": "{position}. {driver}",
+        "fastest": "Giro veloce: {driver} {time}",
+        "retired": "Ritirati: {drivers}",
+        "penalties": "Penalità: {list}",
+        "yours": "I tuoi piloti: {list}",
+        "yours_one": "{driver} P{position}",
+        "kind_drive_through": "drive-through",
+        "kind_stop_go": "stop and go",
+        "kind_grid_penalty": "penalità in griglia",
+        "kind_disqualified": "squalificato",
+        "kind_time_penalty": "penalità in tempo"
+      }
     }
   },
   "options": {
@@ -153,6 +169,62 @@
             "name": "Ora"
           }
         }
+      },
+      "driver": {
+        "name": "Pilota {driver}",
+        "state_attributes": {
+          "name": {
+            "name": "Nome"
+          },
+          "team": {
+            "name": "Squadra"
+          },
+          "number": {
+            "name": "Numero"
+          },
+          "gap": {
+            "name": "Distacco"
+          },
+          "interval": {
+            "name": "Intervallo"
+          },
+          "last_lap": {
+            "name": "Ultimo giro"
+          },
+          "best_lap": {
+            "name": "Giro migliore"
+          },
+          "tyre": {
+            "name": "Gomma"
+          },
+          "tyre_age": {
+            "name": "Giri della gomma"
+          },
+          "stint": {
+            "name": "Stint"
+          },
+          "pit_stops": {
+            "name": "Soste"
+          },
+          "in_pit": {
+            "name": "Ai box"
+          },
+          "laps": {
+            "name": "Giri"
+          },
+          "status": {
+            "name": "Stato"
+          },
+          "penalty": {
+            "name": "Penalità (s)"
+          },
+          "gained": {
+            "name": "Posizioni guadagnate"
+          },
+          "pit_rejoin": {
+            "name": "Rientro dopo una sosta"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -227,6 +299,33 @@
               "warning": "Ammonizione",
               "black_and_white_flag": "Bandiera bianconera",
               "lap_deleted": "Tempo sul giro cancellato"
+            }
+          }
+        }
+      },
+      "drivers": {
+        "name": "I miei piloti",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "position_gained": "Posizione guadagnata",
+              "position_lost": "Posizione persa",
+              "took_lead": "In testa",
+              "pit_in": "Ai box",
+              "pit_out": "Uscita dai box",
+              "fastest_lap": "Giro veloce",
+              "retired": "Ritirato",
+              "penalty": "Penalità"
+            }
+          }
+        }
+      },
+      "summary": {
+        "name": "Riepilogo della sessione",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "summary": "Riepilogo"
             }
           }
         }

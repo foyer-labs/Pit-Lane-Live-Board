@@ -85,6 +85,16 @@ export abstract class LiveCard extends LitElement {
 
   protected override willUpdate(): void {
     if (this.hass) void loadTimePrefs(this.hass);
+    if (this.hass && !this.askedFollowed) {
+      this.askedFollowed = true;
+      api.settings(this.hass).then(
+        (settings) => {
+          this.followed = settings.favourites ?? [];
+          this.requestUpdate();
+        },
+        () => undefined,
+      );
+    }
     this.listen();
   }
 
@@ -98,6 +108,10 @@ export abstract class LiveCard extends LitElement {
       this.unlisten = liveStore.listen(this.hass, (view) => (this.view = view));
     }
   }
+
+  /** The household's drivers, read once per page with the settings. */
+  protected followed: string[] = [];
+  private askedFollowed = false;
 
   protected get t(): Translate {
     return translator(this.hass);

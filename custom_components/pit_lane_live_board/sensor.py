@@ -9,15 +9,17 @@ from typing import Any
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.const import EntityCategory
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.event import async_track_point_in_utc_time
 
 from . import LiveBoardConfigEntry
+from .const import DOMAIN
 from .core.f1tv_token import STATUSES as F1TV_STATUSES
 from .core.session import SESSION_STATUSES, TRACK_STATUSES
 from .entity import LiveBoardEntity, LiveEntity
-from .hub import SIGNAL_CALENDAR
+from .hub import SIGNAL_CALENDAR, SIGNAL_SETTINGS
 
 
 async def async_setup_entry(
@@ -37,6 +39,84 @@ async def async_setup_entry(
             F1tvSensor(entry, "f1tv"),
         ]
     )
+    _follow_favourites(hass, entry, async_add_entities)
+
+
+def _follow_favourites(
+    hass: HomeAssistant,
+    entry: LiveBoardConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    """One sensor per driver the household follows (decision 52), added and
+    removed as the list changes in Settings."""
+    hub = entry.runtime_data.hub
+    shown: set[str] = set()
+
+    @callback
+    def sync() -> None:
+        wanted = set(hub.settings.favourites)
+        new = sorted(wanted - shown)
+        if new:
+            async_add_entities([DriverSensor(entry, code) for code in new])
+            shown.update(new)
+        gone = shown - wanted
+        if gone:
+            registry = er.async_get(hass)
+            for code in gone:
+                unique_id = f"{entry.entry_id}_driver_{code}"
+                if entity_id := registry.async_get_entity_id(
+                    "sensor", DOMAIN, unique_id
+                ):
+                    registry.async_remove(entity_id)
+            shown.difference_update(gone)
+
+    sync()
+    entry.async_on_unload(async_dispatcher_connect(hass, SIGNAL_SETTINGS, sync))
+
+
+class DriverSensor(LiveEntity, SensorEntity):
+    """A driver the household follows: their position, and the rest as attributes."""
+
+    _unrecorded_attributes = frozenset({"pit_rejoin", "last_lap", "gap", "interval"})
+
+    def __init__(self, entry: LiveBoardConfigEntry, code: str) -> None:
+        super().__init__(entry, "driver")
+        self.code = code
+        self._attr_unique_id = f"{entry.entry_id}_driver_{code}"
+        self._attr_translation_placeholders = {"driver": code}
+
+    def _driver(self) -> dict[str, Any]:
+        return (self.shown("drivers") or {}).get(self.code) or {}
+
+    @property
+    def native_value(self) -> int | None:
+        return self._driver().get("position")
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        driver = self._driver()
+        return {
+            key: driver.get(key)
+            for key in (
+                "name",
+                "team",
+                "number",
+                "gap",
+                "interval",
+                "last_lap",
+                "best_lap",
+                "tyre",
+                "tyre_age",
+                "stint",
+                "pit_stops",
+                "in_pit",
+                "laps",
+                "status",
+                "penalty",
+                "gained",
+                "pit_rejoin",
+            )
+        }
 
 
 class NextSessionSensor(LiveBoardEntity, SensorEntity):
