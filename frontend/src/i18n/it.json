@@ -373,7 +373,12 @@
     "testNothing": "Ancora niente da riepilogare: serve una sessione nella pagina Live.",
     "testFailed": "Non inviato.",
     "spoiler": "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità.",
-    "testHidden": "Non inviato: la modalità senza spoiler nasconde la pagina Live."
+    "testHidden": "Non inviato: la modalità senza spoiler nasconde la pagina Live.",
+    "format": "Contenuto",
+    "compact": "Compatto",
+    "full": "Esteso",
+    "compactHelp": "Podio, giro veloce, ritirati, penalità e i tuoi piloti.",
+    "fullHelp": "Lo stesso, poi la classifica completa con il tempo di ogni pilota: distacco e giro migliore in gara, giro migliore e distacco in qualifica e nelle libere."
   },
   "kiosk": {
     "enter": "Schermo intero",

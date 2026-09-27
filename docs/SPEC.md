@@ -1025,6 +1025,11 @@ Decisions taken in chat with the owner.
   browser allows it. The ⛶ button enters it with the Fullscreen API until Esc. The
   non-affiliation notice stays visible (INV-6).
 
+56. **A full summary, on request** (asked by the owner, 0.7): `summary_format` compact
+  (the default) or full, which appends the whole classification: gap and best lap in
+  races and sprints, best lap and gap in qualifying and practice, retirements with
+  their last lap. Chosen by administrators with the rest of the summary.
+
 ---
 
 ## 18. Choices awaiting confirmation

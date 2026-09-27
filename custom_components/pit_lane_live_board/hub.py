@@ -1035,7 +1035,11 @@ class Hub:
             return
         if key in self.store.summaries_sent:
             return
-        title, message = session_summary.render(facts, await self._summary_texts())
+        title, message = session_summary.render(
+            facts,
+            await self._summary_texts(),
+            full=self.settings.summary_format == "full",
+        )
         record = {"key": key, "title": title, "message": message, "facts": facts}
         self.store.summaries_sent = [*self.store.summaries_sent, key][-30:]
         if self._summary_hidden(key):
@@ -1105,7 +1109,11 @@ class Hub:
         if source is None or not source.state.topics:
             return "nothing"
         facts = self._summary_of(source.state, source.builder)
-        title, message = session_summary.render(facts, await self._summary_texts())
+        title, message = session_summary.render(
+            facts,
+            await self._summary_texts(),
+            full=self.settings.summary_format == "full",
+        )
         await self._async_deliver(
             {"key": None, "title": title, "message": message, "facts": facts},
             event=False,

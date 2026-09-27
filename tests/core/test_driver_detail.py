@@ -258,3 +258,92 @@ def test_the_summary_of_a_race():
         "Penalties: GAS +5s",
         "Your drivers: LEC P4 (+1)",
     ]
+
+
+def test_the_full_summary_lists_the_classification():
+    rows = [
+        {
+            "number": "12",
+            "tla": "ANT",
+            "position": 1,
+            "gap": "LAP 57",
+            "best_lap": {"time": "1:36.030"},
+            "status": "running",
+            "laps": 57,
+        },
+        {
+            "number": "1",
+            "tla": "VER",
+            "position": 2,
+            "gap": "+4.351",
+            "best_lap": {"time": "1:35.100"},
+            "status": "running",
+            "laps": 57,
+        },
+        {
+            "number": "10",
+            "tla": "GAS",
+            "position": 3,
+            "gap": "1L",
+            "best_lap": None,
+            "status": "running",
+            "laps": 56,
+        },
+        {
+            "number": "23",
+            "tla": "ALB",
+            "position": None,
+            "status": "retired",
+            "laps": 23,
+        },
+    ]
+    facts = summary.build(
+        {"meeting": "M", "session": "Race", "kind": "race"}, rows, None, ()
+    )
+    texts = {
+        "title": "{meeting}",
+        "place": "{position}. {driver}",
+        "classification": "Classification:",
+        "out": "out",
+        "out_lap": "out (lap {lap})",
+        "fastest": "FL {driver} {time}",
+        "retired": "R {drivers}",
+    }
+    _, compact = summary.render(facts, texts)
+    assert "Classification:" not in compact
+    _, full = summary.render(facts, texts, full=True)
+    assert full.split("Classification:\n")[1].splitlines() == [
+        "1. ANT · 1:36.030",
+        "2. VER +4.351 · 1:35.100",
+        "3. GAS 1L",
+        "ALB out (lap 23)",
+    ]
+
+
+def test_the_full_summary_of_qualifying_leads_with_the_time():
+    rows = [
+        {
+            "number": "16",
+            "tla": "LEC",
+            "position": 1,
+            "status": "running",
+            "qualifying": {"best": "1:26.100", "gap": None},
+        },
+        {
+            "number": "4",
+            "tla": "NOR",
+            "position": 2,
+            "status": "running",
+            "qualifying": {"best": "1:26.322", "gap": "+0.222"},
+        },
+    ]
+    facts = summary.build(
+        {"meeting": "M", "session": "Q", "kind": "qualifying"}, rows, None, ()
+    )
+    _, full = summary.render(facts, {"classification": "C:"}, full=True)
+    assert full.split("C:\n")[1].splitlines() == [
+        "1. LEC 1:26.100",
+        "2. NOR 1:26.322 +0.222",
+    ]
+    assert Settings().with_summary(fmt="full").summary_format == "full"
+    assert Settings.from_dict({"summary_format": "huge"}).summary_format == "compact"

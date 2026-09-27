@@ -159,7 +159,12 @@ export class PlbSettings extends LitElement {
   }
 
   private async setHousehold(
-    values: { favourites?: string[]; notify_targets?: string[]; summary_kinds?: string[] },
+    values: {
+      favourites?: string[];
+      notify_targets?: string[];
+      summary_kinds?: string[];
+      summary_format?: "compact" | "full";
+    },
     box?: EventTarget | null,
   ): Promise<void> {
     this.busy = true;
@@ -237,6 +242,15 @@ export class PlbSettings extends LitElement {
           return html`<button class="chip ${on ? "on" : ""}" ?disabled=${this.busy}
             @click=${() => this.setHousehold({ summary_kinds: this.toggle(kinds, kind, !on) })}>${t(`sessions.${kind}`)}</button>`;
         })}</div>
+        <b class="small">${t("summary.format")}</b>
+        <div class="chips" role="radiogroup" aria-label=${t("summary.format")}>
+          ${(["compact", "full"] as const).map(
+            (format) => html`<button class="chip ${(s.summary_format ?? "compact") === format ? "on" : ""}" role="radio"
+              aria-checked=${(s.summary_format ?? "compact") === format ? "true" : "false"} ?disabled=${this.busy}
+              @click=${() => this.setHousehold({ summary_format: format })}>${t(`summary.${format}`)}</button>`,
+          )}
+        </div>
+        <small class="muted">${t(`summary.${s.summary_format === "full" ? "fullHelp" : "compactHelp"}`)}</small>
         <div class="line">
           <button class="btn flat" ?disabled=${!targets.length} @click=${() => this.testSummary()}>${t("summary.test")}</button>
           ${this.testResult ? html`<span class="muted small">${t(this.testResult)}</span>` : nothing}

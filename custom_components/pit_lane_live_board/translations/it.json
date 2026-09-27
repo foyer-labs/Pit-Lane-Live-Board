@@ -50,7 +50,10 @@
         "kind_stop_go": "stop and go",
         "kind_grid_penalty": "penalità in griglia",
         "kind_disqualified": "squalificato",
-        "kind_time_penalty": "penalità in tempo"
+        "kind_time_penalty": "penalità in tempo",
+        "classification": "Classifica:",
+        "out": "ritirato",
+        "out_lap": "ritirato (giro {lap})"
       }
     }
   },

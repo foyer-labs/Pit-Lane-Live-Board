@@ -1,9 +1,10 @@
 """The summary of a session, when it ends (decision 53).
 
 `build` makes the facts (podium, fastest lap, retirements, penalties, the
-household's drivers) from the final state; `render` writes them as a short
-notification in the language of the given templates, which come from the
-integration's translations (INV-7).
+household's drivers, the whole classification) from the final state; `render`
+writes them as a notification in the language of the given templates, which come
+from the integration's translations (INV-7): compact, or with the whole
+classification and every driver's time (decision 56).
 """
 
 from __future__ import annotations
@@ -73,11 +74,53 @@ def build(
         else [],
         "penalties": list(reversed(penalties)),
         "yours": [result(r) for r in ranked if r["tla"] in wanted],
+        "classification": [
+            {**result(r), "status": r.get("status"), "laps": r.get("laps")}
+            for r in ranked
+        ]
+        + [
+            {
+                "position": None,
+                "driver": r["tla"],
+                "name": r.get("name"),
+                "gap": None,
+                "time": (r.get("best_lap") or {}).get("time"),
+                "gained": None,
+                "status": r.get("status"),
+                "laps": r.get("laps"),
+            }
+            for r in rows
+            if not r.get("position")
+        ],
     }
 
 
-def render(summary: dict[str, Any], texts: dict[str, str]) -> tuple[str, str]:
-    """`(title, message)` with templates such as `{position}. {driver}`."""
+def _row(item: dict[str, Any], qualifying: bool, fill: Any) -> str:
+    """`2. VER +4.351 · 1:35.100` (race: gap, best lap), `2. NOR 1:26.345 +0.222`
+    (qualifying and practice: best lap, gap); `ALB out (lap 23)` without a place."""
+    gap = item.get("gap") or ""
+    if gap.upper().startswith("LAP") or item.get("position") == 1:
+        gap = ""
+    time = item.get("time") or ""
+    if item.get("position") is None:
+        laps = item.get("laps")
+        out = fill("out_lap", lap=laps) if laps else fill("out")
+        return f"{item['driver']} {out}"
+    head = f"{item['position']}. {item['driver']}"
+    if qualifying:
+        return " ".join(part for part in (head, time, gap) if part)
+    if item.get("status") == "retired":
+        return f"{head} {fill('out')}"
+    return " · ".join(
+        part for part in (" ".join(p for p in (head, gap) if p), time) if part
+    )
+
+
+def render(
+    summary: dict[str, Any], texts: dict[str, str], full: bool = False
+) -> tuple[str, str]:
+    """`(title, message)` with templates such as `{position}. {driver}`; `full`
+    adds the whole classification with every driver's time."""
 
     def fill(key: str, **values: Any) -> str:
         text = texts.get(key, key)
@@ -124,4 +167,11 @@ def render(summary: dict[str, Any], texts: dict[str, str]) -> tuple[str, str]:
                 entry += f" ({'+' if gained > 0 else ''}{gained})"
             yours.append(entry)
         lines.append(fill("yours", list=", ".join(yours)))
+    if full and summary.get("classification"):
+        timed_first = summary.get("qualifying") or summary.get("kind") == "practice"
+        lines.append("")
+        lines.append(fill("classification"))
+        lines.extend(
+            _row(item, timed_first, fill) for item in summary["classification"]
+        )
     return title, "\n".join(lines)

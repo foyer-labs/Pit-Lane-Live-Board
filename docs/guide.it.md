@@ -358,6 +358,13 @@ penalità, i tuoi piloti — e lo invia ai servizi di notifica scelti nelle Impo
 (uno per telefono con l'app, oppure `persistent_notification`), dopo i tipi di sessione
 che scegli. *Invia una prova* manda il riepilogo di ciò che mostra la pagina Live.
 
+*Contenuto* sceglie quanto: **Compatto** (podio, giro veloce, ritirati, penalità, i tuoi
+piloti) oppure **Esteso**, che aggiunge la classifica completa con il tempo di ogni
+pilota — `2. VER +4.351 · 1:35.100` in gara (distacco e giro migliore),
+`2. NOR 1:26.322 +0.222` in qualifica e nelle libere (giro migliore e distacco),
+`ALB ritirato (giro 23)` per un ritiro. I `facts` dell'evento contengono sempre la
+classifica completa.
+
 È anche l'evento **Riepilogo della sessione**, con `title` e `message` pronti da inviare
 o da far leggere e i dati da cui nascono, per le tue automazioni. Con la modalità senza
 spoiler attiva aspetta che tu scopra la sessione o spenga la modalità.

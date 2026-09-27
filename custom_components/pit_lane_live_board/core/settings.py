@@ -17,6 +17,7 @@ from .favourites import normalise
 
 SESSION_KINDS = ("practice", "qualifying", "sprint_qualifying", "sprint", "race")
 DEFAULT_SUMMARY_KINDS = ("sprint", "race")
+SUMMARY_FORMATS = ("compact", "full")
 
 
 def _kinds(value: Any) -> tuple[str, ...]:
@@ -64,6 +65,8 @@ class Settings:
     favourites: tuple[str, ...] = ()
     notify_targets: tuple[str, ...] = ()
     summary_kinds: tuple[str, ...] = DEFAULT_SUMMARY_KINDS
+    # Compact (podium and highlights) or full (the whole classification, decision 56).
+    summary_format: str = "compact"
 
     def with_delay(self, value: Any) -> Settings:
         return replace(self, tv_delay=clamp_delay(value))
@@ -85,13 +88,16 @@ class Settings:
     def with_favourites(self, codes: Any) -> Settings:
         return replace(self, favourites=normalise(codes))
 
-    def with_summary(self, targets: Any = None, kinds: Any = None) -> Settings:
+    def with_summary(
+        self, targets: Any = None, kinds: Any = None, fmt: Any = None
+    ) -> Settings:
         return replace(
             self,
             notify_targets=self.notify_targets
             if targets is None
             else _targets(targets),
             summary_kinds=self.summary_kinds if kinds is None else _kinds(kinds),
+            summary_format=str(fmt) if fmt in SUMMARY_FORMATS else self.summary_format,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -104,6 +110,7 @@ class Settings:
             "favourites": list(self.favourites),
             "notify_targets": list(self.notify_targets),
             "summary_kinds": list(self.summary_kinds),
+            "summary_format": self.summary_format,
         }
 
     @classmethod
@@ -125,4 +132,7 @@ class Settings:
             summary_kinds=_kinds(
                 data.get("summary_kinds", list(DEFAULT_SUMMARY_KINDS))
             ),
+            summary_format=data["summary_format"]
+            if data.get("summary_format") in SUMMARY_FORMATS
+            else "compact",
         )

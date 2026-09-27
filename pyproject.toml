@@ -1,6 +1,6 @@
 [project]
 name = "pit-lane-live-board"
-version = "0.6.0"
+version = "0.7.0"
 description = "Formula 1 in a ready-made Home Assistant panel (unofficial)"
 license = "Apache-2.0"
 requires-python = ">=3.13"
