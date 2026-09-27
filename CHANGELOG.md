@@ -17,13 +17,14 @@ under **Changed — read before updating**.
 - **Mini-sectors**: under each sector time, the strip of F1's purple, green and yellow
   mini-sectors, in the panel and in the tower card.
 - **My drivers**: follow up to five drivers in Settings. Each gets a sensor (position,
-  gap, tyre and its age, pits, penalty, where a stop would bring them out), their rows
+  tyre and its age, pits, penalty, best lap), their rows
   get a ★, and the **My drivers** event fires when they gain or lose a place, take the
   lead, pit, set the fastest lap, retire or get a penalty.
 - **Session summary**: when a session ends, podium, fastest lap, retirements, penalties
   and your drivers, sent to the notify services you choose in Settings (for the races,
   sprints, qualifying or practice you pick), and as the **Session summary** event. With
-  no-spoiler mode on it waits until you reveal the session. *Send a test* tries it.
+  no-spoiler mode on it waits until the session is no longer hidden. *Send a test*
+  tries it.
 
 ## [0.4.0] - 2026-09-27
 

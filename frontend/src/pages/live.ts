@@ -357,7 +357,9 @@ export class PlbLive extends LitElement {
               : nothing}${rejoin.behind
               ? html` · ${t("drivers.aheadOf", { driver: rejoin.behind, gap: number(this.hass, rejoin.behind_gap, 1) })}`
               : nothing}
-              <small class="muted">${t(rejoin.known ? "drivers.lossCircuit" : "drivers.lossGeneric", { loss: number(this.hass, rejoin.loss, 1) })}</small></span>
+              <small class="muted">${t(rejoin.known ? "drivers.lossCircuit" : "drivers.lossGeneric", { loss: number(this.hass, rejoin.loss, 1) })}${rejoin.pitting
+                ? ` ${t("drivers.pitting", { n: rejoin.pitting })}`
+                : ""}</small></span>
           </div>`
         : nothing}
     </td></tr>`;

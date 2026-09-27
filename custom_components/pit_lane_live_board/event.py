@@ -125,6 +125,7 @@ class SummaryEvent(_RelayedEvent):
 
     def _event(self, record: Any, *_: Any) -> tuple[str, dict[str, Any]]:
         return "summary", {
+            "session": record.get("key"),
             "title": record.get("title"),
             "message": record.get("message"),
             "facts": record.get("facts"),

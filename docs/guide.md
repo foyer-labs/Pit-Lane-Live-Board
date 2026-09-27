@@ -311,9 +311,10 @@ them through a card or the entities.
 
 Follow up to five drivers in Settings. For each one:
 
-- a sensor, **Driver LEC**, whose state is the position, with gap, interval, last and
-  best lap, tyre and its age, stint, pit stops, penalty and where a stop now would bring
-  them out as attributes;
+- a sensor, **Driver LEC**, whose state is the position, with best lap, tyre and its
+  age, stint, pit stops, penalty, status and places gained as attributes (gaps and lap
+  times move every few seconds: they stay on the page and the cards, so the recorder is
+  not written twice a second);
 - a ★ next to their code in the timing tower, and their row highlighted in the tower
   card when it has no driver of its own;
 - the **My drivers** event: `position_gained`, `position_lost`, `took_lead`, `pit_in`,

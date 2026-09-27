@@ -194,6 +194,8 @@ export interface Row {
     loss: number;
     /** The circuit's typical loss (true) or the generic one. */
     known: boolean;
+    /** Cars in the pit lane now: they make the estimate less certain. */
+    pitting: number;
   } | null;
   qualifying?: { part_bests: (string | null)[]; best: string | null; gap: string | null; cutoff: boolean };
 }

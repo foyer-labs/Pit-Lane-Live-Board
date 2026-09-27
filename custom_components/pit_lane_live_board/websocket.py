@@ -248,7 +248,7 @@ async def ws_summary_test(hass, connection, msg):
     """Send the summary of what the Live page shows now, to try the services."""
     if (hub := _ready(hass, connection, msg)) is None:
         return
-    connection.send_result(msg["id"], {"sent": await hub.async_send_test_summary()})
+    connection.send_result(msg["id"], {"result": await hub.async_send_test_summary()})
 
 
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/entities"})

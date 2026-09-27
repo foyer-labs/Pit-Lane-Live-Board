@@ -43,7 +43,7 @@ class SettingsStore:
         self.auto_window: str | None = None  # the last session window seen
         # Session summaries already sent, and one held back by no-spoiler mode.
         self.summaries_sent: list[str] = []
-        self.pending_summary: dict[str, Any] | None = None
+        self.pending_summaries: list[dict[str, Any]] = []
 
     async def async_load(self) -> Settings:
         data = await self._store.async_load()
@@ -56,8 +56,12 @@ class SettingsStore:
         self.auto_window = window if isinstance(window, str) else None
         sent = data.get("summaries_sent") if isinstance(data, dict) else None
         self.summaries_sent = [str(k) for k in sent] if isinstance(sent, list) else []
-        pending = data.get("pending_summary") if isinstance(data, dict) else None
-        self.pending_summary = pending if isinstance(pending, dict) else None
+        pending = data.get("pending_summaries") if isinstance(data, dict) else None
+        self.pending_summaries = (
+            [p for p in pending if isinstance(p, dict)][-10:]
+            if isinstance(pending, list)
+            else []
+        )
         return self.settings
 
     def _data(self) -> dict[str, Any]:
@@ -67,7 +71,7 @@ class SettingsStore:
             "failed_windows": self.failed_windows,
             "auto_window": self.auto_window,
             "summaries_sent": self.summaries_sent[-30:],
-            "pending_summary": self.pending_summary,
+            "pending_summaries": self.pending_summaries,
         }
 
     async def async_save(self, settings: Settings | None = None) -> None:

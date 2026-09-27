@@ -359,7 +359,8 @@
     "behindOf": "dietro {driver} (+{gap} s)",
     "aheadOf": "davanti a {driver} ({gap} s)",
     "lossCircuit": "Stima: una sosta costa circa {loss} s su questo circuito.",
-    "lossGeneric": "Stima: una sosta costa circa {loss} s (valore generico)."
+    "lossGeneric": "Stima: una sosta costa circa {loss} s (valore generico).",
+    "pitting": "{n} auto ai box: meno certa."
   },
   "summary": {
     "title": "Riepilogo a fine sessione",
@@ -371,6 +372,7 @@
     "testSent": "Inviato: il riepilogo di ciò che mostra la pagina Live.",
     "testNothing": "Ancora niente da riepilogare: serve una sessione nella pagina Live.",
     "testFailed": "Non inviato.",
-    "spoiler": "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità."
+    "spoiler": "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità.",
+    "testHidden": "Non inviato: la modalità senza spoiler nasconde la pagina Live."
   }
 }

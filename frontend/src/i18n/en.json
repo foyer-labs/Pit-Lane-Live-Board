@@ -359,7 +359,8 @@
     "behindOf": "behind {driver} (+{gap} s)",
     "aheadOf": "ahead of {driver} ({gap} s)",
     "lossCircuit": "Estimate: a stop costs about {loss} s at this circuit.",
-    "lossGeneric": "Estimate: a stop costs about {loss} s (a generic figure)."
+    "lossGeneric": "Estimate: a stop costs about {loss} s (a generic figure).",
+    "pitting": "{n} cars in the pits: less certain."
   },
   "summary": {
     "title": "Summary at the end of a session",
@@ -371,6 +372,7 @@
     "testSent": "Sent: the summary of what the Live page shows.",
     "testNothing": "Nothing to summarise yet: it needs a session on the Live page.",
     "testFailed": "Not sent.",
-    "spoiler": "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off."
+    "spoiler": "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off.",
+    "testHidden": "Not sent: no-spoiler mode hides the Live page."
   }
 }

@@ -50,7 +50,9 @@ export class PlbSettings extends LitElement {
   /** The season's drivers, to pick from: the championship lists them all. */
   private async loadDrivers(): Promise<void> {
     try {
-      const page = await api.standings(this.hass, this.settings.season, null, "drivers");
+      // Before the first round the season has no table yet: last season's.
+      let page = await api.standings(this.hass, this.settings.season, null, "drivers");
+      if (!page.rows.length) page = await api.standings(this.hass, this.settings.season - 1, null, "drivers");
       this.drivers = page.rows
         .filter((r) => r.code)
         .map((r) => ({ code: r.code as string, name: r.name ?? null, team_id: r.team_id }));
@@ -200,8 +202,9 @@ export class PlbSettings extends LitElement {
   private async testSummary(): Promise<void> {
     this.testResult = "";
     try {
-      const { sent } = await api.testSummary(this.hass);
-      this.testResult = sent ? "summary.testSent" : "summary.testNothing";
+      const { result } = await api.testSummary(this.hass);
+      this.testResult =
+        result === "sent" ? "summary.testSent" : result === "hidden" ? "summary.testHidden" : "summary.testNothing";
     } catch {
       this.testResult = "summary.testFailed";
     }

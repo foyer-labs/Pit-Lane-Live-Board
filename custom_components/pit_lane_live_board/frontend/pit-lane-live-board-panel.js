@@ -962,7 +962,8 @@ var Re = {
 		behindOf: "behind {driver} (+{gap} s)",
 		aheadOf: "ahead of {driver} ({gap} s)",
 		lossCircuit: "Estimate: a stop costs about {loss} s at this circuit.",
-		lossGeneric: "Estimate: a stop costs about {loss} s (a generic figure)."
+		lossGeneric: "Estimate: a stop costs about {loss} s (a generic figure).",
+		pitting: "{n} cars in the pits: less certain."
 	},
 	summary: {
 		title: "Summary at the end of a session",
@@ -974,7 +975,8 @@ var Re = {
 		testSent: "Sent: the summary of what the Live page shows.",
 		testNothing: "Nothing to summarise yet: it needs a session on the Live page.",
 		testFailed: "Not sent.",
-		spoiler: "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off."
+		spoiler: "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off.",
+		testHidden: "Not sent: no-spoiler mode hides the Live page."
 	}
 }, ze = {
 	en: Re,
@@ -1339,7 +1341,8 @@ var Re = {
 			behindOf: "dietro {driver} (+{gap} s)",
 			aheadOf: "davanti a {driver} ({gap} s)",
 			lossCircuit: "Stima: una sosta costa circa {loss} s su questo circuito.",
-			lossGeneric: "Stima: una sosta costa circa {loss} s (valore generico)."
+			lossGeneric: "Stima: una sosta costa circa {loss} s (valore generico).",
+			pitting: "{n} auto ai box: meno certa."
 		},
 		summary: {
 			title: "Riepilogo a fine sessione",
@@ -1351,7 +1354,8 @@ var Re = {
 			testSent: "Inviato: il riepilogo di ciò che mostra la pagina Live.",
 			testNothing: "Ancora niente da riepilogare: serve una sessione nella pagina Live.",
 			testFailed: "Non inviato.",
-			spoiler: "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità."
+			spoiler: "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità.",
+			testHidden: "Non inviato: la modalità senza spoiler nasconde la pagina Live."
 		}
 	}
 };
@@ -2429,7 +2433,7 @@ var Gt = o`
 			driver: a.behind,
 			gap: q(this.hass, a.behind_gap, 1)
 		})}` : O}
-              <small class="muted">${e(a.known ? "drivers.lossCircuit" : "drivers.lossGeneric", { loss: q(this.hass, a.loss, 1) })}</small></span>
+              <small class="muted">${e(a.known ? "drivers.lossCircuit" : "drivers.lossGeneric", { loss: q(this.hass, a.loss, 1) })}${a.pitting ? ` ${e("drivers.pitting", { n: a.pitting })}` : ""}</small></span>
           </div>` : O}
     </td></tr>`;
 	}
@@ -2994,7 +2998,7 @@ var Gt = o`
 	async loadDrivers() {
 		try {
 			let e = await F.standings(this.hass, this.settings.season, null, "drivers");
-			this.drivers = e.rows.filter((e) => e.code).map((e) => ({
+			e.rows.length || (e = await F.standings(this.hass, this.settings.season - 1, null, "drivers")), this.drivers = e.rows.filter((e) => e.code).map((e) => ({
 				code: e.code,
 				name: e.name ?? null,
 				team_id: e.team_id
@@ -3127,8 +3131,8 @@ var Gt = o`
 	async testSummary() {
 		this.testResult = "";
 		try {
-			let { sent: e } = await F.testSummary(this.hass);
-			this.testResult = e ? "summary.testSent" : "summary.testNothing";
+			let { result: e } = await F.testSummary(this.hass);
+			this.testResult = e === "sent" ? "summary.testSent" : e === "hidden" ? "summary.testHidden" : "summary.testNothing";
 		} catch {
 			this.testResult = "summary.testFailed";
 		}

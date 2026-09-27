@@ -63,6 +63,31 @@ def brief(row: dict[str, Any], rejoin: dict[str, Any] | None = None) -> dict[str
     }
 
 
+# What a driver's entity keeps: fields that change a few times a lap at most, so
+# five followed drivers do not write to the recorder twice a second each.
+ENTITY_FIELDS = (
+    "number",
+    "tla",
+    "name",
+    "team",
+    "position",
+    "best_lap",
+    "tyre",
+    "tyre_age",
+    "stint",
+    "pit_stops",
+    "in_pit",
+    "laps",
+    "status",
+    "penalty",
+    "gained",
+)
+
+
+def for_entity(driver: dict[str, Any]) -> dict[str, Any]:
+    return {key: driver.get(key) for key in ENTITY_FIELDS}
+
+
 def snapshot(
     rows: list[dict[str, Any]], favourites: tuple[str, ...]
 ) -> dict[str, dict[str, Any]]:
@@ -103,11 +128,11 @@ def derive(
             events.append(("pit_in", data))
         elif before["in_pit"] and not now["in_pit"]:
             events.append(("pit_out", {**data, "tyre": now["tyre"]}))
+        if now["fastest"] and (
+            not before["fastest"] or now["last_lap"] != before["last_lap"]
+        ):
+            events.append(("fastest_lap", {**data, "time": now["last_lap"]}))
         if race_like:
-            if now["fastest"] and (
-                not before["fastest"] or now["last_lap"] != before["last_lap"]
-            ):
-                events.append(("fastest_lap", {**data, "time": now["last_lap"]}))
             old, new = before["position"], now["position"]
             if (
                 old

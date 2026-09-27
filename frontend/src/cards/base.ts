@@ -85,8 +85,10 @@ export abstract class LiveCard extends LitElement {
 
   protected override willUpdate(): void {
     if (this.hass) void loadTimePrefs(this.hass);
-    if (this.hass && !this.askedFollowed) {
-      this.askedFollowed = true;
+    // Read again when settings change (the backend then sends a full view), at
+    // most every 10 s.
+    if (this.hass && (!this.askedFollowed || (this.view?.full && Date.now() - this.askedFollowed > 10_000))) {
+      this.askedFollowed = Date.now();
       api.settings(this.hass).then(
         (settings) => {
           this.followed = settings.favourites ?? [];
@@ -111,7 +113,7 @@ export abstract class LiveCard extends LitElement {
 
   /** The household's drivers, read once per page with the settings. */
   protected followed: string[] = [];
-  private askedFollowed = false;
+  private askedFollowed = 0;
 
   protected get t(): Translate {
     return translator(this.hass);

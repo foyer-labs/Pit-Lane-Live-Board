@@ -133,6 +133,7 @@ def test_rejoin_position_and_neighbours():
         "behind_gap": 3.0,
         "loss": 22.0,
         "known": True,
+        "pitting": 0,
     }
     assert out["44"]["position"] == 4 and out["44"]["behind"] is None
     assert "10" not in out  # lapped: its gap does not add up
@@ -182,8 +183,10 @@ def test_favourite_events_between_snapshots():
     ]
     boxed = favourites.snapshot([row("LEC", 1, in_pit=True)], ("LEC",))
     assert [e for e, _ in favourites.derive(third, boxed, True)] == ["pit_in"]
-    # In practice and qualifying positions reshuffle every lap: no position events.
+    # In practice and qualifying positions reshuffle every lap: no position events,
+    # but the fastest lap counts (a provisional pole).
     assert favourites.derive(first, second, False) == []
+    assert [e for e, _ in favourites.derive(second, third, False)] == ["fastest_lap"]
 
 
 def test_the_summary_of_a_race():

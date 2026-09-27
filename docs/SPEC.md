@@ -1002,11 +1002,16 @@ Decisions taken in chat with the owner.
   each (added and removed as the list changes), a ★ in the tower, and the "My drivers"
   event from consecutive snapshots (the first one of a session is the baseline;
   position events in races and sprints only; penalties from the stewards' decisions).
-  Administrators choose them: they create entities for the house.
+  Administrators choose them: they create entities for the house. The sensors carry
+  slow-moving fields only (position, tyre, pits, penalty, best lap): gaps and lap times
+  change every few seconds and would write to the recorder twice a second each.
 53. **The session summary** (asked by the owner, 0.5): built when the followed session
   is finalised, once per session (keys persisted), for the kinds chosen; sent to the
   chosen notify services and as the "Session summary" event; held while no-spoiler mode
-  hides the session and released when revealed. Texts from the integration's
+  hides the session (the same test as the Results page, so also released when the next
+  weekend begins; several can wait), checked on every change of settings and on the
+  30 s tick; delivered off the caller's path. The test from Settings is never sent while
+  the Live page is hidden and does not fire the event. Texts from the integration's
   translations (`selector.summary`). Administrators choose the services.
 
 ---

@@ -60,7 +60,8 @@ async def test_a_sensor_per_followed_driver(hass: HomeAssistant, entry):
     await settle()
     await hass.async_block_till_done()
     state = hass.states.get(sensor)
-    assert state.state == "2" and state.attributes["gap"] == "+1.2"
+    assert state.state == "2" and state.attributes["number"] == "16"
+    assert "gap" not in state.attributes  # moves every lap: not an entity's job
     # Following someone else: the old sensor goes, the new one comes.
     await hub.async_update_settings(hub.settings.with_favourites(["NOR"]))
     await hass.async_block_till_done()
@@ -133,10 +134,10 @@ async def test_no_spoiler_holds_the_summary_until_it_is_off(hass: HomeAssistant,
     client.feed("SessionStatus", {"Status": "Finalised"})
     await settle()
     await hass.async_block_till_done()
-    assert sent == [] and hub.store.pending_summary is not None
+    assert sent == [] and len(hub.store.pending_summaries) == 1
     await hub.async_update_settings(hub.settings.with_no_spoiler(False))
     await hass.async_block_till_done()
-    assert len(sent) == 1 and hub.store.pending_summary is None
+    assert len(sent) == 1 and hub.store.pending_summaries == []
 
 
 async def test_household_settings_are_for_administrators(

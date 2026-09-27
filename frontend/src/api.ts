@@ -78,7 +78,8 @@ export const api = {
     hass: Hass,
     values: { favourites?: string[]; notify_targets?: string[]; summary_kinds?: string[] },
   ) => hass.callWS<Settings>({ type: `${P}/settings/set`, ...values }),
-  testSummary: (hass: Hass) => hass.callWS<{ sent: boolean }>({ type: `${P}/summary/test` }),
+  testSummary: (hass: Hass) =>
+    hass.callWS<{ result: "sent" | "nothing" | "hidden" }>({ type: `${P}/summary/test` }),
   entities: (hass: Hass) => hass.callWS<{ entities: LinkedEntity[] }>({ type: `${P}/entities` }),
   reveal: (hass: Hass, session: string) =>
     hass.callWS<Settings>({ type: `${P}/spoiler/reveal`, session }),

@@ -73,11 +73,17 @@ def pit_rejoin(
     running = [
         (row, gap_seconds(row.get("gap"), row.get("position")))
         for row in rows
-        if row.get("status") == "running" and not row.get("in_pit")
+        if row.get("status") == "running"
     ]
     timed = [(row, gap) for row, gap in running if gap is not None]
+    # A car in the pit lane will come out about half a stop further back than
+    # its gap says: it counts there, and the estimate says it is less certain.
+    pitting = sum(1 for row, _ in timed if row.get("in_pit"))
+    timed = [(row, gap + loss / 2 if row.get("in_pit") else gap) for row, gap in timed]
     out: dict[str, dict[str, Any]] = {}
     for row, gap in timed:
+        if row.get("in_pit"):
+            continue
         after = gap + loss
         others = [(o, g) for o, g in timed if o is not row]
         ahead = [(o, g) for o, g in others if g <= after]
@@ -92,5 +98,6 @@ def pit_rejoin(
             "behind_gap": round(near_behind[1] - after, 1) if near_behind else None,
             "loss": loss,
             "known": known,
+            "pitting": pitting,
         }
     return out

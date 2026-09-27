@@ -887,7 +887,8 @@ var Fe = {
 		behindOf: "behind {driver} (+{gap} s)",
 		aheadOf: "ahead of {driver} ({gap} s)",
 		lossCircuit: "Estimate: a stop costs about {loss} s at this circuit.",
-		lossGeneric: "Estimate: a stop costs about {loss} s (a generic figure)."
+		lossGeneric: "Estimate: a stop costs about {loss} s (a generic figure).",
+		pitting: "{n} cars in the pits: less certain."
 	},
 	summary: {
 		title: "Summary at the end of a session",
@@ -899,7 +900,8 @@ var Fe = {
 		testSent: "Sent: the summary of what the Live page shows.",
 		testNothing: "Nothing to summarise yet: it needs a session on the Live page.",
 		testFailed: "Not sent.",
-		spoiler: "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off."
+		spoiler: "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off.",
+		testHidden: "Not sent: no-spoiler mode hides the Live page."
 	}
 }, Ie = {
 	en: Fe,
@@ -1264,7 +1266,8 @@ var Fe = {
 			behindOf: "dietro {driver} (+{gap} s)",
 			aheadOf: "davanti a {driver} ({gap} s)",
 			lossCircuit: "Stima: una sosta costa circa {loss} s su questo circuito.",
-			lossGeneric: "Stima: una sosta costa circa {loss} s (valore generico)."
+			lossGeneric: "Stima: una sosta costa circa {loss} s (valore generico).",
+			pitting: "{n} auto ai box: meno certa."
 		},
 		summary: {
 			title: "Riepilogo a fine sessione",
@@ -1276,7 +1279,8 @@ var Fe = {
 			testSent: "Inviato: il riepilogo di ciò che mostra la pagina Live.",
 			testNothing: "Ancora niente da riepilogare: serve una sessione nella pagina Live.",
 			testFailed: "Non inviato.",
-			spoiler: "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità."
+			spoiler: "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità.",
+			testHidden: "Non inviato: la modalità senza spoiler nasconde la pagina Live."
 		}
 	}
 };
@@ -2138,7 +2142,7 @@ function Q(e) {
 }
 var $ = class extends N {
 	constructor(...e) {
-		super(...e), this.starting = !1, this.redraw = () => this.requestUpdate(), this.followed = [], this.askedFollowed = !1;
+		super(...e), this.starting = !1, this.redraw = () => this.requestUpdate(), this.followed = [], this.askedFollowed = 0;
 	}
 	static {
 		this.properties = {
@@ -2171,7 +2175,7 @@ var $ = class extends N {
 		super.disconnectedCallback(), window.removeEventListener(Be, this.redraw), this.unlisten?.(), this.unlisten = void 0;
 	}
 	willUpdate() {
-		this.hass && Ue(this.hass), this.hass && !this.askedFollowed && (this.askedFollowed = !0, K.settings(this.hass).then((e) => {
+		this.hass && Ue(this.hass), this.hass && (!this.askedFollowed || this.view?.full && Date.now() - this.askedFollowed > 1e4) && (this.askedFollowed = Date.now(), K.settings(this.hass).then((e) => {
 			this.followed = e.favourites ?? [], this.requestUpdate();
 		}, () => void 0)), this.listen();
 	}

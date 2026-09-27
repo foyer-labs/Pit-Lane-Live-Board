@@ -326,9 +326,10 @@ può comunque leggerli da una card o dalle entità.
 
 Segui fino a cinque piloti dalle Impostazioni. Per ognuno:
 
-- un sensore, **Pilota LEC**, con la posizione come stato e, negli attributi, distacco,
-  intervallo, ultimo e miglior giro, gomma e giri della gomma, stint, soste, penalità e
-  dove rientrerebbe se si fermasse ora;
+- un sensore, **Pilota LEC**, con la posizione come stato e, negli attributi, miglior
+  giro, gomma e giri della gomma, stint, soste, penalità, stato e posizioni guadagnate
+  (distacchi e tempi sul giro cambiano ogni pochi secondi: restano nella pagina e nelle
+  card, così il registro non viene scritto due volte al secondo);
 - una ★ accanto alla sigla nella classifica, e la riga evidenziata nella card della
   classifica se non ha un pilota suo;
 - l'evento **I miei piloti**: `position_gained`, `position_lost`, `took_lead`, `pit_in`,
