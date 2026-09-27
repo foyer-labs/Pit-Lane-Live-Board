@@ -332,5 +332,16 @@
       "kind": "Championship",
       "show_title": "Show the title"
     }
+  },
+  "time": {
+    "title": "Times",
+    "justYou": "just for you",
+    "home": "As in my Home Assistant profile ({zone})",
+    "device": "This device's time zone ({zone})",
+    "circuit": "Local time at the track",
+    "both": "Show both times",
+    "bothHelp": "Next to each time, in small, the other one: the track's local time, or yours when you chose the track's.",
+    "atTrack": "{time} at the track",
+    "yours": "{time} your time"
   }
 }

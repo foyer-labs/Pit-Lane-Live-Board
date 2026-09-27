@@ -3,7 +3,8 @@ import { html, nothing } from "lit";
 import { COMPOUND_VAR } from "./styles";
 import { teamColour } from "./teams";
 import type { Translate } from "./i18n";
-import type { Settings } from "./types";
+import { otherTime } from "./format";
+import type { Hass, Settings } from "./types";
 
 /** Only no-spoiler mode and the reveals change what a page receives; the TV
  *  delay does not, so a page reloads only when this key changes. */
@@ -51,6 +52,13 @@ export function person(
   return html`<span class="drv"
     ><span class="bar" style="background:${teamColour(teamId, colour)}"></span>${name ?? "—"}</span
   >`;
+}
+
+/** "· 15:00 at the track" (or "· 21:00 your time"), when the user wants both. */
+export function alsoTime(t: Translate, hass: Hass, iso: string | null, trackZone: string | null | undefined) {
+  const other = otherTime(hass, iso, trackZone);
+  if (!other) return nothing;
+  return html`<small class="also">${t(other.local ? "time.atTrack" : "time.yours", { time: other.time })}</small>`;
 }
 
 export function loading(t: Translate) {

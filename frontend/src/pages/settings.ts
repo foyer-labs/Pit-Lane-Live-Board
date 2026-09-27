@@ -3,7 +3,8 @@
 // the backend, which checks it (INV-3: the token is sent once and never shown back).
 import { LitElement, css, html, nothing } from "lit";
 import { api } from "../api";
-import { longDate } from "../format";
+import { deviceZone, homeZone, longDate } from "../format";
+import { saveTimePrefs, timePrefs, type TimePrefs, type ZoneMode } from "../timeprefs";
 import { translator, type Translate } from "../i18n";
 import { ICON, icon } from "../icons";
 import { tokens } from "../styles";
@@ -106,6 +107,7 @@ export class PlbSettings extends LitElement {
     return html`<div class="page">
       ${this.renderLive(t, s)}
       ${this.renderDelay(t, s)}
+      ${this.renderClock(t)}
       ${s.is_admin ? this.renderPanel(t, s) : nothing}
       ${s.is_admin ? this.renderF1tv(t, s) : nothing}
       ${this.renderEntities(t)}
@@ -160,6 +162,41 @@ export class PlbSettings extends LitElement {
         <input type="checkbox" .checked=${s.admin_only} ?disabled=${this.busy}
           @change=${(e: Event) => this.setPanel({ admin_only: (e.target as HTMLInputElement).checked }, e.target)} />
         <span><b>${t("settings.adminPanel")}</b><small>${t("settings.adminPanelHelp")}</small></span>
+      </label>
+    </section>`;
+  }
+
+  private async setClock(next: TimePrefs): Promise<void> {
+    try {
+      await saveTimePrefs(this.hass, next);
+    } catch {
+      /* not saved: the previous choice is back on screen */
+    }
+    this.requestUpdate();
+  }
+
+  /** Which clock times are in: a choice of each user, not of the house. */
+  private renderClock(t: Translate) {
+    const prefs = timePrefs();
+    const options: [ZoneMode, string][] = [
+      ["home_assistant", t("time.home", { zone: homeZone(this.hass) })],
+      ["device", t("time.device", { zone: deviceZone() })],
+      ["circuit", t("time.circuit")],
+    ];
+    return html`<section class="card">
+      <div class="card-head">${t("time.title")}<span class="spacer"></span><small>${t("time.justYou")}</small></div>
+      <div class="radios" role="radiogroup" aria-label=${t("time.title")}>
+        ${options.map(
+          ([mode, label]) => html`<label class="row">
+            <input type="radio" name="clock" .checked=${prefs.zone === mode}
+              @change=${() => this.setClock({ ...prefs, zone: mode })} />
+            <span><b>${label}</b></span>
+          </label>`,
+        )}
+      </div>
+      <label class="row">
+        <input type="checkbox" .checked=${prefs.both} @change=${(e: Event) => this.setClock({ ...prefs, both: (e.target as HTMLInputElement).checked })} />
+        <span><b>${t("time.both")}</b><small>${t("time.bothHelp")}</small></span>
       </label>
     </section>`;
   }
@@ -251,6 +288,8 @@ export class PlbSettings extends LitElement {
       .what b { font-size: 16px; color: var(--primary-text-color); font-weight: 500; }
       .row { display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px 16px; cursor: pointer; }
       .row input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--primary-color); }
+      .radios .row { padding-top: 8px; padding-bottom: 8px; }
+      .radios .row:first-child { padding-top: 14px; }
       .row span { display: grid; gap: 2px; font-size: 14px; }
       .row small { color: var(--secondary-text-color); font-size: 12px; line-height: 1.5; }
       .stepper { display: flex; align-items: center; gap: 10px; }

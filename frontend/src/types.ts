@@ -2,7 +2,8 @@
 
 export interface Hass {
   language: string;
-  locale?: { language: string };
+  /** The profile's choice: the server's time zone or the device's. */
+  locale?: { language: string; time_zone?: "local" | "server" };
   config: { time_zone: string };
   user?: { is_admin: boolean };
   themes?: { darkMode?: boolean };
@@ -66,6 +67,8 @@ export interface Meeting {
   circuit: string | null;
   locality: string | null;
   country: string | null;
+  /** The IANA time zone at the track, when known. */
+  timezone: string | null;
   sprint: boolean;
   sessions: Session[];
   state: "done" | "live" | "next" | "upcoming";
@@ -197,6 +200,7 @@ export interface LiveHeader {
 }
 
 export interface NextSession extends Session {
+  timezone: string | null;
   meeting: string;
   round: number;
   season: number;

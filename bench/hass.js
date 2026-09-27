@@ -69,6 +69,10 @@ export function createHass() {
     f1tv: admin ? { status: params.get("f1tv") ?? "active", expires: "2026-09-16T10:00:00+00:00", product: "F1 TV Pro" } : null,
   };
   const P = "pit_lane_live_board/";
+  // Per-user frontend data; `clock=circuit&both=true` picks the times' clock.
+  const userData = params.get("clock")
+    ? { pit_lane_live_board_time: { zone: params.get("clock"), both: params.get("both") === "true" } }
+    : {};
   const settingsListeners = [];
   const pushSettings = () => settingsListeners.forEach((listen) => listen({ ...settings }));
   return {
@@ -94,6 +98,11 @@ export function createHass() {
           settings.f1tv = { status: "active", expires: "2026-10-16T10:00:00+00:00", product: "F1 TV Pro" };
           pushSettings();
           return { ...settings };
+        case "frontend/get_user_data":
+          return { value: userData[msg.key] ?? null };
+        case "frontend/set_user_data":
+          userData[msg.key] = msg.value;
+          return null;
         case "panel/set":
           if ("show_in_sidebar" in msg) settings.show_in_sidebar = msg.show_in_sidebar;
           if ("admin_only" in msg) settings.admin_only = msg.admin_only;

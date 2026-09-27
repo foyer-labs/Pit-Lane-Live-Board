@@ -60,6 +60,12 @@ L'ingranaggio in alto a destra nel pannello apre le **Impostazioni**:
   in pausa fino alla successiva.
 - **Ritardo TV**, lo stesso controllo dell'orologio in alto (vedi [Ritardo
   TV](#ritardo-tv)).
+- **Orari** (ogni utente per sé): in quale fuso mostrare calendario e conti alla
+  rovescia — *come nel mio profilo di Home Assistant* (predefinito: il fuso del server,
+  o quello del dispositivo se il profilo lo dice), *fuso orario di questo dispositivo*
+  o *ora locale del circuito* — e *Mostra entrambi gli orari*, che aggiunge in piccolo
+  l'altro ("15:00 al circuito"). Resta legato al tuo utente di Home Assistant, quindi ti
+  segue su ogni dispositivo.
 - **F1TV** (solo amministratori): stato e scadenza del token, un campo per incollarne
   uno nuovo e *Rimuovi* (vedi [F1TV](#f1tv-e-la-mappa-live)).
 - **Entità**: tutte le entità dell'integrazione con il loro stato; cliccane una per la

@@ -302,6 +302,7 @@ class Hub:
             "season": meeting.season,
             "circuit": meeting.circuit,
             "country": meeting.country,
+            "timezone": meeting.timezone,
             **session.to_dict(),
         }
 

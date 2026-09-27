@@ -8,6 +8,8 @@ import { translator, type Translate } from "./i18n";
 import { ICON, icon } from "./icons";
 import { failure } from "./parts";
 import { tokens } from "./styles";
+import { TIME_PREFS_EVENT, loadTimePrefs } from "./timeprefs";
+import { keyed } from "lit/directives/keyed.js";
 import type { Hass, Settings } from "./types";
 import { PlbAge, PlbCountdown } from "./clock";
 import { PlbCalendar } from "./pages/calendar";
@@ -48,6 +50,7 @@ export class PitLaneLiveBoardPanel extends LitElement {
     delayOpen: { state: true },
     failed: { state: true },
     target: { state: true },
+    clockVersion: { state: true },
   };
 
   hass?: Hass;
@@ -58,6 +61,10 @@ export class PitLaneLiveBoardPanel extends LitElement {
   delayOpen = false;
   failed = false;
   target?: GoTo;
+  // Bumped when the user changes which clock times are shown in: the pages are
+  // drawn again (their own `hass` guard would otherwise skip it).
+  clockVersion = 0;
+  private readonly clockChanged = () => this.clockVersion++;
   private unsubscribe?: () => void;
   private connecting = false;
   private retry?: number;
@@ -70,8 +77,14 @@ export class PitLaneLiveBoardPanel extends LitElement {
     return translator(this.hass);
   }
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    window.addEventListener(TIME_PREFS_EVENT, this.clockChanged);
+  }
+
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    window.removeEventListener(TIME_PREFS_EVENT, this.clockChanged);
     this.unsubscribe?.();
     this.unsubscribe = undefined;
     window.clearTimeout(this.retry);
@@ -90,6 +103,7 @@ export class PitLaneLiveBoardPanel extends LitElement {
   private async connect(): Promise<void> {
     if (!this.hass) return;
     this.connecting = true;
+    void loadTimePrefs(this.hass);
     try {
       this.unsubscribe = await api.subscribeSettings(this.hass, (settings) => this.receive(settings));
       this.failed = false;
@@ -249,7 +263,7 @@ export class PitLaneLiveBoardPanel extends LitElement {
           aria-label=${t("settings.title")} title=${t("settings.title")}>${icon(ICON.cog, 22)}</button>
       </header>
       ${this.delayOpen && s ? this.renderPopover(s) : nothing}
-      <main>${this.renderPage()}</main>
+      <main>${keyed(this.clockVersion, this.renderPage())}</main>
       <footer>${t("common.disclaimer")}</footer>
     `;
   }

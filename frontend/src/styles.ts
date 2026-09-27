@@ -83,6 +83,7 @@ export const tokens = css`
   .tbl tr.click:hover td { background: var(--plb-row-alt); }
   .scroll { overflow-x: auto; }
   .muted { color: var(--secondary-text-color); }
+  .also { display: block; color: var(--secondary-text-color); font-size: 11px; font-weight: 400; }
   .hidden-cell { color: var(--secondary-text-color); font-style: italic; }
   .state {
     display: grid; justify-items: center; gap: 12px; text-align: center;

@@ -8,6 +8,8 @@ import { hassChanged, sessionTime } from "../format";
 import { translator, type Translate } from "../i18n";
 import { ICON, icon } from "../icons";
 import { pillStyles } from "../pages/stewards";
+import { alsoTime } from "../parts";
+import { TIME_PREFS_EVENT, loadTimePrefs } from "../timeprefs";
 import { tokens } from "../styles";
 import type { Hass, LiveView } from "../types";
 import { liveStore } from "./store";
@@ -52,6 +54,7 @@ export abstract class LiveCard extends LitElement {
   view?: LiveView;
   starting = false;
   private unlisten?: () => void;
+  private readonly redraw = () => this.requestUpdate();
 
   /** Defaults each card fills its configuration with. */
   protected defaults(): Partial<CardConfig> {
@@ -69,16 +72,19 @@ export abstract class LiveCard extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    window.addEventListener(TIME_PREFS_EVENT, this.redraw);
     this.listen();
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    window.removeEventListener(TIME_PREFS_EVENT, this.redraw);
     this.unlisten?.();
     this.unlisten = undefined;
   }
 
   protected override willUpdate(): void {
+    if (this.hass) void loadTimePrefs(this.hass);
     this.listen();
   }
 
@@ -122,7 +128,8 @@ export abstract class LiveCard extends LitElement {
       ? html`<div class="next">${t("live.next", { meeting: next.meeting, session: t(`sessions.${next.kind}`) })}
           ${next.start
             ? html`<b class="num"><plb-countdown .to=${next.start}></plb-countdown></b>
-                <small>${sessionTime(this.hass!, next.start, next.date)}</small>`
+                <small>${sessionTime(this.hass!, next.start, next.date, next.timezone)}
+                  ${alsoTime(t, this.hass!, next.start, next.timezone)}</small>`
             : nothing}</div>`
       : html`<div class="next">${t("live.noNext")}</div>`;
     switch (v.state) {

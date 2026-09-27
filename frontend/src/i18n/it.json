@@ -332,5 +332,16 @@
       "kind": "Campionato",
       "show_title": "Mostra il titolo"
     }
+  },
+  "time": {
+    "title": "Orari",
+    "justYou": "solo per te",
+    "home": "Come nel mio profilo di Home Assistant ({zone})",
+    "device": "Fuso orario di questo dispositivo ({zone})",
+    "circuit": "Ora locale del circuito",
+    "both": "Mostra entrambi gli orari",
+    "bothHelp": "Accanto a ogni orario, in piccolo, l'altro: l'ora locale del circuito, o la tua se hai scelto quella del circuito.",
+    "atTrack": "{time} al circuito",
+    "yours": "{time} ora tua"
   }
 }
