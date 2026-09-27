@@ -281,12 +281,8 @@ actions:
 
 ## Project status
 
-**Young and moving fast (0.x).** Calendar, results, standings and the post-session views
-run on the same public data they always will. The live path — timing tower, flags, radio,
-map — is built and tested against recorded F1 data, but **it has not yet been through a
-full live race weekend**. If something looks wrong during a session, please
-[open an issue](https://github.com/foyer-labs/Pit-Lane-Live-Board/issues). The screenshots
-show real 2026 Spanish Grand Prix data rendered on a test bench.
+**Young and moving fast (0.x)**, with new features every few days. Found something
+that looks wrong, or have an idea? [Open an issue](https://github.com/foyer-labs/Pit-Lane-Live-Board/issues).
 
 Every version is a GitHub release that HACS offers by version number; the
 [changelog](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/CHANGELOG.md) puts

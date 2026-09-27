@@ -288,12 +288,8 @@ actions:
 
 ## Stato del progetto
 
-**Giovane e in rapida evoluzione (0.x).** Calendario, risultati, classifiche e le pagine a
-fine sessione usano gli stessi dati pubblici di sempre. La parte live — classifica,
-bandiere, team radio, mappa — è costruita e provata su dati registrati della F1, ma
-**non ha ancora affrontato un intero weekend di gara dal vivo**. Se durante una sessione
-qualcosa non torna, [apri una issue](https://github.com/foyer-labs/Pit-Lane-Live-Board/issues).
-Gli screenshot mostrano dati reali del Gran Premio di Spagna 2026 su un banco di prova.
+**Giovane e in rapida evoluzione (0.x)**, con novità ogni pochi giorni. Qualcosa non
+torna, o hai un'idea? [Apri una issue](https://github.com/foyer-labs/Pit-Lane-Live-Board/issues).
 
 Ogni versione è una release GitHub proposta da HACS per numero di versione; il
 [changelog](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/CHANGELOG.md) mette
