@@ -90,3 +90,11 @@ def test_login_session_expiry():
     assert not session_expired(jwt(exp=at(timedelta(days=1))), NOW)
     assert not session_expired("opaque-id", NOW)
     assert not session_expired(None, NOW)
+
+
+def test_an_unusable_expiry_is_invalid_not_an_exception():
+    for exp in (1e20, -1e20, 99999999999999, float("nan"), float("inf"), True):
+        status = evaluate(jwt(exp=exp), NOW)
+        assert (status.status, status.reason) == ("invalid", "no_expiry"), exp
+        assert acceptable(status, NOW) == "token_invalid"
+        assert not session_expired(jwt(exp=exp), NOW)
