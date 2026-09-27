@@ -7,8 +7,10 @@ show. Pure decisions are delegated to core/; this module does the timing and the
 A Raspberry Pi shapes the live path (SPEC §5.5):
 
 * one 0.25 s loop releases messages, measures health and publishes when due;
-* the page's view is sections rebuilt only when a topic they read changed, encoded
-  once for every open page; after the first message only changed sections travel;
+* the page's view is sections rebuilt only when a topic they read changed, computed
+  once per publish for the events, the entities and the page, and encoded once for
+  every open page; after the first message only changed sections travel, and the
+  timing tower only as the rows that changed (`tower_patch`);
 * the map's outline travels once, then only the cars;
 * entities are told to write only when something they show changed.
 
@@ -108,10 +110,15 @@ STALE_REPUBLISH = 1.0
 DISPLAY_EVERY = 5.0
 RELEASE_CHUNK = 2000  # a lowered delay's backlog is applied over a few steps
 CLOSE_AFTER_FINAL = timedelta(minutes=5)
+# The archive publishes a session 0-30 minutes after it ends: while it has not, an
+# open page asks again at most this often (INV-4).
+FINAL_RETRY = 120.0
 SETTLED_AFTER = timedelta(hours=48)
 FAILED_WINDOWS_FOR_REPAIR = 3
 LIVE_OUTLINE_SAMPLES = 20_000
 LIVE_OUTLINE_RETRY = 30.0
+# The provisional projection widens as the cars cover more of the circuit.
+PROVISIONAL_EVERY = 5.0
 DEV_WINDOW = "dev"
 
 ISSUE_F1TV = "f1tv_new_token"
@@ -121,6 +128,9 @@ _LIVE_LISTENERS = f"{DOMAIN}_live_listeners"
 _MAP_LISTENERS = f"{DOMAIN}_map_listeners"
 # Topics that change nothing the page's sections show.
 _QUIET_TOPICS = frozenset({POSITION_TOPIC, "Heartbeat"})
+# Driver fields left out of the entities: they change every lap, and each change
+# would be a recorder row per followed driver (decision 52: slow fields only).
+_LAP_BY_LAP = frozenset({"laps", "tyre_age"})
 
 type Listener = Callable[[bytes], None]
 
@@ -171,6 +181,7 @@ class LiveSession:
     archive_outline: asyncio.Task[None] | None = None
     live_samples: list[Sample] = field(default_factory=list)
     next_outline_try: float = 0.0
+    next_provisional: float = 0.0
     # The household's drivers as last seen: the baseline of their events.
     favourites_seen: dict[str, dict[str, Any]] | None = None
     favourites_session: int | None = None
@@ -214,6 +225,7 @@ class Hub:
         self.live: LiveSession | None = None
         self.final: FinalView | None = None
         self._final_task: asyncio.Task[None] | None = None
+        self._final_missing: tuple[str, float] | None = None  # (session, when)
         self.first_tick: asyncio.Task[None] | None = None
         self._lock = asyncio.Lock()
         self._stopped = False
@@ -222,7 +234,12 @@ class Hub:
         self._token_refused = False
         self.f1tv = self._evaluate_token()
         self._renewing = False
+        # What the open pages were last sent: the sections' version keys, the
+        # tower's rows by racing number (the base of the next `tower_patch`) and
+        # the encoded message (an identical one is not sent again).
         self._sent: dict[str, Any] = {}
+        self._tower_sent: dict[str, Any] = {}
+        self._last_view: bytes | None = None
         self._map_rev_sent = -1
         self.entity_state: dict[str, Any] = self._entity_snapshot()
         self.display: dict[str, Any] = {"state": "idle", "attributes": {}}
@@ -252,10 +269,15 @@ class Hub:
         self.entry.async_create_background_task(
             self.hass, self._async_check_f1tv(), f"{DOMAIN} F1TV check"
         )
+        # Pages left open across a reload hear from the new hub at once, not only
+        # once the calendar parses: the old hub's last view may have been live.
+        self.publish_full()
 
     async def _async_first_tick(self) -> None:
         await self.async_refresh_calendar()
         await self._async_tick(dt_util.utcnow())
+        if not self._stopped:
+            async_dispatcher_send(self.hass, SIGNAL_SETTINGS)  # "running", F1TV
 
     async def async_stop(self) -> None:
         self._stopped = True
@@ -267,6 +289,9 @@ class Hub:
         async with self._lock:
             await self._async_stop_live(counts_as_window=False)
         await self.store.async_flush()
+        # Open pages must not keep a live view whose clock froze (INV-2): they
+        # get the session's final view, or idle, until a new hub speaks.
+        self.publish_full()
 
     # Calendar.
 
@@ -331,6 +356,8 @@ class Hub:
         return self.store.settings
 
     async def async_update_settings(self, settings: Settings) -> None:
+        if settings == self.settings:
+            return  # a click on the value already set: nothing to write or send
         playing = settings.live != self.settings.live
         favourites_changed = settings.favourites != self.settings.favourites
         await self.store.async_save(settings)
@@ -342,7 +369,7 @@ class Hub:
         async_dispatcher_send(self.hass, SIGNAL_SETTINGS)
         self._update_entities()
         self.publish_full()
-        self._notify_map(self.map_payload(broadcast=True, full=True))
+        self._broadcast_map(full=True)
         self.release_summaries()
         if playing:
             # Play and pause take effect now, not at the next tick.
@@ -363,8 +390,14 @@ class Hub:
         async with self._lock:
             if not self._stopped:
                 await self._async_tick_locked(now)
+        if self._stopped:
+            return  # unloaded while waiting: the new hub's entities are not ours
         self.release_summaries()
         self._update_entities()
+        if _listeners(self.hass, _LIVE_LISTENERS):
+            # A page left open (a wall tablet, a dashboard) gets the newest final
+            # view as sessions end, also while live timing is paused.
+            self.ensure_final()
 
     def _window(self, now: datetime) -> tuple[Meeting | None, Session | None] | None:
         if self.dev_url:
@@ -386,12 +419,14 @@ class Hub:
             # Auto-start acts once per window, as it opens, whether or not live
             # timing is already on: a pause pressed during the session holds, and
             # the window is remembered across restarts.
+            # With auto-start off it stays in memory: nothing depends on it after
+            # a restart, and a paused install writes nothing (SPEC §5.5).
             self.store.auto_window = key
             if self.settings.auto_start and not self.settings.live:
                 await self.store.async_save(self.settings.with_live(True))
                 async_dispatcher_send(self.hass, SIGNAL_SETTINGS)
                 self.publish_full()
-            else:
+            elif self.settings.auto_start:
                 await self.store.async_save()
         wanted = window if self.settings.live else None
         if live is not None:
@@ -486,7 +521,7 @@ class Hub:
         async_dispatcher_send(self.hass, SIGNAL_SETTINGS)  # Settings: "running"
         self._update_entities()
         self.publish_full()
-        self._notify_map(self.map_payload(broadcast=True, full=True))
+        self._broadcast_map(full=True)
 
     def _live_token(self) -> str | None:
         """Evaluated at each connection, not trusted from the hourly check."""
@@ -538,7 +573,12 @@ class Hub:
         now = time.monotonic()
         released = live.buffer.release(now, RELEASE_CHUNK)
         for item in released:
-            self._apply(live, item)
+            # One message F1 shaped unexpectedly must not cost the rest of its
+            # batch: F1 never sends a delta again.
+            try:
+                self._apply(live, item)
+            except Exception:
+                _LOGGER.exception("A live message could not be applied")
         if released:
             self._after_batch(live)
         if live.client.connected:
@@ -552,13 +592,31 @@ class Hub:
         if live.map_dirty and now - live.last_map >= MAP_EVERY:
             live.map_dirty = False
             live.last_map = now
-            self._notify_map(self.map_payload(broadcast=True))
+            self._broadcast_map()
         if live.dirty and now - live.last_push >= PUBLISH_EVERY:
-            live.dirty = False
             live.last_push = now
-            self._fire_events(live)
-            self._update_entities()
-            self._send_view(full=False)
+            self._publish(live)
+            live.dirty = False  # only once the pages have it: a failure tries again
+
+    def _publish(self, live: LiveSession) -> None:
+        """One publish: the sections are computed once and read by the events,
+        the entities, the small screen and the pages. A failing event or entity
+        step never keeps the page from its update."""
+        sections = None
+        hidden = live_hidden(self.settings) or live.buffer.syncing()
+        if live.state.topics and (self.settings.favourites or not hidden):
+            shown = dt_util.utcnow() - timedelta(seconds=self.settings.tv_delay)
+            sections = live.builder.sections(live.state, shown)
+        try:
+            self._fire_events(live, sections)
+        except Exception:
+            _LOGGER.exception("Automation events failed; the page is still updated")
+        parts = self._view_parts(sections)
+        try:
+            self._update_entities(sections, parts)
+        except Exception:
+            _LOGGER.exception("Entities failed; the page is still updated")
+        self._send_view(full=False, parts=parts)
 
     def _apply(self, live: LiveSession, item: tuple[Any, ...]) -> None:
         if item[0] == "keyframes":
@@ -573,7 +631,7 @@ class Hub:
                 live.state.carry_over(previous)
             # Versions restart with the new state: what the pages hold can no
             # longer be compared with them, so the next view goes out complete.
-            self._sent = {}
+            self._forget_sent()
             live.dirty = True
         else:
             _, topic, delta, utc = item
@@ -589,7 +647,10 @@ class Hub:
         seen = live.state.version("SessionInfo", "SessionStatus")
         if seen != live.finalised_seen:
             live.finalised_seen = seen
-            self._check_finalised(live)
+            try:
+                self._check_finalised(live)
+            except Exception:
+                _LOGGER.exception("The finalised check failed")
         self._ensure_outline(live)
 
     def _check_finalised(self, live: LiveSession) -> None:
@@ -618,7 +679,9 @@ class Hub:
 
     # Automation events and entities.
 
-    def _fire_events(self, live: LiveSession) -> None:
+    def _fire_events(
+        self, live: LiveSession, sections: dict[str, tuple[Any, Any]] | None = None
+    ) -> None:
         """Race control transitions and stewards' decisions.
 
         The marks always follow the released state, so nothing that happened while
@@ -642,7 +705,9 @@ class Hub:
         # events are withheld, so nothing fires late.
         drivers: list[tuple[str, dict[str, Any]]] = []
         if self.settings.favourites and live.state.topics:
-            rows = live.builder.sections(live.state, dt_util.utcnow())["tower"][1]
+            if sections is None:
+                sections = live.builder.sections(live.state, dt_util.utcnow())
+            rows = sections["tower"][1]
             seen = fav.snapshot(rows, self.settings.favourites)
             kind = session_kind(live.state.get("SessionInfo"))
             session = _session_key(live.state.topics)
@@ -678,32 +743,45 @@ class Hub:
         for event_type, data in drivers:
             async_dispatcher_send(self.hass, SIGNAL_FAVOURITE, event_type, data)
 
-    def _update_entities(self) -> None:
+    def _update_entities(
+        self,
+        sections: dict[str, tuple[Any, Any]] | None = None,
+        parts: _ViewParts | None = None,
+    ) -> None:
         """Entities write only when what they show changed: a race writes a few
         hundred states, not two a second each."""
-        snapshot = self._entity_snapshot()
+        snapshot = self._entity_snapshot(sections)
         if snapshot != self.entity_state:
             self.entity_state = snapshot
             async_dispatcher_send(self.hass, SIGNAL_LIVE)
-        self._update_display()
+        self._update_display(parts)
 
-    def _update_display(self) -> None:
-        """The small-screen sensor (decision 54): only while it is enabled."""
+    def _update_display(self, parts: _ViewParts | None = None) -> None:
+        """The small-screen sensor (decision 54): only while it is enabled, gaps
+        at most every 5 s, the page's state and the flag at once; written only
+        when what it shows changed."""
         if not self.display_enabled:
             return
-        display = screen.build(self.live_view(), self.settings.favourites)
-        if display == self.display:
-            return
-        urgent = display["state"] != self.display["state"] or display["attributes"].get(
-            "track"
-        ) != self.display["attributes"].get("track")
         now = time.monotonic()
-        if not urgent and now - self._display_at < DISPLAY_EVERY:
+        meta, sections = parts if parts is not None else self._view_parts()
+        if now - self._display_at < DISPLAY_EVERY:
+            # Not due: only the page's state or the flag can make it urgent, and
+            # both are read before anything is built.
+            head = sections["header"][1] if sections else {}
+            track = head.get("track_status") if sections else None
+            if meta["state"] == self.display["state"] and track == self.display[
+                "attributes"
+            ].get("track"):
+                return
+        display = screen.build(_assemble(meta, sections), self.settings.favourites)
+        if display == self.display:
             return
         self.display, self._display_at = display, now
         async_dispatcher_send(self.hass, SIGNAL_DISPLAY)
 
-    def _entity_snapshot(self) -> dict[str, Any]:
+    def _entity_snapshot(
+        self, sections: dict[str, tuple[Any, Any]] | None = None
+    ) -> dict[str, Any]:
         live = self.live
         running = bool(
             live and session_status(live.state.get("SessionStatus")) == "started"
@@ -722,7 +800,8 @@ class Hub:
             return base
         if not live.state.topics:
             return base
-        sections = live.builder.sections(live.state, dt_util.utcnow())
+        if sections is None:
+            sections = live.builder.sections(live.state, dt_util.utcnow())
         head = sections["header"][1]
         stewards = sections["stewards"][1]
         messages = sections["race_control"][1]
@@ -745,7 +824,11 @@ class Hub:
             "investigations": [_brief(i) for i in stewards["investigations"]],
             "last_message": messages[0] if messages else None,
             "drivers": {
-                code: fav.for_entity(driver)
+                code: {
+                    key: value
+                    for key, value in fav.for_entity(driver).items()
+                    if key not in _LAP_BY_LAP
+                }
                 for code, driver in fav.snapshot(
                     sections["tower"][1], self.settings.favourites
                 ).items()
@@ -766,10 +849,11 @@ class Hub:
         return "token_problem"
 
     def _view_parts(
-        self,
-    ) -> tuple[dict[str, Any], dict[str, tuple[Any, Any]] | None]:
+        self, computed: dict[str, tuple[Any, Any]] | None = None
+    ) -> _ViewParts:
         """`(meta, sections)`: what the Live page shows now. The meta always
-        travels; the sections only when they changed."""
+        travels; the sections only when they changed. `computed` are the live
+        sections when this publish already has them."""
         now = dt_util.utcnow()
         live = self.live
         meta: dict[str, Any] = {
@@ -797,7 +881,8 @@ class Hub:
             meta["data_age"] = round(age, 1)
             shown = now - timedelta(seconds=self.settings.tv_delay)
             state = "live" if health == "ok" else health
-            return {**meta, "state": state}, live.builder.sections(live.state, shown)
+            sections = computed or live.builder.sections(live.state, shown)
+            return {**meta, "state": state}, sections
         final = self.final
         if final is not None:
             if self.settings.no_spoiler and (
@@ -819,36 +904,82 @@ class Hub:
 
     def live_view(self) -> dict[str, Any]:
         """The complete view: for a page that has just subscribed, and tests."""
-        meta, sections = self._view_parts()
-        view = {**meta, "full": True}
-        for name, (_, value) in (sections or {}).items():
-            view[name] = value
+        view = _assemble(*self._view_parts())
+        if self._tower_sent and view.get("tower"):
+            # This page now holds rows the others may not have been sent yet.
+            # Each one that differs from the last broadcast goes out again in the
+            # next patch, so a row that returns to its broadcast value still
+            # reaches this page.
+            for row in view["tower"]:
+                if self._tower_sent.get(row["number"]) != row:
+                    self._tower_sent[row["number"]] = None
         return view
 
-    def _send_view(self, *, full: bool) -> None:
-        """Encode once for every open page; after a full view, only what changed."""
+    def _forget_sent(self) -> None:
+        """The pages' copy can no longer be compared: the next view is complete."""
+        self._sent = {}
+        self._tower_sent = {}
+        self._last_view = None
+
+    def _send_view(self, *, full: bool, parts: _ViewParts | None = None) -> None:
+        """Encode once for every open page; after a full view, only what changed.
+
+        In a partial view (`full: false`) the tower travels as a patch against the
+        rows last sent: `tower_patch: {order: [numbers], rows: {number: row}}`,
+        with every number in display order and only the rows whose content
+        changed. A complete view carries `tower` whole."""
         if not _listeners(self.hass, _LIVE_LISTENERS):
-            self._sent = {}
+            self._forget_sent()
             return
-        meta, sections = self._view_parts()
+        meta, sections = parts if parts is not None else self._view_parts()
         sent = self._sent
         if full or sections is None or meta["state"] != sent.get("state"):
-            view = {**meta, "full": True}
+            view = _assemble(meta, sections)
             self._sent = {"state": meta["state"]}
-            for name, (key, value) in (sections or {}).items():
-                view[name] = value
+            for name, (key, _) in (sections or {}).items():
                 self._sent[name] = key
+            self._tower_sent = {row["number"]: row for row in view.get("tower") or []}
         else:
             view = {**meta, "full": False}
             for name, (key, value) in sections.items():
-                if sent.get(name) != key:
+                if sent.get(name) == key:
+                    continue
+                sent[name] = key
+                if name != "tower":
                     view[name] = value
-                    sent[name] = key
-        self._notify(_LIVE_LISTENERS, json_bytes(view))
+                elif (patch := self._tower_patch(value)) is not None:
+                    view["tower_patch"] = patch
+        payload = json_bytes(view)
+        if not full and payload == self._last_view:
+            # Nothing new (a hidden or syncing page while the feed runs): the
+            # pages already hold exactly this.
+            return
+        self._last_view = payload
+        self._notify(_LIVE_LISTENERS, payload)
+
+    def _tower_patch(self, rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+        """The rows that differ from those last sent, compared by value, and the
+        whole order; None when neither changed."""
+        previous = self._tower_sent
+        order = [row["number"] for row in rows]
+        changed = {
+            row["number"]: row for row in rows if previous.get(row["number"]) != row
+        }
+        self._tower_sent = {row["number"]: row for row in rows}
+        if not changed and order == list(previous):
+            return None
+        return {"order": order, "rows": changed}
 
     def publish_full(self) -> None:
         """Everything again: settings, pause, a window, the final view changed."""
         self._send_view(full=True)
+
+    def _broadcast_map(self, *, full: bool = False) -> None:
+        """The cars to the open maps; nothing is projected or encoded while no
+        page watches the map (SPEC §5.4). A new map page gets its own full
+        message."""
+        if _listeners(self.hass, _MAP_LISTENERS):
+            self._notify_map(self.map_payload(broadcast=True, full=full))
 
     def map_payload(self, *, broadcast: bool, full: bool = False) -> bytes:
         """The cars, projected once for every open page; the outline only when it
@@ -915,15 +1046,22 @@ class Hub:
         live.live_samples.extend(samples)
         if len(live.live_samples) > LIVE_OUTLINE_SAMPLES:
             del live.live_samples[: len(live.live_samples) - LIVE_OUTLINE_SAMPLES]
-        if live.outline is None and (first := provisional(live.live_samples)):
-            self._set_outline(live, first)
+        now = time.monotonic()
+        if live.outline is None or now >= live.next_provisional:
+            # The first positions (cars in the garage, on the grid) cover a corner
+            # of the circuit: refitted every few seconds while the cars spread
+            # out, until a real outline exists.
+            fitted = provisional(live.live_samples)
+            if fitted is not None:
+                live.next_provisional = now + PROVISIONAL_EVERY
+                if live.outline is None or fitted.to_dict() != live.outline.to_dict():
+                    self._set_outline(live, fitted)
         # Drawn from live positions only once the archive has no outline to give.
         archive = live.archive_outline
         if archive is None or not archive.done():
             return
         if live.outline_task is not None and not live.outline_task.done():
             return
-        now = time.monotonic()
         if now < live.next_outline_try:
             return
         live.next_outline_try = now + LIVE_OUTLINE_RETRY
@@ -974,6 +1112,13 @@ class Hub:
             return
         if self._final_task is not None and not self._final_task.done():
             return
+        missing = self._final_missing
+        if (
+            missing is not None
+            and missing[0] == session.key
+            and time.monotonic() - missing[1] < FINAL_RETRY
+        ):
+            return
         self._final_task = self.entry.async_create_background_task(
             self.hass, self._async_load_final(session), f"{DOMAIN} final view"
         )
@@ -983,8 +1128,11 @@ class Hub:
             final = await self.archive.final_state(self.meetings, session)
         except (SourceError, OSError) as err:
             _LOGGER.debug("No final state for %s yet: %s", session.key, err)
+            final = None
+        if not final:
+            self._final_missing = (session.key, time.monotonic())
             return
-        if not final or self._stopped or self.live is not None:
+        if self._stopped or self.live is not None:
             return
         state = LiveState()
         state.apply_keyframes(final.get("topics") or {})
@@ -1062,6 +1210,8 @@ class Hub:
 
     def _deliver_later(self, record: dict[str, Any]) -> None:
         """Off the caller's path: a slow phone never holds up a reply."""
+        if self._stopped:
+            return
         self.entry.async_create_background_task(
             self.hass, self._async_deliver(record), f"{DOMAIN} summary delivery"
         )
@@ -1072,7 +1222,7 @@ class Hub:
         switched off, or the next weekend begun. Called on each change of settings
         and on the 30 s tick."""
         pending = self.store.pending_summaries
-        if not pending:
+        if not pending or self._stopped:
             return
         ready = [p for p in pending if not self._summary_hidden(p.get("key"))]
         if not ready:
@@ -1237,6 +1387,19 @@ class Hub:
             },
             "now": datetime.now(UTC).isoformat(),
         }
+
+
+type _ViewParts = tuple[dict[str, Any], dict[str, tuple[Any, Any]] | None]
+
+
+def _assemble(
+    meta: dict[str, Any], sections: dict[str, tuple[Any, Any]] | None
+) -> dict[str, Any]:
+    """A complete view: the meta and every section's value."""
+    view = {**meta, "full": True}
+    for name, (_, value) in (sections or {}).items():
+        view[name] = value
+    return view
 
 
 def _same_window(
