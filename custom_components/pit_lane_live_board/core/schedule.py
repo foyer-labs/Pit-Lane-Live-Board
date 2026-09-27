@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Any
 
+from .circuits import circuit_timezone
 from .values import text, to_int
 
 # Jolpica field → our session kind, in weekend order.
@@ -92,6 +93,11 @@ class Meeting:
             return last.end <= now
         return last.day < now.date()
 
+    @property
+    def timezone(self) -> str | None:
+        """The time zone at the track (decision 50)."""
+        return circuit_timezone(self.circuit_id, self.country)
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "season": self.season,
@@ -99,6 +105,7 @@ class Meeting:
             "name": self.name,
             "circuit_id": self.circuit_id,
             "circuit": self.circuit,
+            "timezone": self.timezone,
             "locality": self.locality,
             "country": self.country,
             "sprint": self.sprint,
