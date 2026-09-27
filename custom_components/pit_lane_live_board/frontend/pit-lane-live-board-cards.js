@@ -901,7 +901,12 @@ var Fe = {
 		testNothing: "Nothing to summarise yet: it needs a session on the Live page.",
 		testFailed: "Not sent.",
 		spoiler: "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off.",
-		testHidden: "Not sent: no-spoiler mode hides the Live page."
+		testHidden: "Not sent: no-spoiler mode hides the Live page.",
+		format: "Content",
+		compact: "Compact",
+		full: "Full",
+		compactHelp: "Podium, fastest lap, retirements, penalties and your drivers.",
+		fullHelp: "The same, then the whole classification with every driver's time: gap and best lap in a race, best lap and gap in qualifying and practice."
 	},
 	kiosk: {
 		enter: "Full screen",
@@ -1289,7 +1294,12 @@ var Fe = {
 			testNothing: "Ancora niente da riepilogare: serve una sessione nella pagina Live.",
 			testFailed: "Non inviato.",
 			spoiler: "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità.",
-			testHidden: "Non inviato: la modalità senza spoiler nasconde la pagina Live."
+			testHidden: "Non inviato: la modalità senza spoiler nasconde la pagina Live.",
+			format: "Contenuto",
+			compact: "Compatto",
+			full: "Esteso",
+			compactHelp: "Podio, giro veloce, ritirati, penalità e i tuoi piloti.",
+			fullHelp: "Lo stesso, poi la classifica completa con il tempo di ogni pilota: distacco e giro migliore in gara, giro migliore e distacco in qualifica e nelle libere."
 		},
 		kiosk: {
 			enter: "Schermo intero",

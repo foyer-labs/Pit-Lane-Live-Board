@@ -343,6 +343,12 @@ retirements, penalties, your drivers — and sends it to the notify services cho
 Settings (one per phone with the mobile app, or `persistent_notification`), after the
 kinds of session you pick. *Send a test* sends the summary of what the Live page shows.
 
+*Content* chooses how much: **Compact** (podium, fastest lap, retirements, penalties,
+your drivers) or **Full**, which then lists the whole classification with every driver's
+time — `2. VER +4.351 · 1:35.100` in a race (gap and best lap), `2. NOR 1:26.322 +0.222`
+in qualifying and practice (best lap and gap), `ALB out (lap 23)` for a retirement. The
+event's `facts` always carry the whole classification.
+
 It is also the **Session summary** event, with `title` and `message` ready to send or
 speak and the facts behind them, for your own automations. With no-spoiler mode on it
 waits until you reveal the session or turn the mode off.

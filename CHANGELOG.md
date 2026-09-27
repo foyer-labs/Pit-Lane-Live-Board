@@ -6,6 +6,15 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-27
+
+### Added
+- **Full session summary**: in Settings, choose *Compact* (as before: podium, fastest
+  lap, retirements, penalties, your drivers) or *Full*, which adds the whole
+  classification with every driver's time — gap and best lap in a race, best lap and gap
+  in qualifying and practice, retirements with the lap they stopped on. The summary
+  event always carries the classification in its facts.
+
 ## [0.6.0] - 2026-09-27
 
 ### Added
