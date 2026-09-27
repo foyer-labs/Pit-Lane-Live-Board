@@ -4,7 +4,9 @@
 
 <h1 align="center">Pit Lane Live Board</h1>
 
-<p align="center"><em>Formula 1 in your Home Assistant sidebar: the live timing tower, the calendar, every race since 1950 and both championships, in one page that is already built.</em></p>
+<p align="center"><strong>Put your Home Assistant on the pit wall.</strong></p>
+
+<p align="center"><em>A ready-made Formula 1 page in your sidebar: the live timing tower, flags and stewards, your driver's race, the calendar and every result since 1950. Free, no account, nothing to build.</em></p>
 
 <p align="center"><strong>English</strong> · <a href="https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/README.it.md">Italiano</a> · <a href="https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md">📖 Guide</a> · <a href="https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/CHANGELOG.md">What's new</a></p>
 
@@ -16,72 +18,178 @@
   <a href="https://github.com/foyer-labs/Pit-Lane-Live-Board/actions/workflows/ci.yml"><img src="https://github.com/foyer-labs/Pit-Lane-Live-Board/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
 </p>
 
-Other Formula 1 integrations give you sensors, and then you build the dashboard. Pit Lane
-Live Board gives you the dashboard: install it, open **Live Board** in the sidebar, and
-the whole weekend is there — the timing tower during the session, the calendar before it,
-the results and standings after it. Free, with no account.
-
-One install, three ways to use it:
-
-| | |
-|---|---|
-| 🏁 **A ready-made panel** | Live timing, calendar, results since 1950 and both championships, in the sidebar. |
-| 🧩 **Eight dashboard cards** | The timing tower, the track map, flags & stewards, team radio and more, for your own dashboards. Nothing to install, a visual editor for each. |
-| ⚡ **Sensors and events** | Safety car, red flag, yellow sectors, penalties, every stewards' decision: triggers for your lights, speakers and phone. |
-
 <p align="center">
-  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/live.png" alt="The Live page during a race: the timing tower with gaps, sectors in purple and green and tyres, the track map, race control and team radio" width="900">
+  <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=foyer-labs&repository=Pit-Lane-Live-Board&category=integration"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open this repository inside HACS"></a>
 </p>
 
-## What you get
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/tv.png" alt="Kiosk mode on a TV, dark theme: lap 31 of 57, flags and stewards, the timing tower with gaps, sectors, mini-sectors and tyres, the track map and race control" width="900">
+  <br>
+  <sub><em>Kiosk mode on the living-room TV, 45 seconds behind live timing to match the stream. Real data from the 2026 Spanish Grand Prix; the track map needs an F1TV subscription.</em></sub>
+</p>
 
-- **The live timing tower.** Position, gap to the leader and to the car ahead, last and
-  best lap, the three sectors in purple and green, the tyre each driver is on and how
-  many laps it has done, pit stops, and places gained or lost since the start.
-- **Qualifying done right.** Q1, Q2 and Q3 with the knockout line, best laps and gaps,
-  and the mini-sectors in F1's purple, green and yellow.
-- **Every driver's race, one click away.** Their stints with the laps and best lap of
-  each, and where a stop now would bring them back out.
-- **Flags and stewards at a glance.** The track status, yellow sectors, the safety car
-  and its last lap, every penalty (a `+5s` next to the driver until it is served),
-  incidents under investigation and deleted laps, in one card above the tower.
-- **Race control and weather.** Every message from race control, filtered by flags or
-  penalties; air and track temperature, wind and rain.
-- **Team radio.** The clips F1 publishes during the session, with a play button.
-- **The live track map** — with an F1TV subscription. Every car on the circuit, in its
-  team colour. Everything else works without an account.
-- **In sync with your TV.** Streams run behind live timing. Set a delay of up to two
-  minutes and the page, the radio and your automations wait for your screen.
-- **No spoilers.** Watching the race later? No-spoiler mode keeps the weekend's
-  results inside Home Assistant until you reveal them.
-- **The calendar.** Every session of the season in your own time zone, a countdown to
-  the next one, the podium of every weekend already run.
-- **Every race since 1950.** Results, qualifying and sprints for any season; lap charts,
-  tyre strategies, lap times, pit stops, race control and weather for the modern era.
-- **Both championships.** Drivers and constructors, for any season, after any round.
-- **After the flag.** Between sessions the Live page keeps the final classification,
-  the stewards' decisions and the pit stops, with a countdown to the next session.
-- **Easy on a Raspberry Pi.** Live timing starts paused: nothing connects to F1 and
-  nothing is written to disk until you press play, or let it start by itself at each
-  session.
-- **You decide who sees it.** The panel is for the whole house, or for administrators
-  only; each dashboard keeps its own visibility.
-- **On any screen.** A kiosk mode for a TV or a Raspberry Pi monitor, and a sensor made
-  for small screens: an ESP32 with ESPHome can show the lap, the flags and the top ten.
-- **English and Italian**, light and dark, on a phone or a wall tablet.
+<p align="center"><b>Works with</b> Home Assistant 2026.6+ · HACS · phone and tablet · TV and Raspberry Pi kiosk · ESP32 with ESPHome · English and Italian · light and dark</p>
+
+<p align="center"><sub>Unofficial fan project, not associated with the Formula 1 companies or the FIA (full notice at the bottom).</sub></p>
+
+### Why fans install it
+
+- 🏁 **It's already built.** Install, open **Live Board** in the sidebar, and the whole
+  weekend is there. No YAML dashboard, no card hunting, no sensors to wire up first.
+- 📺 **It waits for your TV.** Streams run behind live timing. Set a delay of up to two
+  minutes and the page, the team radio *and your automations* land when your screen
+  shows it. No more spoilers from your own dashboard.
+- 💡 **Your house joins the race.** The living room turns amber under the safety car,
+  your phone buzzes when your driver gets a penalty, the podium arrives when the session ends.
+- 🆓 **Free, with no account.** Only the live track map needs an F1TV subscription.
+
+<p align="center"><strong><a href="https://github.com/foyer-labs/Pit-Lane-Live-Board#get-started">→ Get it running in three steps</a></strong></p>
+
+---
+
+## More than a pile of sensors
+
+Sensors are where most home automations start; the dashboard is then yours to build.
+Here it is already built — and you still get the sensors.
+
+| | Starting from sensors | Pit Lane Live Board |
+|---|---|---|
+| A timing tower to look at | Your job | In the sidebar, on install |
+| In sync with your stream | Your job | TV delay up to 2 minutes, for the page *and* your automations |
+| The stewards | Your job | One event per decision: driver, seconds, reason |
+| Your driver | Your job | A ★ in the tower, a sensor each, an event when they pit, gain a place or get a penalty |
+| Watching later | Your job | No-spoiler mode keeps the weekend's results inside Home Assistant until you reveal them |
+| The history | Your job | Every race since 1950; lap charts and tyre strategies from 2018 |
+
+And you still get the sensors: [plenty of them](https://github.com/foyer-labs/Pit-Lane-Live-Board#sensors-and-events-for-automations).
+
+## Get started
+
+You need **Home Assistant 2026.6 or later** and **[HACS](https://hacs.xyz/)**. Pit Lane
+Live Board is a HACS *custom repository* for now: it takes a minute.
+
+**1. Add it to HACS and download it**
+
+<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=foyer-labs&repository=Pit-Lane-Live-Board&category=integration"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open this repository inside HACS"></a>
+
+Or by hand: HACS → ⋮ → *Custom repositories* → `https://github.com/foyer-labs/Pit-Lane-Live-Board`,
+category *Integration*. Download **Pit Lane Live Board** and **restart Home Assistant**.
+
+**2. Add the integration**
+
+<a href="https://my.home-assistant.io/redirect/config_flow_start/?domain=pit_lane_live_board"><img src="https://my.home-assistant.io/badges/config_flow_start.svg" alt="Open your Home Assistant instance and start setting up Pit Lane Live Board"></a>
+
+Or *Settings → Devices & services → Add integration → Pit Lane Live Board*. There is
+nothing to fill in.
+
+**3. Open Live Board in the sidebar**
+
+Calendar, results and standings work straight away. **Live timing starts paused**: press
+play in the panel's **Settings** (the gear), or turn on *Start automatically at each
+session*. For the live track map, an administrator pastes an F1TV token there too
+([how](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md#f1tv-and-the-live-map)).
+
+That's it — the next session is on your board.
+
+## A race weekend, the Pit Lane way
+
+**Friday.** The calendar shows every session in your own time zone — or the local time at
+the track, or both side by side — with a countdown to the next one and the podium of every
+weekend already run.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/strategy.png" alt="Results: the tyre strategy of every driver in a race, stints coloured by compound" width="820">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/calendar.png" alt="The Calendar page: every round of the season with its podium, the weekend in progress marked Live now and the next one marked Next" width="820">
+  <br>
+  <sub><em>The whole season at a glance, podiums included.</em></sub>
 </p>
+
+**Saturday.** Qualifying the way it should look: Q1, Q2 and Q3 with the knockout line,
+best laps and gaps, and the mini-sectors in purple, green and yellow under each sector time.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/qualifying.png" alt="Qualifying on the Live page: Q1, Q2 and Q3 times, gaps, sectors with mini-sectors, knocked-out drivers marked KO, investigations and track limits" width="820">
+  <br>
+  <sub><em>Q3, the knockout zone and every deleted lap, in one view.</em></sub>
+</p>
+
+**Sunday, 15 minutes to go.** A calendar trigger pings your phone: *the race starts in 15
+minutes*. No code, one of the ready-made automations in the guide.
+
+**Lights out.** Press play (or let it start by itself at each session). The tower fills in:
+position, gap to the leader and to the car ahead, last and best lap, three sectors, the
+tyre and how old it is, pit stops, places gained since the start.
+
+**Your driver pits.** Click their row: every stint with its compound, laps and best lap, and
+where a stop *right now* would bring them back out.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/driver.png" alt="A driver opened in the timing tower: three stints with compound, laps and best lap, and a pit estimate: back out P9, behind BOR, ahead of COL" width="900">
+  <br>
+  <sub><em>"Pitting now: back out P9." An estimate from the circuit's typical pit loss, lower under a safety car or VSC.</em></sub>
+</p>
+
+**Safety car.** The binary sensor flips and the living-room lights go amber until it comes
+in. Red flag? Red. Green again? Green.
+
+**Five-second penalty.** A `+5s` appears next to the driver until it is served, and the
+stewards event fires with the driver, the seconds and the reason — straight to your phone
+if you want.
+
+**Chequered flag.** The session summary lands on your phone: podium, fastest lap,
+retirements, penalties and your drivers — or the whole classification with every time. In
+no-spoiler mode it waits until you reveal the session.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/final.png" alt="The Live page after the race: final classification with the chequered flag, penalties, investigations, track limits, and the countdown to the next session" width="820">
+  <br>
+  <sub><em>After the flag the board keeps the final order, the stewards' decisions and a countdown to the next session.</em></sub>
+</p>
+
+**Monday.** Relive it: lap chart, tyre strategy, lap times, pit stops, race control and
+weather from 2018; results, qualifying and sprints for every season since 1950;
+both championships after any round.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/lap-chart.png" alt="Results: the lap chart of a race, every driver's position lap by lap in team colours" width="440">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/strategy.png" alt="Results: the tyre strategy of every driver in a race, stints coloured by compound" width="440">
+  <br>
+  <sub><em>Every overtake, every stint.</em></sub>
+</p>
+
+## Everything on the board
+
+**Live**
+- **Timing tower** with gaps, intervals, last and best lap, sectors and mini-sectors in
+  F1's purple, green and yellow, tyres and their age, pit stops, places gained or lost.
+- **Flags & stewards** above the tower: track status, yellow sectors, the safety car and its
+  last lap, every penalty, incidents under investigation, deleted laps.
+- **Race control** messages, filtered by flags or penalties, and **weather**: air and track
+  temperature, wind, rain.
+- **Team radio**: the clips F1 publishes during the session, with a play button.
+- **Live track map**, every car in its team colour — with an F1TV subscription.
+- **My drivers**: follow up to five, each with a ★ in the tower and a sensor of their own.
+
+**Around the weekend**
+- **Calendar** in your time zone, with a countdown; **results since 1950**; **both
+  championships**, drivers and constructors, for any season.
+- **No-spoiler mode** for when you watch later.
+- **English and Italian**, light and dark, phone or wall tablet.
+
+**Built for a home server**
+- **Easy on a Raspberry Pi.** Live timing starts paused: nothing connects to F1 and nothing
+  live is written to disk until you press play, or let it start by itself at each session.
+- **You decide who sees it**: the whole house, or administrators only.
 
 ## Your dashboard, your cards
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/cards.png" alt="The dashboard cards: session, timing tower, flags and stewards, track map, race control, team radio, weather and drivers' standings" width="900">
+  <br>
+  <sub><em>Eight cards, a visual editor for each, nothing to add by hand.</em></sub>
 </p>
 
-Every piece of the Live page is also a card. *Edit dashboard → Add card → Pit Lane*,
-and pick what you want where you want it:
+Every piece of the Live page is also a card. *Edit dashboard → Add card → Pit Lane*, and
+put it where you want it:
 
 | Card | What it shows |
 |---|---|
@@ -94,10 +202,24 @@ and pick what you want where you want it:
 | **Weather** | Air and track temperature, rain, humidity, wind. |
 | **Championship** | Drivers' or constructors' standings, top N. |
 
-No resource to add by hand, a visual editor for every card, and the same TV delay and
-no-spoiler mode as the panel. A wall tablet with the tower and the flags, a phone
-view with just the session and your driver: [the guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md#dashboard-cards)
+The cards follow the same TV delay and no-spoiler mode as the panel. A wall tablet with the
+tower and the flags, a phone view with just the session and your driver:
+[the guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md#dashboard-cards)
 has examples.
+
+## Every screen in the house
+
+| | |
+|---|---|
+| 📺 **TV or monitor** | Add `?kiosk` to the panel's address and it fills the screen and the pointer hides when it rests; `&scale=1.3` makes it readable from the sofa. On a Raspberry Pi, one `chromium --kiosk` line. |
+| 📱 **Phone** | The same board, laid out for a narrow screen. |
+| 🔌 **ESP32 or e-paper** | The optional **Small screen** sensor hands ESPHome the lap, the track status (with a colour for a LED ring), the top ten and your drivers, ready to print. [ESPHome example](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md#dedicated-screens). |
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/phone.png" alt="The Live page on a phone: track status, penalties and investigations as chips, and the timing tower with gap, last lap and tyre" width="300">
+  <br>
+  <sub><em>On the phone, during the race.</em></sub>
+</p>
 
 ## Sensors and events for automations
 
@@ -113,8 +235,9 @@ has examples.
 | `calendar` Sessions · `sensor` Next session | "The race starts in 15 minutes", with no code. |
 | `switch` Live timing · No-spoiler mode · `number` TV delay | Control the board from your own automations and voice assistant. |
 
-Everything is released through the TV delay, so the lights change when *your* screen
-shows it. Ready-made automations are [in the guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md#entities-and-automations):
+Everything is released through the TV delay, so the lights change when *your* screen shows
+it. Ready-made automations — safety car lights, red flag, race in 15 minutes, penalty for
+your driver — are [in the guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md#entities-and-automations):
 
 ```yaml
 triggers:
@@ -127,23 +250,6 @@ actions:
     data:
       message: "Penalty for Leclerc: {{ trigger.to_state.attributes.reason }}"
 ```
-
-## Get started
-
-You need Home Assistant 2026.6 or later and HACS.
-
-1. In HACS, add this repository as a *Custom repository* (category *Integration*),
-   download *Pit Lane Live Board* and restart Home Assistant.
-2. *Settings → Devices & services → Add integration → Pit Lane Live Board.*
-3. Open **Live Board** in the sidebar, open **Settings** (the gear) and press play, or
-   turn on *Start automatically at each session*. Calendar, results and standings work
-   without it.
-
-For the live track map, an administrator pastes an F1TV token in the panel's
-**Settings**; the
-**[guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md)**
-shows where to find it, how to read the timing tower, how to set the TV delay, and
-ready-made automations.
 
 ## Documentation
 
@@ -160,16 +266,31 @@ ready-made automations.
   Results and standings come from [Jolpica-F1](https://github.com/jolpica/jolpica-f1).
   The project reads them the way one viewer would, with caching, for personal and
   non-commercial use.
+- **Live timing starts paused.** Press play in the panel's Settings, or turn on *Start
+  automatically at each session*. Calendar, results and standings work without it.
 - **F1TV is optional.** It is only needed for the live track map. The token stays in
   your Home Assistant and is renewed automatically; about once a month you paste a new
   one.
 - **Team radio is F1's selection.** Some sessions have few clips, some have none.
+- **The pit estimate is an estimate**, from the circuit's typical pit loss.
+- **Not a video stream.** It shows timing data, not the race: use the TV delay to match
+  your stream.
+- **Lap-by-lap detail starts in 2018**, with F1's archive, which has gaps.
+- **No driver photos or team logos.** They belong to F1 and the teams: drivers appear by
+  code, number, name and team colour.
 
-## Status
+## Project status
 
-In use and released by version. Every version is a GitHub release, offered by HACS by
-version number, and the [changelog](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/CHANGELOG.md)
-lists what changes, anything you need to act on first.
+**Young and moving fast (0.x).** Calendar, results, standings and the post-session views
+run on the same public data they always will. The live path — timing tower, flags, radio,
+map — is built and tested against recorded F1 data, but **it has not yet been through a
+full live race weekend**. If something looks wrong during a session, please
+[open an issue](https://github.com/foyer-labs/Pit-Lane-Live-Board/issues). The screenshots
+show real 2026 Spanish Grand Prix data rendered on a test bench.
+
+Every version is a GitHub release that HACS offers by version number; the
+[changelog](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/CHANGELOG.md) puts
+anything you need to act on first.
 
 ## Support, contributing and licence
 
@@ -178,6 +299,8 @@ reply or a fix ([SUPPORT.md](https://github.com/foyer-labs/Pit-Lane-Live-Board/b
 [CONTRIBUTING.md](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/CONTRIBUTING.md)).
 Pit Lane Live Board is the personal, non-commercial project of one person, published as
 Foyer Labs; there is no company behind it.
+
+If it made your race weekend better, a coffee keeps it going:
 
 <p align="center">
   <a href="https://www.buymeacoffee.com/foyerlabs" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-green.png" alt="Buy Me a Coffee" height="60"></a>
