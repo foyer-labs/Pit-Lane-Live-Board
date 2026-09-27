@@ -225,6 +225,20 @@
             "name": "Rientro dopo una sosta"
           }
         }
+      },
+      "display": {
+        "name": "Schermo piccolo",
+        "state": {
+          "idle": "Nessuna sessione",
+          "paused": "In pausa",
+          "connecting": "Connessione",
+          "syncing": "Sincronizzazione",
+          "live": "Live",
+          "stale": "In ritardo",
+          "lost": "Nessun dato",
+          "final": "Finale",
+          "hidden": "Nascosto"
+        }
       }
     },
     "binary_sensor": {

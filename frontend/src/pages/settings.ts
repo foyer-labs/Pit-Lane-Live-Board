@@ -131,6 +131,7 @@ export class PlbSettings extends LitElement {
       ${s.is_admin ? this.renderSummary(t, s) : nothing}
       ${s.is_admin ? this.renderPanel(t, s) : nothing}
       ${s.is_admin ? this.renderF1tv(t, s) : nothing}
+      ${this.renderKiosk(t)}
       ${this.renderEntities(t)}
     </div>`;
   }
@@ -353,6 +354,23 @@ export class PlbSettings extends LitElement {
                 <button class="btn flat" @click=${() => (this.confirmRemove = false)}>${t("settings.cancel")}</button></div>`
             : html`<button class="btn flat" @click=${() => (this.confirmRemove = true)}>${t("settings.remove")}</button>`
           : nothing}
+      </div>
+    </section>`;
+  }
+
+  /** A dedicated screen: the kiosk address and the small-screen sensor. */
+  private renderKiosk(t: Translate) {
+    const address = `${location.origin}${location.pathname}?kiosk`;
+    return html`<section class="card">
+      <div class="card-head">${t("kiosk.title")}</div>
+      <div class="body">
+        <p>${t("kiosk.help")}</p>
+        <div class="token">
+          <input readonly .value=${address} aria-label=${t("kiosk.title")} @focus=${(e: Event) => (e.target as HTMLInputElement).select()} />
+          <button class="btn flat" @click=${() => void navigator.clipboard?.writeText(address)}>${t("kiosk.copy")}</button>
+        </div>
+        <small class="muted">${t("kiosk.options")}</small>
+        <p>${t("kiosk.small")}</p>
       </div>
     </section>`;
   }

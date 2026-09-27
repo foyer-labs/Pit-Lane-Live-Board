@@ -25,7 +25,30 @@ const PAGES: Page[] = ["live", "calendar", "results", "standings"];
 const ALL_PAGES: Page[] = [...PAGES, "settings"];
 const STORAGE_KEY = "pit-lane-live-board-page";
 
+/**
+ * Kiosk mode (decision 55), from the address: `?kiosk` fills the screen with the
+ * panel, over Home Assistant's sidebar and header, for a TV or a wall tablet;
+ * `page=calendar` picks the page, `scale=1.3` makes everything bigger for a TV
+ * seen from the sofa.
+ */
+// Read when the panel opens, not when the module loads: Home Assistant keeps the
+// module between visits, and the address can change.
+function query(): URLSearchParams {
+  return new URLSearchParams(location.search);
+}
+
+function kioskFromAddress(): boolean {
+  const q = query();
+  return q.has("kiosk") && q.get("kiosk") !== "0";
+}
+
+function scale(): number {
+  return Math.min(2.5, Math.max(0.6, Number(query().get("scale")) || 1));
+}
+
 function rememberedPage(): Page {
+  const asked = query().get("page") as Page | null;
+  if (asked && ALL_PAGES.includes(asked)) return asked;
   try {
     const saved = localStorage.getItem(STORAGE_KEY) as Page | null;
     return saved && ALL_PAGES.includes(saved) ? saved : "live";
@@ -51,6 +74,7 @@ export class PitLaneLiveBoardPanel extends LitElement {
     failed: { state: true },
     target: { state: true },
     clockVersion: { state: true },
+    kiosk: { type: Boolean, reflect: true },
   };
 
   hass?: Hass;
@@ -64,6 +88,20 @@ export class PitLaneLiveBoardPanel extends LitElement {
   // Bumped when the user changes which clock times are shown in: the pages are
   // drawn again (their own `hass` guard would otherwise skip it).
   clockVersion = 0;
+  kiosk = false;
+  private kioskAsked = false;
+  private scale = 1;
+  private idleTimer?: number;
+  private wakeLock?: { release(): Promise<void> };
+  private readonly moved = () => {
+    this.classList.remove("idle");
+    window.clearTimeout(this.idleTimer);
+    if (this.kiosk) this.idleTimer = window.setTimeout(() => this.classList.add("idle"), 3_000);
+  };
+  private readonly fullscreenChanged = () => {
+    // Leaving full screen (Esc) leaves kiosk mode too, unless the address asked.
+    if (!document.fullscreenElement && !this.kioskAsked) this.kiosk = false;
+  };
   private readonly clockChanged = () => this.clockVersion++;
   private unsubscribe?: () => void;
   private connecting = false;
@@ -80,11 +118,51 @@ export class PitLaneLiveBoardPanel extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     window.addEventListener(TIME_PREFS_EVENT, this.clockChanged);
+    window.addEventListener("pointermove", this.moved);
+    document.addEventListener("fullscreenchange", this.fullscreenChanged);
+    this.kioskAsked = kioskFromAddress();
+    this.kiosk = this.kioskAsked;
+    this.scale = scale();
+    const asked = query().get("page") as Page | null;
+    if (asked && ALL_PAGES.includes(asked)) this.page = asked;
+    if (this.kiosk) this.startKiosk();
+  }
+
+  /** Keep the screen awake where the browser allows it (a secure page), and
+   *  hide the pointer when it rests. */
+  private startKiosk(): void {
+    this.moved();
+    const lock = (navigator as unknown as { wakeLock?: { request(kind: string): Promise<{ release(): Promise<void> }> } }).wakeLock;
+    lock?.request("screen").then(
+      (sentinel) => (this.wakeLock = sentinel),
+      () => undefined,
+    );
+  }
+
+  private async enterFullScreen(): Promise<void> {
+    this.kiosk = true;
+    this.startKiosk();
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch {
+      /* the browser refused: kiosk layout without full screen */
+    }
+  }
+
+  private async leaveFullScreen(): Promise<void> {
+    this.kiosk = this.kioskAsked;
+    void this.wakeLock?.release().catch(() => undefined);
+    this.wakeLock = undefined;
+    if (document.fullscreenElement) await document.exitFullscreen().catch(() => undefined);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     window.removeEventListener(TIME_PREFS_EVENT, this.clockChanged);
+    window.removeEventListener("pointermove", this.moved);
+    document.removeEventListener("fullscreenchange", this.fullscreenChanged);
+    window.clearTimeout(this.idleTimer);
+    void this.wakeLock?.release().catch(() => undefined);
     this.unsubscribe?.();
     this.unsubscribe = undefined;
     window.clearTimeout(this.retry);
@@ -229,7 +307,7 @@ export class PitLaneLiveBoardPanel extends LitElement {
     const f1tv = s?.f1tv && s.f1tv.status !== "not_configured" ? s.f1tv.status : null;
     return html`
       <header class="appbar">
-        ${this.narrow
+        ${this.narrow && !this.kiosk
           ? html`<button class="icon-btn" @click=${this.toggleMenu} aria-label=${t("common.menu")}>${icon(ICON.menu, 24)}</button>`
           : nothing}
         <div class="brand"><span class="mark">${icon(ICON.board, 18)}</span><span class="name">${t("common.title")}</span></div>
@@ -259,11 +337,14 @@ export class PitLaneLiveBoardPanel extends LitElement {
           ${icon(s?.no_spoiler ? ICON.eyeOff : ICON.eye, 18)}
           <span class="label">${s?.no_spoiler ? t("spoiler.on") : t("spoiler.off")}</span>
         </button>
+        <button class="icon-btn full" @click=${() => (this.kiosk ? this.leaveFullScreen() : this.enterFullScreen())}
+          aria-label=${t(this.kiosk ? "kiosk.leave" : "kiosk.enter")} title=${t(this.kiosk ? "kiosk.leave" : "kiosk.enter")}>
+          ${icon(this.kiosk ? ICON.exitFullscreen : ICON.fullscreen, 22)}</button>
         <button class="icon-btn gear ${this.page === "settings" ? "active" : ""}" @click=${() => this.go({ page: "settings" })}
           aria-label=${t("settings.title")} title=${t("settings.title")}>${icon(ICON.cog, 22)}</button>
       </header>
       ${this.delayOpen && s ? this.renderPopover(s) : nothing}
-      <main>${keyed(this.clockVersion, this.renderPage())}</main>
+      <main style=${this.scale !== 1 ? `zoom:${this.scale}` : ""}>${keyed(this.clockVersion, this.renderPage())}</main>
       <footer>${t("common.disclaimer")}</footer>
     `;
   }
@@ -291,6 +372,15 @@ export class PitLaneLiveBoardPanel extends LitElement {
         min-height: 100vh;
         background: var(--primary-background-color);
       }
+      /* Kiosk: over Home Assistant's sidebar and header, the whole screen. */
+      :host([kiosk]) {
+        position: fixed; inset: 0; z-index: 100;
+        overflow: auto; min-height: 0;
+      }
+      :host([kiosk]) main { max-width: none; }
+      :host([kiosk]) footer { max-width: none; font-size: 10px; }
+      :host([kiosk]) .gear, :host([kiosk]) .chip.paused { display: none; }
+      :host(.idle) { cursor: none; }
       .appbar {
         position: sticky; top: 0; z-index: 5;
         display: flex; align-items: center; gap: 12px;

@@ -374,5 +374,14 @@
     "testFailed": "Not sent.",
     "spoiler": "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off.",
     "testHidden": "Not sent: no-spoiler mode hides the Live page."
+  },
+  "kiosk": {
+    "enter": "Full screen",
+    "leave": "Leave full screen",
+    "title": "Dedicated screen",
+    "help": "For a TV, a monitor with a Raspberry Pi or a wall tablet: this address opens the panel on the whole screen, over Home Assistant's sidebar, with the pointer hidden when it rests. On a Raspberry Pi: chromium --kiosk followed by the address. The ⛶ button in the header does the same for a moment.",
+    "copy": "Copy",
+    "options": "Add &page=calendar to open another page, &scale=1.3 to make everything bigger on a TV.",
+    "small": "For a small screen (an ESP32 with ESPHome, e-paper): enable the “Small screen” sensor. It carries the state of the Live page and short fields ready to print: lap, track status and its colour, the top ten as rows, your drivers, the next session. The guide has an ESPHome example."
   }
 }

@@ -1014,6 +1014,17 @@ Decisions taken in chat with the owner.
   the Live page is hidden and does not fire the event. Texts from the integration's
   translations (`selector.summary`). Administrators choose the services.
 
+54. **A sensor for small screens** (asked by the owner, 0.6): ESPHome reads states and
+  attributes one by one as text, so `sensor.…_small_screen` carries the Live page's
+  state and flat, short, language-neutral attributes (`p1`…`p10` fixed-width rows,
+  `flag_colour` for LEDs). Off by default and computed only while enabled; gap changes
+  at most every 5 s, the page's state and the track status at once.
+55. **Kiosk mode** (asked by the owner, 0.6): `?kiosk` in the address (read when the
+  panel opens), `page=` and `scale=`; the panel covers Home Assistant's chrome with a
+  fixed position, hides the pointer after 3 s, asks for a screen wake lock where the
+  browser allows it. The ⛶ button enters it with the Fullscreen API until Esc. The
+  non-affiliation notice stays visible (INV-6).
+
 ---
 
 ## 18. Choices awaiting confirmation

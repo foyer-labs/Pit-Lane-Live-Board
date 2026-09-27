@@ -374,5 +374,14 @@
     "testFailed": "Non inviato.",
     "spoiler": "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità.",
     "testHidden": "Non inviato: la modalità senza spoiler nasconde la pagina Live."
+  },
+  "kiosk": {
+    "enter": "Schermo intero",
+    "leave": "Esci dallo schermo intero",
+    "title": "Schermo dedicato",
+    "help": "Per una TV, un monitor con un Raspberry Pi o un tablet a parete: questo indirizzo apre il pannello a tutto schermo, sopra la barra laterale di Home Assistant, con il puntatore nascosto quando è fermo. Su un Raspberry Pi: chromium --kiosk seguito dall'indirizzo. Il pulsante ⛶ in alto fa lo stesso al momento.",
+    "copy": "Copia",
+    "options": "Aggiungi &page=calendar per aprire un'altra pagina, &scale=1.3 per ingrandire tutto su una TV.",
+    "small": "Per uno schermo piccolo (un ESP32 con ESPHome, un e-paper): attiva il sensore «Schermo piccolo». Contiene lo stato della pagina Live e campi brevi pronti da stampare: giro, stato della pista e il suo colore, i primi dieci come righe, i tuoi piloti, la prossima sessione. La guida ha un esempio ESPHome."
   }
 }

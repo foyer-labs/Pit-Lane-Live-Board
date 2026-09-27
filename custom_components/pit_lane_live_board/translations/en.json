@@ -225,6 +225,20 @@
             "name": "Rejoin after a stop"
           }
         }
+      },
+      "display": {
+        "name": "Small screen",
+        "state": {
+          "idle": "No session",
+          "paused": "Paused",
+          "connecting": "Connecting",
+          "syncing": "Syncing",
+          "live": "Live",
+          "stale": "Delayed",
+          "lost": "No feed",
+          "final": "Final",
+          "hidden": "Hidden"
+        }
       }
     },
     "binary_sensor": {
