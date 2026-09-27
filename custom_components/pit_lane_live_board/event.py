@@ -66,7 +66,8 @@ class _RelayedEvent(LiveBoardEntity, EventEntity):
     def _relay(self, *payload: Any) -> None:
         event_type, data = self._event(*payload)
         self._trigger_event(event_type, {"session": self._session(), **data})
-        self.async_write_ha_state()
+        self._written = None
+        self.async_write_if_changed()
 
     def _event(self, *payload: Any) -> tuple[str, dict[str, Any]]:
         raise NotImplementedError

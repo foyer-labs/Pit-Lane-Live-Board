@@ -106,7 +106,16 @@ def derive(
     race_like: bool,
 ) -> list[tuple[str, dict[str, Any]]]:
     """Events between two snapshots: `(event type, data)`. Positions matter in
-    races and sprints only; in practice and qualifying they reshuffle every lap."""
+    races and sprints only; in practice and qualifying they reshuffle every lap.
+
+    Pit events count once the car has a lap count: before the start the cars
+    drive out to the grid and back, which is no pit stop. `pit_out` names the
+    new tyre, and F1 opens the new stint in `TimingAppData` a moment after
+    `PitOut`, and names its compound later still: until then the event waits,
+    carried in the current snapshot (under `_pit`, which the entities do not
+    read), and goes with the next lap at the latest, for a stop with no tyre
+    change.
+    """
     if previous is None:
         return []
     events: list[tuple[str, dict[str, Any]]] = []
@@ -121,13 +130,33 @@ def derive(
             "previous_position": before["position"],
             "lap": now["laps"],
         }
+        held = before.get("_pit")
         if now["status"] == "retired" and before["status"] != "retired":
             events.append(("retired", data))
             continue
-        if now["in_pit"] and not before["in_pit"]:
+        if now["in_pit"] and not before["in_pit"] and now["laps"] is not None:
             events.append(("pit_in", data))
-        elif before["in_pit"] and not now["in_pit"]:
-            events.append(("pit_out", {**data, "tyre": now["tyre"]}))
+            # The stint the car came in on, to know the new one when it opens.
+            now["_pit"] = {"stint": before["stint"]}
+        elif now["in_pit"] and held and "data" not in held:
+            now["_pit"] = held
+        elif before["in_pit"] and not now["in_pit"] and now["laps"] is not None:
+            stint = (held or {}).get("stint", before["stint"])
+            held = {"stint": stint, "data": data}
+        if held and "data" in held:
+            # The new stint opens with the compound "UNKNOWN", named a moment later.
+            opened = (now["stint"] or 0) > (held["stint"] or 0) and now["tyre"] not in (
+                None,
+                "unknown",
+            )
+            if (
+                opened
+                or now["in_pit"]
+                or (now["laps"] or 0) > (held["data"]["lap"] or 0)
+            ):
+                events.append(("pit_out", {**held["data"], "tyre": now["tyre"]}))
+            else:
+                now["_pit"] = held
         if now["fastest"] and (
             not before["fastest"] or now["last_lap"] != before["last_lap"]
         ):

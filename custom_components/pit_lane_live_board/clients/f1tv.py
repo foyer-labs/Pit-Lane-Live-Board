@@ -10,7 +10,9 @@ map stops: everything else never touches F1TV.
 from __future__ import annotations
 
 from datetime import datetime
+import json
 import logging
+from typing import Any
 
 import aiohttp
 
@@ -37,6 +39,13 @@ class RenewalOutcome:
     PAIRING = "pairing"  # the login session is over: the user must paste again
 
 
+def _json(body: str) -> Any:
+    try:
+        return json.loads(body) if body else None
+    except (ValueError, RecursionError):
+        return None
+
+
 async def renew(
     session: aiohttp.ClientSession, token: str, now: datetime
 ) -> tuple[str, str | None]:
@@ -61,11 +70,15 @@ async def renew(
             allow_redirects=False,
         ) as response:
             code = response.status
-            data = await response.json(content_type=None) if code == 200 else None
+            body = await response.text() if code in (200, 403) else ""
     except (aiohttp.ClientError, TimeoutError, ValueError) as err:
         _LOGGER.debug("F1TV renewal failed: %s", type(err).__name__)
         return RenewalOutcome.RETRY, None
-    if code in (401, 403):
+    data = _json(body)
+    # A 401, or a 403 in the API's own JSON, is F1 turning the session down. A 403
+    # in HTML is the bot protection in front of the API: a false alarm that would
+    # ask the admin to paste a token that is still good for a day.
+    if code == 401 or (code == 403 and isinstance(data, dict)):
         return RenewalOutcome.PAIRING, None
     if code != 200 or not isinstance(data, dict):
         return RenewalOutcome.RETRY, None
