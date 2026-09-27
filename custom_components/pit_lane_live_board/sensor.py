@@ -19,7 +19,7 @@ from .const import DOMAIN
 from .core.f1tv_token import STATUSES as F1TV_STATUSES
 from .core.session import SESSION_STATUSES, TRACK_STATUSES
 from .entity import LiveBoardEntity, LiveEntity
-from .hub import SIGNAL_CALENDAR, SIGNAL_SETTINGS
+from .hub import SIGNAL_CALENDAR, SIGNAL_DISPLAY, SIGNAL_SETTINGS
 
 
 async def async_setup_entry(
@@ -37,6 +37,7 @@ async def async_setup_entry(
             InvestigationsSensor(entry, "investigations"),
             RaceControlMessageSensor(entry, "race_control_message"),
             F1tvSensor(entry, "f1tv"),
+            DisplaySensor(entry, "display"),
         ]
     )
     _follow_favourites(hass, entry, async_add_entities)
@@ -277,3 +278,45 @@ class F1tvSensor(LiveBoardEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         expires = self.hub.f1tv.expires
         return {"expires": expires.isoformat() if expires else None}
+
+
+class DisplaySensor(LiveBoardEntity, SensorEntity):
+    """For small screens (decision 54): the Live page's state, with short flat
+    attributes an ESP32 reads one by one. Off by default: it follows the gaps
+    every 5 s during a session, which only a screen needs."""
+
+    _attr_entity_registry_enabled_default = False
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = [
+        "idle",
+        "paused",
+        "connecting",
+        "syncing",
+        "live",
+        "stale",
+        "lost",
+        "final",
+        "hidden",
+    ]
+    signals = (SIGNAL_DISPLAY,)
+    _unrecorded_attributes = frozenset(
+        {f"p{i}" for i in range(1, 11)} | {"mine", "remaining", "lap"}
+    )
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        self.hub.display_enabled = True
+        self.async_on_remove(self._stop)
+        self.hub._update_display()
+
+    @callback
+    def _stop(self) -> None:
+        self.hub.display_enabled = False
+
+    @property
+    def native_value(self) -> str:
+        return self.hub.display["state"]
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return self.hub.display["attributes"]

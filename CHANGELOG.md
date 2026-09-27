@@ -6,6 +6,19 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-27
+
+### Added
+- **Kiosk mode** for a TV, a Raspberry Pi monitor or a wall tablet: add `?kiosk` to the
+  panel's address (Settings shows it) and the panel fills the screen over Home
+  Assistant's sidebar and header, with the pointer hidden when it rests;
+  `&page=calendar` and `&scale=1.3` pick the page and the size. The ⛶ button in the
+  header does the same for the moment.
+- **Small screen** sensor, off by default, for an ESP32 with ESPHome or an e-paper
+  frame: the Live page's state and short flat attributes ready to print — lap, track
+  status and its colour for a LED ring, the top ten as rows, your drivers, the next
+  session. The guide has an ESPHome example.
+
 ## [0.5.0] - 2026-09-27
 
 ### Added

@@ -902,6 +902,15 @@ var Fe = {
 		testFailed: "Not sent.",
 		spoiler: "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off.",
 		testHidden: "Not sent: no-spoiler mode hides the Live page."
+	},
+	kiosk: {
+		enter: "Full screen",
+		leave: "Leave full screen",
+		title: "Dedicated screen",
+		help: "For a TV, a monitor with a Raspberry Pi or a wall tablet: this address opens the panel on the whole screen, over Home Assistant's sidebar, with the pointer hidden when it rests. On a Raspberry Pi: chromium --kiosk followed by the address. The ⛶ button in the header does the same for a moment.",
+		copy: "Copy",
+		options: "Add &page=calendar to open another page, &scale=1.3 to make everything bigger on a TV.",
+		small: "For a small screen (an ESP32 with ESPHome, e-paper): enable the “Small screen” sensor. It carries the state of the Live page and short fields ready to print: lap, track status and its colour, the top ten as rows, your drivers, the next session. The guide has an ESPHome example."
 	}
 }, Ie = {
 	en: Fe,
@@ -1281,6 +1290,15 @@ var Fe = {
 			testFailed: "Non inviato.",
 			spoiler: "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità.",
 			testHidden: "Non inviato: la modalità senza spoiler nasconde la pagina Live."
+		},
+		kiosk: {
+			enter: "Schermo intero",
+			leave: "Esci dallo schermo intero",
+			title: "Schermo dedicato",
+			help: "Per una TV, un monitor con un Raspberry Pi o un tablet a parete: questo indirizzo apre il pannello a tutto schermo, sopra la barra laterale di Home Assistant, con il puntatore nascosto quando è fermo. Su un Raspberry Pi: chromium --kiosk seguito dall'indirizzo. Il pulsante ⛶ in alto fa lo stesso al momento.",
+			copy: "Copia",
+			options: "Aggiungi &page=calendar per aprire un'altra pagina, &scale=1.3 per ingrandire tutto su una TV.",
+			small: "Per uno schermo piccolo (un ESP32 con ESPHome, un e-paper): attiva il sensore «Schermo piccolo». Contiene lo stato della pagina Live e campi brevi pronti da stampare: giro, stato della pista e il suo colore, i primi dieci come righe, i tuoi piloti, la prossima sessione. La guida ha un esempio ESPHome."
 		}
 	}
 };
@@ -1936,6 +1954,8 @@ var Ot = class extends N {
 	board: "M3 5h2v14H3zM7 5h14v2H7zm0 4h10v2H7zm0 4h14v2H7zm0 4h8v2H7z",
 	menu: "M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z",
 	back: "M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z",
+	fullscreen: "M5 5h5v2H7v3H5zm9 0h5v5h-2V7h-3zm3 9h2v5h-5v-2h3zm-7 3v2H5v-5h2v3z",
+	exitFullscreen: "M14 14h5v2h-3v3h-2zm-9 0h5v5H8v-3H5zm3-9h2v5H5V8h3zm6 0h2v3h3v2h-5z",
 	cog: "M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.51.51 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64z"
 }, J = (e, t = 20) => be`<svg viewBox="0 0 24 24" width=${t} height=${t} fill="currentColor" aria-hidden="true"><path d=${e}></path></svg>`, Y = 4, kt = {
 	clear: "st-clear",
