@@ -273,7 +273,11 @@ class LiveTimingClient:
             await ws.send_str(json.dumps({"type": 6}) + SEPARATOR)
 
     def _silent_for(self) -> float:
-        since = max(self.last_message or 0.0, self._connected_at)
+        # Not `or 0.0`: the monotonic clock can be younger than the limit (a
+        # freshly booted host), and 0 would hide the connection's own time.
+        since = self._connected_at
+        if self.last_message is not None:
+            since = max(self.last_message, since)
         return time.monotonic() - since
 
     async def _read(self, ws: aiohttp.ClientWebSocketResponse) -> None:

@@ -203,7 +203,7 @@ async def test_history_lists_this_seasons_drivers_by_index(
     scores = [-14.5, 0.5, -1.1]
     mean = sum(w * s for w, s in zip(weights, scores, strict=True)) / sum(weights)
     assert leclerc["index"] == pytest.approx(
-        round(max(0, min(100, 50 + 5 * mean)), 1), abs=0.11
+        round(max(0, min(100, 50 + 5 * mean * 3 / 5)), 1), abs=0.11
     )
     assert hamilton["wins"] == 1 and hamilton["index"] is not None
     assert rookie["races"] == 0 and rookie["index"] is None

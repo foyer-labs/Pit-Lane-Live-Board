@@ -16,8 +16,10 @@ went that season (decision 58):
 - `delta_quali = expected - quali_position`, when a qualifying position exists.
 - `year_score = 0.6 * delta_race + 0.4 * delta_quali`, or `delta_race` alone.
 - Each year weighs `0.85 ** (current_season - season)`: recent form matters more.
-- `index = clamp(50 + 5 * weighted mean, 0, 100)`, one decimal: 50 is "as the car",
-  +5 per position better. None when no year counted.
+- `index = clamp(50 + 5 * weighted mean * n / (n + 2), 0, 100)`, one decimal, where
+  `n` is the number of counted years: 50 is "as the car", +5 per position better.
+  The `n / (n + 2)` factor pulls a driver with one or two races there towards 50: a
+  single good afternoon is not an affinity. None when no year counted.
 
 Pure (INV-1): the WebSocket layer fetches the pages, the standings and the archive
 details, and hands them here.
@@ -344,18 +346,25 @@ def year_score(row: dict[str, Any]) -> float | None:
     return RACE_WEIGHT * row["delta_race"] + QUALI_WEIGHT * row["delta_quali"]
 
 
+# How many counted years pull the index halfway to its full value (see the module).
+SHRINK_YEARS = 2
+
+
 def affinity_index(years: list[dict[str, Any]]) -> float | None:
     """The weighted mean of the counted years, on the 0-100 scale."""
     total = weights = 0.0
+    counted = 0
     for row in years:
         score = year_score(row)
         if score is None:
             continue
         total += row["weight"] * score
         weights += row["weight"]
+        counted += 1
     if weights == 0:
         return None
-    value = 50 + POINTS_PER_PLACE * total / weights
+    confidence = counted / (counted + SHRINK_YEARS)
+    value = 50 + POINTS_PER_PLACE * total / weights * confidence
     return round(min(100.0, max(0.0, value)), 1)
 
 

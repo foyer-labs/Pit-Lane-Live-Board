@@ -76,7 +76,7 @@ def quali_row(driver, position):
 #   1955  no constructors' championship yet: not counted
 #
 #   weighted mean = (1.9 - 2.975 - 4.23729) / 2.4641 = -2.15588
-#   index = 50 + 5 * -2.15588 = 39.2
+#   index = 50 + 5 * -2.15588 = 43.5
 RESULTS = [
     page(
         (1955, 3, [result("ann", 1955, 3, 1)]),
@@ -127,7 +127,7 @@ def test_the_index_of_the_hand_made_example():
     assert ch.year_score(accident) == pytest.approx(-6.9)
     assert accident["weight"] == 0.6141
     assert old["expected"] is None and old["counted"] is False
-    assert ch.affinity_index(rows) == 39.2
+    assert ch.affinity_index(rows) == 43.5
 
 
 def test_grid_penalty_is_a_grid_behind_qualifying():
@@ -249,7 +249,7 @@ def test_history_lists_the_drivers_by_index_nulls_last():
     assert out["first_season"] == 1955 and out["last_season"] == 2026
     assert [d["driver_id"] for d in out["drivers"]] == ["ben", "ann", "new"]
     ben, ann, new = out["drivers"]
-    assert ben["index"] > ann["index"] and ann["index"] == 39.2
+    assert ben["index"] > ann["index"] and ann["index"] == 43.5
     assert ben["wins"] == 2 and ben["podiums"] == 2 and ben["best_finish"] == 1
     assert ann["races"] == 5 and ann["counted"] == 3
     assert ann["wins"] == 1  # 1955
@@ -349,7 +349,7 @@ def test_driver_payload_carries_penalties_per_race():
         penalties=penalties,
     )
     assert out["code"] == "ANN" and out["name"] == "Given Ann"
-    assert out["index"] == 39.2
+    assert out["index"] == 43.5
     assert [y["penalties"] for y in out["years"]] == [
         [{"kind": "time_penalty"}],
         [],
@@ -373,3 +373,10 @@ def test_standings_are_needed_only_for_the_drivers_listed_from_1958():
     _meta, results = ch.parse_circuit_results(RESULTS)
     assert ch.standings_seasons(results, {"ann"}) == [2023, 2024, 2025, 2026]
     assert ch.standings_seasons(results, {"zed"}) == []
+
+
+def test_few_races_pull_the_index_towards_50():
+    """One good afternoon is not an affinity: n / (n + 2) of the full value."""
+    row = {"counted": True, "delta_race": 4.0, "delta_quali": 4.0, "weight": 1.0}
+    assert ch.affinity_index([row]) == round(50 + 5 * 4 * (1 / 3), 1)
+    assert ch.affinity_index([row] * 8) == round(50 + 5 * 4 * (8 / 10), 1)
