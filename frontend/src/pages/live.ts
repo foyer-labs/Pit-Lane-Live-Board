@@ -71,6 +71,9 @@ export class PlbLive extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     document.addEventListener("visibilitychange", this.visibility);
+    // Back on the page (the panel keeps it while another is shown): subscribe
+    // again, even though no property changed.
+    if (this.hasUpdated) this.requestUpdate();
   }
 
   override disconnectedCallback(): void {
