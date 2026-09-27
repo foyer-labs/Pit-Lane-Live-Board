@@ -57,6 +57,11 @@ the results and standings after it. Free, with no account.
 - **Easy on a Raspberry Pi.** Live timing starts paused: nothing connects to F1 and
   nothing is written to disk until you press play, or let it start by itself at each
   session.
+- **Cards for your own dashboards.** Timing tower, track map, flags & stewards, team
+  radio, race control, session, weather and championship, each a card with a visual
+  editor, ready in the card picker with nothing to install.
+- **You decide who sees it.** The panel is for the whole house, or for administrators
+  only; each dashboard keeps its own visibility.
 - **English and Italian**, light and dark, on a phone or a wall tablet.
 
 <p align="center">
@@ -84,7 +89,7 @@ ready-made automations.
 
 | | |
 |---|---|
-| [Guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md) | Install, the four pages, reading the timing tower, TV delay, no-spoiler mode, F1TV, entities and automations, troubleshooting, FAQ |
+| [Guide](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.md) | Install, settings, the four pages, reading the timing tower, flags and stewards, TV delay, no-spoiler mode, F1TV, dashboard cards, entities and automations, troubleshooting, FAQ |
 | [What's new](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/CHANGELOG.md) | What changes in each version |
 | [Support](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/SUPPORT.md) | How to ask for help or report a problem |
 

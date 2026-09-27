@@ -5,7 +5,7 @@ from __future__ import annotations
 DOMAIN = "pit_lane_live_board"
 NAME = "Pit Lane Live Board"
 # Kept equal to manifest.json and pyproject.toml by a test.
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 REPOSITORY = "https://github.com/foyer-labs/Pit-Lane-Live-Board"
 
 # Every request says who is asking (INV-4; Jolpica asks for it).
@@ -31,6 +31,8 @@ STORE_MINOR_VERSION = 1
 
 # Options (SPEC §10.1).
 OPTION_SHOW_IN_SIDEBAR = "show_in_sidebar"
+# The panel for administrators only (decision 48). Off by default.
+OPTION_ADMIN_ONLY = "admin_only"
 
 # Config entry data (SPEC §4.5): the F1TV token. Never returned to the frontend.
 DATA_F1TV_TOKEN = "f1tv_token"

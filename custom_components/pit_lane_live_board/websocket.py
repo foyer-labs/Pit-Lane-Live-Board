@@ -21,7 +21,7 @@ from homeassistant.util import dt as dt_util
 import voluptuous as vol
 
 from .clients.http import SourceError
-from .const import DOMAIN
+from .const import DOMAIN, OPTION_ADMIN_ONLY, OPTION_SHOW_IN_SIDEBAR
 from .core import pages
 from .core.f1tv_token import acceptable, evaluate, extract_token
 from .core.jolpica_parse import (
@@ -76,6 +76,8 @@ def _settings_payload(hub: Hub, is_admin: bool) -> dict[str, Any]:
         "first_season": FIRST_SEASON,
         "is_admin": is_admin,
         "running": hub.live is not None,
+        "show_in_sidebar": bool(hub.entry.options.get(OPTION_SHOW_IN_SIDEBAR, True)),
+        "admin_only": bool(hub.entry.options.get(OPTION_ADMIN_ONLY, False)),
         # Only a status, never the token (INV-3); and only for admins.
         "f1tv": hub.f1tv.to_dict() if is_admin else None,
     }
@@ -200,6 +202,28 @@ async def ws_f1tv_remove(hass, connection, msg):
     if (hub := _ready(hass, connection, msg)) is None:
         return
     await hub.async_set_token(None)
+    connection.send_result(msg["id"], _settings_payload(hub, True))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/panel/set",
+        vol.Optional("show_in_sidebar"): bool,
+        vol.Optional("admin_only"): bool,
+    }
+)
+@websocket_api.require_admin
+@websocket_api.async_response
+async def ws_panel_set(hass, connection, msg):
+    """The panel's options, from Settings (administrators only): the same options
+    as the integration's Configure form."""
+    if (hub := _ready(hass, connection, msg)) is None:
+        return
+    options = dict(hub.entry.options)
+    for key in (OPTION_SHOW_IN_SIDEBAR, OPTION_ADMIN_ONLY):
+        if key in msg:
+            options[key] = msg[key]
+    hass.config_entries.async_update_entry(hub.entry, options=options)
     connection.send_result(msg["id"], _settings_payload(hub, True))
 
 
@@ -494,6 +518,7 @@ COMMANDS = (
     ws_spoiler_reveal,
     ws_f1tv_set,
     ws_f1tv_remove,
+    ws_panel_set,
     ws_entities,
     ws_calendar_get,
     ws_seasons,

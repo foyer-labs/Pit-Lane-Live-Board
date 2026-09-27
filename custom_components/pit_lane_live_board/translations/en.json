@@ -46,11 +46,13 @@
         "data": {
           "show_in_sidebar": "Show Live Board in the sidebar",
           "f1tv_token": "F1TV token (leave empty to keep the current one)",
-          "remove_f1tv_token": "Remove the F1TV token"
+          "remove_f1tv_token": "Remove the F1TV token",
+          "admin_only": "Only administrators see the panel"
         },
         "data_description": {
           "show_in_sidebar": "When off, the panel still opens from the device page.",
-          "f1tv_token": "The value is never shown again after saving."
+          "f1tv_token": "The value is never shown again after saving.",
+          "admin_only": "Off: every user of the house sees Live Board. The cards on dashboards follow each dashboard's own visibility."
         }
       }
     },
