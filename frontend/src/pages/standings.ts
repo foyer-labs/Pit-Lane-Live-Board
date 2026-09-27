@@ -8,6 +8,8 @@ import { tokens } from "../styles";
 import { teamColour } from "../teams";
 import type { Hass, Settings, StandingsPage } from "../types";
 
+const REFRESH = 10 * 60_000;
+
 export class PlbStandings extends LitElement {
   static override properties = {
     hass: { attribute: false },
@@ -30,25 +32,74 @@ export class PlbStandings extends LitElement {
   failed = false;
   private request = 0;
   private spoilers = "";
+  private timer?: number;
+  // What was read, per season, kind and round, and when: switching back and forth
+  // between drivers and constructors, or rounds, does not ask again.
+  private readonly pages = new Map<string, { data: StandingsPage; at: number }>();
+  private readonly visibility = () => {
+    if (document.visibilityState === "visible") this.refresh();
+  };
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    // The latest round moves after each race: read it again every 10 minutes
+    // while the page is open, and when it is shown again.
+    this.timer = window.setInterval(() => this.refresh(), 60_000);
+    document.addEventListener("visibilitychange", this.visibility);
+    this.refresh();
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    window.clearInterval(this.timer);
+    document.removeEventListener("visibilitychange", this.visibility);
+  }
+
+  private get key(): string {
+    return `${this.season}|${this.kind}|${this.round}`;
+  }
+
+  private refresh(): void {
+    const kept = this.pages.get(this.key);
+    if (this.round === null && kept && Date.now() - kept.at > REFRESH && document.visibilityState !== "hidden") {
+      void this.load(true);
+    }
+  }
 
   protected override willUpdate(changed: Map<string, unknown>): void {
     if (this.season === undefined && this.settings) this.season = this.settings.season;
     const spoilers = spoilerKey(this.settings);
-    if (["season", "kind", "round"].some((k) => changed.has(k)) || spoilers !== this.spoilers) {
+    if (spoilers !== this.spoilers) {
       this.spoilers = spoilers;
+      this.pages.clear(); // no-spoiler mode changes what the backend gives
+      void this.load();
+    } else if (["season", "kind", "round"].some((k) => changed.has(k))) {
       void this.load();
     }
   }
 
-  private async load(): Promise<void> {
+  private async load(force = false): Promise<void> {
     if (!this.hass || this.season === undefined) return;
+    const key = this.key;
+    const kept = this.pages.get(key);
+    if (kept && !force && (this.round !== null || Date.now() - kept.at < REFRESH)) {
+      this.request++;
+      this.data = kept.data;
+      this.failed = false;
+      return;
+    }
     const request = ++this.request;
-    this.failed = false;
+    if (!kept) this.failed = false;
     try {
       const data = await api.standings(this.hass, this.season, this.round, this.kind);
-      if (request === this.request) this.data = data;
+      this.pages.set(key, { data, at: Date.now() });
+      if (request === this.request) {
+        this.data = data;
+        this.failed = false;
+      }
     } catch {
-      if (request === this.request) this.failed = true;
+      // A refresh that fails keeps the table on screen.
+      if (request === this.request && !kept) this.failed = true;
     }
   }
 
@@ -90,25 +141,27 @@ export class PlbStandings extends LitElement {
     }
     const drivers = this.kind === "drivers";
     const max = data.rows[0].points || 1;
+    // Nobody moved (or there is no round to compare with): the column would be empty.
+    const changes = data.rows.some((r) => !!r.change);
     return html`<div class="card">
       <div class="scroll"><table class="tbl">
         <tr>
-          <th>${t("common.pos")}</th><th>${t("standings.change")}</th>
+          <th>${t("common.pos")}</th>${changes ? html`<th>${t("standings.change")}</th>` : nothing}
           <th>${drivers ? t("common.driver") : t("common.team")}</th>
           ${drivers ? html`<th class="wide">${t("common.team")}</th>` : nothing}
           <th class="barcol"></th>
-          <th class="r">${t("common.points")}</th><th class="r">${t("standings.wins")}</th><th class="r">${t("standings.behind")}</th>
+          <th class="r">${t("common.points")}</th><th class="r">${t("standings.wins")}</th><th class="r col-behind">${t("standings.behind")}</th>
         </tr>
         ${data.rows.map(
           (r) => html`<tr>
             <td class="num">${r.position_text && r.position_text !== String(r.position) ? r.position_text : r.position}</td>
-            <td>${gained(r.change, false)}</td>
-            <td>${person(drivers ? r.name : r.team, r.team_id)}</td>
+            ${changes ? html`<td>${gained(r.change, false)}</td>` : nothing}
+            <td class="wrap">${person(drivers ? r.name : r.team, r.team_id)}</td>
             ${drivers ? html`<td class="wide muted">${r.team ?? ""}</td>` : nothing}
             <td class="barcol"><div class="fill" style="width:${((r.points ?? 0) / max) * 100}%;background:${teamColour(r.team_id)}"></div></td>
             <td class="r num"><b>${number(this.hass, r.points)}</b></td>
             <td class="r num">${r.wins ?? ""}</td>
-            <td class="r num">${r.behind ? `−${number(this.hass, r.behind)}` : ""}</td>
+            <td class="r num col-behind">${r.behind ? `−${number(this.hass, r.behind)}` : ""}</td>
           </tr>`,
         )}
       </table></div>
@@ -119,11 +172,13 @@ export class PlbStandings extends LitElement {
   static override styles = [
     tokens,
     css`
-      :host { display: block; }
+      :host { display: block; container-type: inline-size; }
       .barcol { width: 30%; min-width: 80px; }
       .fill { height: 6px; border-radius: 3px; min-width: 2px; }
-      @media (max-width: 900px) { .wide { display: none; } }
-      @media (max-width: 640px) { .barcol { display: none; } }
+      @container (max-width: 900px) { .wide { display: none; } }
+      @container (max-width: 640px) { .barcol { display: none; } }
+      @container (max-width: 640px) { .tbl td.wrap { white-space: normal; } }
+      @container (max-width: 420px) { .col-behind { display: none; } }
     `,
   ];
 }

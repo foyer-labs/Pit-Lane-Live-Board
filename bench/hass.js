@@ -3,7 +3,9 @@
 //
 // Parameters (query string): page, live (race|qualifying|stale|final|paused|idle|
 // hidden|syncing|connecting), lang (en|it), theme (light|dark), delay, spoiler,
-// admin, f1tv, playing (true|false), auto (true|false).
+// admin, f1tv, playing (true|false), auto (true|false), patch (true: after the
+// first view, partial messages every second with a `tower_patch` that swaps P2 and
+// P3 and changes P2's last lap, and a data age that grows, as the backend sends).
 const params = new URLSearchParams(location.search);
 const NOW = Date.parse(params.get("now") ?? "2026-09-13T14:00:00Z");
 
@@ -86,6 +88,16 @@ export function createHass() {
     states: {},
     services: { notify: { mobile_app_pixel: {}, mobile_app_tablet: {}, persistent_notification: {} } },
     user: { is_admin: admin },
+    // Home Assistant's own formatting of a state, roughly: enough for the bench.
+    formatEntityState(state) {
+      if (/^\d{4}-\d\d-\d\dT/.test(state.state) && !Number.isNaN(Date.parse(state.state))) {
+        return new Date(state.state).toLocaleString(params.get("lang") === "it" ? "it-IT" : "en-GB", {
+          day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Rome",
+        });
+      }
+      const words = { on: "On", off: "Off", unavailable: "Unavailable", unknown: "Unknown" };
+      return words[state.state] ?? state.state.charAt(0).toUpperCase() + state.state.slice(1).replaceAll("_", " ");
+    },
     async callWS(msg) {
       const type = msg.type.replace(P, "");
       switch (type) {
@@ -153,6 +165,26 @@ export function createHass() {
             ? { full: true, state: live, delay: settings.tv_delay, next_session: null }
             : await data(`live_${live}`);
           callback({ ...view, delay: settings.tv_delay, paused: !settings.live, auto_start: settings.auto_start });
+          if (params.get("patch") === "true" && view.tower?.length > 2) {
+            // Partials as the backend sends them: the order, and only the rows that changed.
+            let order = view.tower.map((r) => r.number);
+            let age = 0;
+            let tick = 0;
+            const timer = setInterval(() => {
+              tick++;
+              age += 1;
+              const message = { full: false, state: view.state, data_age: age };
+              if (tick % 2) {
+                [order[1], order[2]] = [order[2], order[1]];
+                const at = (i) => view.tower.find((r) => r.number === order[i]);
+                const second = { ...at(1), position: 2, last_lap: { time: `1:3${tick % 10}.${String(100 + tick).slice(1)}`, personal_best: true, overall_best: false, previous: false } };
+                const third = { ...at(2), position: 3 };
+                message.tower_patch = { order: [...order], rows: { [second.number]: second, [third.number]: third } };
+              }
+              callback(message);
+            }, 1000);
+            return () => clearInterval(timer);
+          }
         } else if (type === "map/subscribe") {
           callback(
             params.get("f1tv") === "not_configured"

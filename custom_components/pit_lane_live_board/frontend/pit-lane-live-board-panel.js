@@ -257,86 +257,86 @@ var _ = class extends HTMLElement {
 _.elementStyles = [], _.shadowRootOptions = { mode: "open" }, _[g("elementProperties")] = /* @__PURE__ */ new Map(), _[g("finalized")] = /* @__PURE__ */ new Map(), ne?.({ ReactiveElement: _ }), (h.reactiveElementVersions ??= []).push("2.1.2");
 //#endregion
 //#region node_modules/lit-html/lit-html.js
-var oe = globalThis, se = (e) => e, v = oe.trustedTypes, ce = v ? v.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, le = "$lit$", y = `lit$${Math.random().toFixed(9).slice(2)}$`, ue = "?" + y, de = `<${ue}>`, b = document, x = () => b.createComment(""), S = (e) => e === null || typeof e != "object" && typeof e != "function", fe = Array.isArray, pe = (e) => fe(e) || typeof e?.[Symbol.iterator] == "function", me = "[ 	\n\f\r]", C = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, he = /-->/g, ge = />/g, w = RegExp(`>|${me}(?:([^\\s"'>=/]+)(${me}*=${me}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), _e = /'/g, ve = /"/g, ye = /^(?:script|style|textarea|title)$/i, be = (e) => (t, ...n) => ({
+var oe = globalThis, se = (e) => e, ce = oe.trustedTypes, le = ce ? ce.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, ue = "$lit$", v = `lit$${Math.random().toFixed(9).slice(2)}$`, de = "?" + v, fe = `<${de}>`, y = document, b = () => y.createComment(""), x = (e) => e === null || typeof e != "object" && typeof e != "function", pe = Array.isArray, me = (e) => pe(e) || typeof e?.[Symbol.iterator] == "function", he = "[ 	\n\f\r]", S = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ge = /-->/g, _e = />/g, C = RegExp(`>|${he}(?:([^\\s"'>=/]+)(${he}*=${he}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), ve = /'/g, ye = /"/g, be = /^(?:script|style|textarea|title)$/i, xe = (e) => (t, ...n) => ({
 	_$litType$: e,
 	strings: t,
 	values: n
-}), T = be(1), E = be(2), D = Symbol.for("lit-noChange"), O = Symbol.for("lit-nothing"), xe = /* @__PURE__ */ new WeakMap(), k = b.createTreeWalker(b, 129);
-function Se(e, t) {
-	if (!fe(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
-	return ce === void 0 ? t : ce.createHTML(t);
+}), w = xe(1), T = xe(2), E = Symbol.for("lit-noChange"), D = Symbol.for("lit-nothing"), Se = /* @__PURE__ */ new WeakMap(), O = y.createTreeWalker(y, 129);
+function Ce(e, t) {
+	if (!pe(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+	return le === void 0 ? t : le.createHTML(t);
 }
-var Ce = (e, t) => {
-	let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = C;
+var we = (e, t) => {
+	let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = S;
 	for (let t = 0; t < n; t++) {
 		let n = e[t], s, c, l = -1, u = 0;
-		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === C ? c[1] === "!--" ? o = he : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = w) : (ye.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = w) : o = ge : o === w ? c[0] === ">" ? (o = i ?? C, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? w : c[3] === "\"" ? ve : _e) : o === ve || o === _e ? o = w : o === he || o === ge ? o = C : (o = w, i = void 0);
-		let d = o === w && e[t + 1].startsWith("/>") ? " " : "";
-		a += o === C ? n + de : l >= 0 ? (r.push(s), n.slice(0, l) + le + n.slice(l) + y + d) : n + y + (l === -2 ? t : d);
+		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === S ? c[1] === "!--" ? o = ge : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = C) : (be.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = C) : o = _e : o === C ? c[0] === ">" ? (o = i ?? S, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? C : c[3] === "\"" ? ye : ve) : o === ye || o === ve ? o = C : o === ge || o === _e ? o = S : (o = C, i = void 0);
+		let d = o === C && e[t + 1].startsWith("/>") ? " " : "";
+		a += o === S ? n + fe : l >= 0 ? (r.push(s), n.slice(0, l) + ue + n.slice(l) + v + d) : n + v + (l === -2 ? t : d);
 	}
-	return [Se(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
-}, we = class e {
+	return [Ce(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
+}, Te = class e {
 	constructor({ strings: t, _$litType$: n }, r) {
 		let i;
 		this.parts = [];
-		let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = Ce(t, n);
-		if (this.el = e.createElement(l, r), k.currentNode = this.el.content, n === 2 || n === 3) {
+		let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = we(t, n);
+		if (this.el = e.createElement(l, r), O.currentNode = this.el.content, n === 2 || n === 3) {
 			let e = this.el.content.firstChild;
 			e.replaceWith(...e.childNodes);
 		}
-		for (; (i = k.nextNode()) !== null && c.length < s;) {
+		for (; (i = O.nextNode()) !== null && c.length < s;) {
 			if (i.nodeType === 1) {
-				if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(le)) {
-					let t = u[o++], n = i.getAttribute(e).split(y), r = /([.?@])?(.*)/.exec(t);
+				if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(ue)) {
+					let t = u[o++], n = i.getAttribute(e).split(v), r = /([.?@])?(.*)/.exec(t);
 					c.push({
 						type: 1,
 						index: a,
 						name: r[2],
 						strings: n,
-						ctor: r[1] === "." ? Ee : r[1] === "?" ? De : r[1] === "@" ? Oe : M
+						ctor: r[1] === "." ? Oe : r[1] === "?" ? ke : r[1] === "@" ? Ae : A
 					}), i.removeAttribute(e);
-				} else e.startsWith(y) && (c.push({
+				} else e.startsWith(v) && (c.push({
 					type: 6,
 					index: a
 				}), i.removeAttribute(e));
-				if (ye.test(i.tagName)) {
-					let e = i.textContent.split(y), t = e.length - 1;
+				if (be.test(i.tagName)) {
+					let e = i.textContent.split(v), t = e.length - 1;
 					if (t > 0) {
-						i.textContent = v ? v.emptyScript : "";
-						for (let n = 0; n < t; n++) i.append(e[n], x()), k.nextNode(), c.push({
+						i.textContent = ce ? ce.emptyScript : "";
+						for (let n = 0; n < t; n++) i.append(e[n], b()), O.nextNode(), c.push({
 							type: 2,
 							index: ++a
 						});
-						i.append(e[t], x());
+						i.append(e[t], b());
 					}
 				}
 			} else if (i.nodeType === 8) {
-				if (i.data === ue) c.push({
+				if (i.data === de) c.push({
 					type: 2,
 					index: a
 				});
 				else {
 					let e = -1;
-					for (; (e = i.data.indexOf(y, e + 1)) !== -1;) c.push({
+					for (; (e = i.data.indexOf(v, e + 1)) !== -1;) c.push({
 						type: 7,
 						index: a
-					}), e += y.length - 1;
+					}), e += v.length - 1;
 				}
 			}
 			a++;
 		}
 	}
 	static createElement(e, t) {
-		let n = b.createElement("template");
+		let n = y.createElement("template");
 		return n.innerHTML = e, n;
 	}
 };
-function A(e, t, n = e, r) {
-	if (t === D) return t;
-	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = S(t) ? void 0 : t._$litDirective$;
-	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ??= [])[r] = i), i !== void 0 && (t = A(e, i._$AS(e, t.values), i, r)), t;
+function k(e, t, n = e, r) {
+	if (t === E) return t;
+	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = x(t) ? void 0 : t._$litDirective$;
+	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ??= [])[r] = i), i !== void 0 && (t = k(e, i._$AS(e, t.values), i, r)), t;
 }
-var Te = class {
+var Ee = class {
 	constructor(e, t) {
 		this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
 	}
@@ -347,28 +347,28 @@ var Te = class {
 		return this._$AM._$AU;
 	}
 	u(e) {
-		let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? b).importNode(t, !0);
-		k.currentNode = r;
-		let i = k.nextNode(), a = 0, o = 0, s = n[0];
+		let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? y).importNode(t, !0);
+		O.currentNode = r;
+		let i = O.nextNode(), a = 0, o = 0, s = n[0];
 		for (; s !== void 0;) {
 			if (a === s.index) {
 				let t;
-				s.type === 2 ? t = new j(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new ke(i, this, e)), this._$AV.push(t), s = n[++o];
+				s.type === 2 ? t = new De(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new je(i, this, e)), this._$AV.push(t), s = n[++o];
 			}
-			a !== s?.index && (i = k.nextNode(), a++);
+			a !== s?.index && (i = O.nextNode(), a++);
 		}
-		return k.currentNode = b, r;
+		return O.currentNode = y, r;
 	}
 	p(e) {
 		let t = 0;
 		for (let n of this._$AV) n !== void 0 && (n.strings === void 0 ? n._$AI(e[t]) : (n._$AI(e, n, t), t += n.strings.length - 2)), t++;
 	}
-}, j = class e {
+}, De = class e {
 	get _$AU() {
 		return this._$AM?._$AU ?? this._$Cv;
 	}
 	constructor(e, t, n, r) {
-		this.type = 2, this._$AH = O, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
+		this.type = 2, this._$AH = D, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
 	}
 	get parentNode() {
 		let e = this._$AA.parentNode, t = this._$AM;
@@ -381,7 +381,7 @@ var Te = class {
 		return this._$AB;
 	}
 	_$AI(e, t = this) {
-		e = A(this, e, t), S(e) ? e === O || e == null || e === "" ? (this._$AH !== O && this._$AR(), this._$AH = O) : e !== this._$AH && e !== D && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? pe(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
+		e = k(this, e, t), x(e) ? e === D || e == null || e === "" ? (this._$AH !== D && this._$AR(), this._$AH = D) : e !== this._$AH && e !== E && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? me(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
 	}
 	O(e) {
 		return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -390,24 +390,24 @@ var Te = class {
 		this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
 	}
 	_(e) {
-		this._$AH !== O && S(this._$AH) ? this._$AA.nextSibling.data = e : this.T(b.createTextNode(e)), this._$AH = e;
+		this._$AH !== D && x(this._$AH) ? this._$AA.nextSibling.data = e : this.T(y.createTextNode(e)), this._$AH = e;
 	}
 	$(e) {
-		let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = we.createElement(Se(n.h, n.h[0]), this.options)), n);
+		let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = Te.createElement(Ce(n.h, n.h[0]), this.options)), n);
 		if (this._$AH?._$AD === r) this._$AH.p(t);
 		else {
-			let e = new Te(r, this), n = e.u(this.options);
+			let e = new Ee(r, this), n = e.u(this.options);
 			e.p(t), this.T(n), this._$AH = e;
 		}
 	}
 	_$AC(e) {
-		let t = xe.get(e.strings);
-		return t === void 0 && xe.set(e.strings, t = new we(e)), t;
+		let t = Se.get(e.strings);
+		return t === void 0 && Se.set(e.strings, t = new Te(e)), t;
 	}
 	k(t) {
-		fe(this._$AH) || (this._$AH = [], this._$AR());
+		pe(this._$AH) || (this._$AH = [], this._$AR());
 		let n = this._$AH, r, i = 0;
-		for (let a of t) i === n.length ? n.push(r = new e(this.O(x()), this.O(x()), this, this.options)) : r = n[i], r._$AI(a), i++;
+		for (let a of t) i === n.length ? n.push(r = new e(this.O(b()), this.O(b()), this, this.options)) : r = n[i], r._$AI(a), i++;
 		i < n.length && (this._$AR(r && r._$AB.nextSibling, i), n.length = i);
 	}
 	_$AR(e = this._$AA.nextSibling, t) {
@@ -419,7 +419,7 @@ var Te = class {
 	setConnected(e) {
 		this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
 	}
-}, M = class {
+}, A = class {
 	get tagName() {
 		return this.element.tagName;
 	}
@@ -427,47 +427,47 @@ var Te = class {
 		return this._$AM._$AU;
 	}
 	constructor(e, t, n, r, i) {
-		this.type = 1, this._$AH = O, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = O;
+		this.type = 1, this._$AH = D, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = D;
 	}
 	_$AI(e, t = this, n, r) {
 		let i = this.strings, a = !1;
-		if (i === void 0) e = A(this, e, t, 0), a = !S(e) || e !== this._$AH && e !== D, a && (this._$AH = e);
+		if (i === void 0) e = k(this, e, t, 0), a = !x(e) || e !== this._$AH && e !== E, a && (this._$AH = e);
 		else {
 			let r = e, o, s;
-			for (e = i[0], o = 0; o < i.length - 1; o++) s = A(this, r[n + o], t, o), s === D && (s = this._$AH[o]), a ||= !S(s) || s !== this._$AH[o], s === O ? e = O : e !== O && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
+			for (e = i[0], o = 0; o < i.length - 1; o++) s = k(this, r[n + o], t, o), s === E && (s = this._$AH[o]), a ||= !x(s) || s !== this._$AH[o], s === D ? e = D : e !== D && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
 		}
 		a && !r && this.j(e);
 	}
 	j(e) {
-		e === O ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
+		e === D ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
 	}
-}, Ee = class extends M {
+}, Oe = class extends A {
 	constructor() {
 		super(...arguments), this.type = 3;
 	}
 	j(e) {
-		this.element[this.name] = e === O ? void 0 : e;
+		this.element[this.name] = e === D ? void 0 : e;
 	}
-}, De = class extends M {
+}, ke = class extends A {
 	constructor() {
 		super(...arguments), this.type = 4;
 	}
 	j(e) {
-		this.element.toggleAttribute(this.name, !!e && e !== O);
+		this.element.toggleAttribute(this.name, !!e && e !== D);
 	}
-}, Oe = class extends M {
+}, Ae = class extends A {
 	constructor(e, t, n, r, i) {
 		super(e, t, n, r, i), this.type = 5;
 	}
 	_$AI(e, t = this) {
-		if ((e = A(this, e, t, 0) ?? O) === D) return;
-		let n = this._$AH, r = e === O && n !== O || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== O && (n === O || r);
+		if ((e = k(this, e, t, 0) ?? D) === E) return;
+		let n = this._$AH, r = e === D && n !== D || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== D && (n === D || r);
 		r && this.element.removeEventListener(this.name, this, n), i && this.element.addEventListener(this.name, this, e), this._$AH = e;
 	}
 	handleEvent(e) {
 		typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
 	}
-}, ke = class {
+}, je = class {
 	constructor(e, t, n) {
 		this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = n;
 	}
@@ -475,33 +475,33 @@ var Te = class {
 		return this._$AM._$AU;
 	}
 	_$AI(e) {
-		A(this, e);
+		k(this, e);
 	}
-}, Ae = {
-	M: le,
-	P: y,
-	A: ue,
+}, Me = {
+	M: ue,
+	P: v,
+	A: de,
 	C: 1,
-	L: Ce,
-	R: Te,
-	D: pe,
-	V: A,
-	I: j,
-	H: M,
-	N: De,
-	U: Oe,
-	B: Ee,
-	F: ke
-}, je = oe.litHtmlPolyfillSupport;
-je?.(we, j), (oe.litHtmlVersions ??= []).push("3.3.3");
-var Me = (e, t, n) => {
+	L: we,
+	R: Ee,
+	D: me,
+	V: k,
+	I: De,
+	H: A,
+	N: ke,
+	U: Ae,
+	B: Oe,
+	F: je
+}, Ne = oe.litHtmlPolyfillSupport;
+Ne?.(Te, De), (oe.litHtmlVersions ??= []).push("3.3.3");
+var Pe = (e, t, n) => {
 	let r = n?.renderBefore ?? t, i = r._$litPart$;
 	if (i === void 0) {
 		let e = n?.renderBefore ?? null;
-		r._$litPart$ = i = new j(t.insertBefore(x(), e), e, void 0, n ?? {});
+		r._$litPart$ = i = new De(t.insertBefore(b(), e), e, void 0, n ?? {});
 	}
 	return i._$AI(e), i;
-}, Ne = globalThis, N = class extends _ {
+}, Fe = globalThis, j = class extends _ {
 	constructor() {
 		super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
 	}
@@ -511,7 +511,7 @@ var Me = (e, t, n) => {
 	}
 	update(e) {
 		let t = this.render();
-		this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Me(t, this.renderRoot, this.renderOptions);
+		this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Pe(t, this.renderRoot, this.renderOptions);
 	}
 	connectedCallback() {
 		super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -520,30 +520,110 @@ var Me = (e, t, n) => {
 		super.disconnectedCallback(), this._$Do?.setConnected(!1);
 	}
 	render() {
-		return D;
+		return E;
 	}
 };
-N._$litElement$ = !0, N.finalized = !0, Ne.litElementHydrateSupport?.({ LitElement: N });
-var Pe = Ne.litElementPolyfillSupport;
-Pe?.({ LitElement: N }), (Ne.litElementVersions ??= []).push("4.2.2");
+j._$litElement$ = !0, j.finalized = !0, Fe.litElementHydrateSupport?.({ LitElement: j });
+var Ie = Fe.litElementPolyfillSupport;
+Ie?.({ LitElement: j }), (Fe.litElementVersions ??= []).push("4.2.2");
 //#endregion
-//#region src/api.ts
-var P = "pit_lane_live_board", Fe = 1e4;
-async function Ie(e, t, n) {
-	let r = e.connection, i, a = !1, o, s = async () => {
-		let e = await r.subscribeMessage(n, t, { resubscribe: !1 });
-		a ? e() : i = e;
-	}, c = () => {
-		window.clearTimeout(o), !a && (i = void 0, s().catch(() => {
-			a || (o = window.setTimeout(c, Fe));
-		}));
-	};
-	return await s(), r.addEventListener?.("ready", c), () => {
-		a = !0, window.clearTimeout(o), r.removeEventListener?.("ready", c);
+//#region node_modules/lit-html/directive.js
+var Le = {
+	ATTRIBUTE: 1,
+	CHILD: 2,
+	PROPERTY: 3,
+	BOOLEAN_ATTRIBUTE: 4,
+	EVENT: 5,
+	ELEMENT: 6
+}, Re = (e) => (...t) => ({
+	_$litDirective$: e,
+	values: t
+}), ze = class {
+	constructor(e) {}
+	get _$AU() {
+		return this._$AM._$AU;
+	}
+	_$AT(e, t, n) {
+		this._$Ct = e, this._$AM = t, this._$Ci = n;
+	}
+	_$AS(e, t) {
+		return this.update(e, t);
+	}
+	update(e, t) {
+		return this.render(...t);
+	}
+}, { I: Be } = Me, Ve = (e) => e, He = (e, t) => t === void 0 ? e?._$litType$ !== void 0 : e?._$litType$ === t, Ue = (e) => e?._$litType$?.h != null, We = () => document.createComment(""), M = (e, t, n) => {
+	let r = e._$AA.parentNode, i = t === void 0 ? e._$AB : t._$AA;
+	if (n === void 0) n = new Be(r.insertBefore(We(), i), r.insertBefore(We(), i), e, e.options);
+	else {
+		let t = n._$AB.nextSibling, a = n._$AM, o = a !== e;
+		if (o) {
+			let t;
+			n._$AQ?.(e), n._$AM = e, n._$AP !== void 0 && (t = e._$AU) !== a._$AU && n._$AP(t);
+		}
+		if (t !== i || o) {
+			let e = n._$AA;
+			for (; e !== t;) {
+				let t = Ve(e).nextSibling;
+				Ve(r).insertBefore(e, i), e = t;
+			}
+		}
+	}
+	return n;
+}, N = (e, t, n = e) => (e._$AI(t, n), e), Ge = {}, Ke = (e, t = Ge) => e._$AH = t, qe = (e) => e._$AH, Je = (e) => {
+	e._$AR(), e._$AA.remove();
+}, Ye = (e) => {
+	e._$AR();
+}, Xe = (e) => Ue(e) ? e._$litType$.h : e.strings, Ze = Re(class extends ze {
+	constructor(e) {
+		super(e), this.et = /* @__PURE__ */ new WeakMap();
+	}
+	render(e) {
+		return [e];
+	}
+	update(e, [t]) {
+		let n = He(this.it) ? Xe(this.it) : null, r = He(t) ? Xe(t) : null;
+		if (n !== null && (r === null || n !== r)) {
+			let t = qe(e).pop(), r = this.et.get(n);
+			r === void 0 && (r = Pe(D, document.createDocumentFragment()), r.setConnected(!1), this.et.set(n, r)), Ke(r, [t]), M(r, void 0, t);
+		}
+		if (r !== null) {
+			if (n === null || n !== r) {
+				let t = this.et.get(r);
+				if (t !== void 0) {
+					let n = qe(t).pop();
+					Ye(e), M(e, void 0, n), Ke(e, [n]);
+				}
+			}
+			this.it = t;
+		} else this.it = void 0;
+		return this.render(t);
+	}
+}), P = "pit_lane_live_board", Qe = 1e4;
+async function $e(e, t, n) {
+	let r = e.connection, i, a = !1, o, s = 0, c = (e) => {
 		try {
-			i?.();
+			Promise.resolve(e?.()).catch(() => void 0);
 		} catch {}
+	}, l = async () => {
+		let e = ++s, o = await r.subscribeMessage((t) => {
+			e === s && !a && n(t);
+		}, t, { resubscribe: !1 });
+		if (a || e !== s) {
+			c(o);
+			return;
+		}
+		i = o;
+	}, u = () => {
+		if (window.clearTimeout(o), o = void 0, a) return;
 		i = void 0;
+		let e = s + 1;
+		l().catch(() => {
+			!a && e === s && (o = window.setTimeout(u, Qe));
+		});
+	};
+	return await l(), r.addEventListener?.("ready", u), () => {
+		a = !0, s++, window.clearTimeout(o), r.removeEventListener?.("ready", u), c(i), i = void 0;
 	};
 }
 var F = {
@@ -592,16 +672,16 @@ var F = {
 		round: n,
 		kind: r
 	}),
-	subscribeSettings: (e, t) => Ie(e, { type: `${P}/settings/subscribe` }, t),
-	subscribeLive: (e, t) => Ie(e, { type: `${P}/live/subscribe` }, t),
-	subscribeMap: (e, t) => Ie(e, { type: `${P}/map/subscribe` }, t)
-}, Le = document.querySelector("home-assistant") && !customElements.get("home-assistant") ? customElements.whenDefined("home-assistant") : Promise.resolve();
+	subscribeSettings: (e, t) => $e(e, { type: `${P}/settings/subscribe` }, t),
+	subscribeLive: (e, t) => $e(e, { type: `${P}/live/subscribe` }, t),
+	subscribeMap: (e, t) => $e(e, { type: `${P}/map/subscribe` }, t)
+}, et = document.querySelector("home-assistant") && !customElements.get("home-assistant") ? customElements.whenDefined("home-assistant") : Promise.resolve();
 function I(e, t) {
-	Le.then(() => {
+	et.then(() => {
 		customElements.get(e) || customElements.define(e, t);
 	});
 }
-var Re = {
+var tt = {
 	tabs: {
 		live: "Live",
 		calendar: "Calendar",
@@ -705,7 +785,50 @@ var Re = {
 		track: "Track temperature",
 		pitIn: "IN",
 		pitOut: "OUT",
-		gridShort: "G"
+		gridShort: "G",
+		status: {
+			finished: "Finished",
+			lapped: "Lapped",
+			retired: "Retired",
+			disqualified: "Disqualified",
+			did_not_start: "Did not start",
+			did_not_qualify: "Did not qualify",
+			did_not_prequalify: "Did not pre-qualify",
+			withdrew: "Withdrew",
+			not_classified: "Not classified",
+			excluded: "Excluded",
+			accident: "Accident",
+			collision: "Collision",
+			engine: "Engine",
+			gearbox: "Gearbox",
+			transmission: "Transmission",
+			hydraulics: "Hydraulics",
+			brakes: "Brakes",
+			suspension: "Suspension",
+			electrical: "Electrical",
+			power_unit: "Power Unit",
+			spun_off: "Spun off",
+			puncture: "Puncture",
+			overheating: "Overheating",
+			fuel_pressure: "Fuel pressure",
+			oil_leak: "Oil leak",
+			water_leak: "Water leak",
+			wheel: "Wheel",
+			tyre: "Tyre",
+			damage: "Damage",
+			mechanical: "Mechanical",
+			illness: "Illness"
+		},
+		lapsDownOne: "+{n} lap",
+		lapsDown: "+{n} laps",
+		best: "Best",
+		teammateDashed: "Dashed: the second driver of a team.",
+		startEnd: "{start} → {end}",
+		range: "min {min} · max {max}",
+		dry: "Dry",
+		wet: "Rain during the session",
+		open: "Open the round",
+		usedFaded: "A faded bar is a used set."
 	},
 	standings: {
 		title: "Standings",
@@ -787,7 +910,11 @@ var Re = {
 		autoStart: "It starts by itself at the next session.",
 		final: "FINAL",
 		ended: "Ended {time} · data frozen",
-		nextShort: "Next"
+		nextShort: "Next",
+		leader: "Leader",
+		lappedOne: "+{n} lap",
+		lapped: "+{n} laps",
+		pausedHelp: "Nothing connects to F1 and nothing live is written to disk."
 	},
 	f1tv: {
 		active: "F1TV active",
@@ -840,7 +967,9 @@ var Re = {
 		sidebar: "Show Live Board in the sidebar",
 		sidebarHelp: "Off: the panel still opens from the integration's device page, and the cards keep working on dashboards.",
 		adminPanel: "Only administrators can open the panel",
-		adminPanelHelp: "Off (the default): every user of the house sees Live Board. On: only administrators do. The cards follow the visibility of the dashboard they are on."
+		adminPanelHelp: "Off (the default): every user of the house sees Live Board. On: only administrators do. The cards follow the visibility of the dashboard they are on.",
+		pauseShort: "Pause",
+		startShort: "Start"
 	},
 	stewards: {
 		title: "Flags & stewards",
@@ -933,8 +1062,10 @@ var Re = {
 			count: "How many",
 			filter: "Show",
 			kind: "Championship",
-			show_title: "Show the title"
-		}
+			hide_title: "Hide the title"
+		},
+		startFailed: "Could not start live timing. Try again in a moment.",
+		backWith: "Back with {session}, {time}"
 	},
 	time: {
 		title: "Times",
@@ -992,8 +1123,8 @@ var Re = {
 		options: "Add &page=calendar to open another page, &scale=1.3 to make everything bigger on a TV.",
 		small: "For a small screen (an ESP32 with ESPHome, e-paper): enable the “Small screen” sensor. It carries the state of the Live page and short fields ready to print: lap, track status and its colour, the top ten as rows, your drivers, the next session. The guide has an ESPHome example."
 	}
-}, ze = {
-	en: Re,
+}, nt = {
+	en: tt,
 	it: {
 		tabs: {
 			live: "Live",
@@ -1098,7 +1229,50 @@ var Re = {
 			track: "Temperatura della pista",
 			pitIn: "ENTRATA",
 			pitOut: "USCITA",
-			gridShort: "G"
+			gridShort: "G",
+			status: {
+				finished: "Arrivato",
+				lapped: "Doppiato",
+				retired: "Ritirato",
+				disqualified: "Squalificato",
+				did_not_start: "Non partito",
+				did_not_qualify: "Non qualificato",
+				did_not_prequalify: "Non prequalificato",
+				withdrew: "Ritirato prima del via",
+				not_classified: "Non classificato",
+				excluded: "Escluso",
+				accident: "Incidente",
+				collision: "Collisione",
+				engine: "Motore",
+				gearbox: "Cambio",
+				transmission: "Trasmissione",
+				hydraulics: "Idraulica",
+				brakes: "Freni",
+				suspension: "Sospensioni",
+				electrical: "Impianto elettrico",
+				power_unit: "Power unit",
+				spun_off: "Testacoda",
+				puncture: "Foratura",
+				overheating: "Surriscaldamento",
+				fuel_pressure: "Pressione carburante",
+				oil_leak: "Perdita d'olio",
+				water_leak: "Perdita d'acqua",
+				wheel: "Ruota",
+				tyre: "Pneumatico",
+				damage: "Danni",
+				mechanical: "Guasto meccanico",
+				illness: "Malore"
+			},
+			lapsDownOne: "+{n} giro",
+			lapsDown: "+{n} giri",
+			best: "Migliore",
+			teammateDashed: "Tratteggiato: il secondo pilota di una squadra.",
+			startEnd: "{start} → {end}",
+			range: "min {min} · max {max}",
+			dry: "Asciutto",
+			wet: "Pioggia durante la sessione",
+			open: "Apri la gara",
+			usedFaded: "Una barra sbiadita è un treno usato."
 		},
 		standings: {
 			title: "Classifiche",
@@ -1180,7 +1354,11 @@ var Re = {
 			autoStart: "Partono da soli alla prossima sessione.",
 			final: "FINALE",
 			ended: "Terminata {time} · dati fermi",
-			nextShort: "Prossima"
+			nextShort: "Prossima",
+			leader: "Leader",
+			lappedOne: "+{n} giro",
+			lapped: "+{n} giri",
+			pausedHelp: "Niente si collega a F1 e niente di live viene scritto su disco."
 		},
 		f1tv: {
 			active: "F1TV attivo",
@@ -1233,7 +1411,9 @@ var Re = {
 			sidebar: "Mostra Live Board nella barra laterale",
 			sidebarHelp: "Spento: il pannello si apre comunque dalla pagina del dispositivo dell'integrazione, e le card continuano a funzionare nelle plance.",
 			adminPanel: "Solo gli amministratori possono aprire il pannello",
-			adminPanelHelp: "Spento (predefinito): tutti gli utenti di casa vedono Live Board. Acceso: solo gli amministratori. Le card seguono la visibilità della plancia in cui si trovano."
+			adminPanelHelp: "Spento (predefinito): tutti gli utenti di casa vedono Live Board. Acceso: solo gli amministratori. Le card seguono la visibilità della plancia in cui si trovano.",
+			pauseShort: "Metti in pausa",
+			startShort: "Avvia"
 		},
 		stewards: {
 			title: "Bandiere e commissari",
@@ -1326,8 +1506,10 @@ var Re = {
 				count: "Quanti",
 				filter: "Mostra",
 				kind: "Campionato",
-				show_title: "Mostra il titolo"
-			}
+				hide_title: "Nascondi il titolo"
+			},
+			startFailed: "Non è stato possibile avviare i tempi live. Riprova tra poco.",
+			backWith: "Torna con {session}, {time}"
 		},
 		time: {
 			title: "Orari",
@@ -1387,10 +1569,10 @@ var Re = {
 		}
 	}
 };
-function Be(e) {
+function rt(e) {
 	return (e?.locale?.language ?? e?.language ?? "en").toLowerCase().startsWith("it") ? "it" : "en";
 }
-function Ve(e, t) {
+function it(e, t) {
 	let n = e;
 	for (let e of t.split(".")) {
 		if (typeof n != "object" || !n) return;
@@ -1398,12 +1580,17 @@ function Ve(e, t) {
 	}
 	return typeof n == "string" ? n : void 0;
 }
+var at = {
+	en: /* @__PURE__ */ new Map(),
+	it: /* @__PURE__ */ new Map()
+};
 function L(e) {
-	let t = ze[Be(e)];
-	return (e, n) => {
-		let r = Ve(t, e) ?? Ve(Re, e) ?? e;
-		for (let [e, t] of Object.entries(n ?? {})) r = r.replaceAll(`{${e}}`, String(t));
-		return r;
+	let t = rt(e), n = nt[t], r = at[t];
+	return (e, t) => {
+		let i = r.get(e);
+		i === void 0 && (i = it(n, e) ?? it(tt, e) ?? e, r.set(e, i));
+		for (let [e, n] of Object.entries(t ?? {})) i = i.replaceAll(`{${e}}`, String(n));
+		return i;
 	};
 }
 //#endregion
@@ -1423,19 +1610,28 @@ var R = {
 	fullscreen: "M5 5h5v2H7v3H5zm9 0h5v5h-2V7h-3zm3 9h2v5h-5v-2h3zm-7 3v2H5v-5h2v3z",
 	exitFullscreen: "M14 14h5v2h-3v3h-2zm-9 0h5v5H8v-3H5zm3-9h2v5H5V8h3zm6 0h2v3h3v2h-5z",
 	cog: "M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.51.51 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64z"
-}, z = (e, t = 20) => E`<svg viewBox="0 0 24 24" width=${t} height=${t} fill="currentColor" aria-hidden="true"><path d=${e}></path></svg>`, B = o`
+}, z = (e, t = 20) => T`<svg viewBox="0 0 24 24" width=${t} height=${t} fill="currentColor" aria-hidden="true"><path d=${e}></path></svg>`, B = o`
   :host {
     --plb-purple: #a24bdb;
     --plb-green: #1fa855;
     --plb-yellow: #e0b000;
     --plb-soft: #e8333a;
     --plb-medium: #f2c200;
-    --plb-hard: #eeeeee;
+    /* White on a light page, a softer grey on a dark one (pure white glares). */
+    --plb-hard: color-mix(in srgb, #ffffff 82%, var(--primary-background-color, #fafafa));
     --plb-intermediate: #3aa845;
     --plb-wet: #2f7de1;
     --plb-unknown: #8a8a8a;
+    /* Text in the timing colours: mixed with the theme's text colour, so they
+       darken on a light theme and lighten on a dark one, and read at 4.5:1 or
+       better on both (the plain colours are 3.1:1 and 3.7:1). */
+    --plb-purple-text: color-mix(in srgb, var(--plb-purple) 65%, var(--primary-text-color));
+    --plb-green-text: color-mix(in srgb, var(--plb-green) 65%, var(--primary-text-color));
+    --plb-yellow-text: color-mix(in srgb, var(--plb-yellow) 50%, var(--primary-text-color));
+    /* The theme's accent as text on its own tint (a selected tab or chip). */
+    --plb-primary-text: color-mix(in srgb, var(--primary-color) 55%, var(--primary-text-color));
     --plb-row-alt: color-mix(in srgb, var(--primary-text-color) 3%, transparent);
-    --plb-muted: color-mix(in srgb, var(--primary-text-color) 55%, transparent);
+    --plb-muted: color-mix(in srgb, var(--primary-text-color) 65%, transparent);
     --plb-radius: var(--ha-card-border-radius, 12px);
     --plb-gap: 16px;
     color: var(--primary-text-color);
@@ -1471,7 +1667,7 @@ var R = {
   }
   .chip.on {
     background: color-mix(in srgb, var(--primary-color) 16%, transparent);
-    border-color: transparent; color: var(--primary-color);
+    border-color: transparent; color: var(--plb-primary-text);
   }
   .chip.small { height: 26px; font-size: 12px; padding: 0 10px; }
   .tab {
@@ -1479,22 +1675,26 @@ var R = {
     font: inherit; font-size: 14px; font-weight: 500; letter-spacing: 0.02em;
     padding: 8px 14px; border-radius: 18px; cursor: pointer; white-space: nowrap;
   }
-  .tab.active { color: var(--primary-color); background: color-mix(in srgb, var(--primary-color) 14%, transparent); }
+  .tab.active { color: var(--plb-primary-text); background: color-mix(in srgb, var(--primary-color) 14%, transparent); }
   .btn {
     height: 36px; padding: 0 16px; border-radius: 18px; border: 0;
     background: var(--primary-color); color: var(--text-primary-color, #fff);
     font: inherit; font-weight: 500; cursor: pointer;
   }
-  .btn.flat { background: none; color: var(--primary-color); border: 1px solid var(--divider-color); }
-  .link { border: 0; background: none; color: var(--primary-color); font: inherit; cursor: pointer; padding: 0; }
+  .btn.flat { background: none; color: var(--plb-primary-text); border: 1px solid var(--divider-color); }
+  .btn.flat.danger { color: var(--error-color, #db4437); border-color: color-mix(in srgb, var(--error-color, #db4437) 50%, transparent); }
+  /* Disabled: a neutral grey, not a faded accent with grey text on it. */
+  .btn:disabled { background: var(--secondary-background-color); color: var(--secondary-text-color); cursor: default; opacity: 1; }
+  .btn.flat:disabled { background: none; }
+  .link { border: 0; background: none; color: var(--plb-primary-text); font: inherit; cursor: pointer; padding: 0; }
   .bar { display: inline-block; width: 4px; height: 20px; border-radius: 2px; flex: none; }
   .drv { display: inline-flex; align-items: center; gap: 8px; }
   .tla { font-weight: 600; letter-spacing: 0.03em; }
   .gained { font-size: 11px; font-weight: 600; }
-  .up { color: var(--plb-green); }
+  .up { color: var(--plb-green-text); }
   .down { color: var(--error-color, #db4437); }
-  .t.pb { color: var(--plb-green); font-weight: 600; }
-  .t.ob { color: var(--plb-purple); font-weight: 600; }
+  .t.pb { color: var(--plb-green-text); font-weight: 600; }
+  .t.ob { color: var(--plb-purple-text); font-weight: 600; }
   .t.prev { color: var(--plb-muted); }
   .tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
   .tbl td, .tbl th { padding: 8px 12px; border-bottom: 1px solid var(--divider-color); text-align: left; white-space: nowrap; }
@@ -1503,6 +1703,15 @@ var R = {
   .tbl tr.click { cursor: pointer; }
   .tbl tr.click:hover td { background: var(--plb-row-alt); }
   .scroll { overflow-x: auto; }
+  /* A table wider than its card fades at the edge that has more, so the columns
+     behind the scroll are not a secret (where the browser has scroll timelines). */
+  @supports (animation-timeline: scroll()) {
+    .scroll { animation: plb-more-x linear both; animation-timeline: scroll(self inline); }
+  }
+  @keyframes plb-more-x {
+    0%, 97% { mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
+    100% { mask-image: none; }
+  }
   .muted { color: var(--secondary-text-color); }
   .also { display: block; color: var(--secondary-text-color); font-size: 11px; font-weight: 400; }
   .hidden-cell { color: var(--secondary-text-color); font-style: italic; }
@@ -1541,17 +1750,34 @@ var R = {
   .chart svg { display: block; min-width: 640px; width: 100%; height: auto; }
   .chart .axis { stroke: var(--divider-color); }
   .chart text { fill: var(--secondary-text-color); font-size: 11px; }
-  @media (max-width: 640px) {
+  @container (max-width: 640px) {
     .tbl td, .tbl th { padding: 8px 8px; }
   }
-`, He = {
+  /* Fingers: 40 px targets at least. */
+  @media (pointer: coarse) {
+    .chip { height: 40px; }
+    .chip.small { height: 36px; }
+    .tab { min-height: 40px; }
+    .btn { height: 40px; }
+    .link { min-height: 40px; }
+    select { height: 40px; }
+  }
+`, ot = o`
+  @supports (animation-timeline: scroll()) {
+    .feed { animation: plb-more-y linear both; animation-timeline: scroll(self block); }
+  }
+  @keyframes plb-more-y {
+    0%, 97% { mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent); }
+    100% { mask-image: none; }
+  }
+`, V = {
 	soft: "--plb-soft",
 	medium: "--plb-medium",
 	hard: "--plb-hard",
 	intermediate: "--plb-intermediate",
 	wet: "--plb-wet",
 	unknown: "--plb-unknown"
-}, Ue = {
+}, st = {
 	mercedes: "#27F4D2",
 	ferrari: "#E8002D",
 	mclaren: "#F47600",
@@ -1564,7 +1790,7 @@ var R = {
 	sauber: "#52E252",
 	audi: "#BB0A30",
 	cadillac: "#909090"
-}, We = [
+}, ct = [
 	"#5c6bc0",
 	"#26a69a",
 	"#ef6c00",
@@ -1576,254 +1802,213 @@ var R = {
 	"#3949ab",
 	"#c0ca33"
 ];
-function Ge(e, t) {
+function lt(e, t) {
 	if (t) return t;
-	if (e && Ue[e]) return Ue[e];
+	if (e && st[e]) return st[e];
 	let n = 0;
 	for (let t of e ?? "") n = n * 31 + t.charCodeAt(0) >>> 0;
-	return We[n % We.length];
+	return ct[n % ct.length];
 }
 //#endregion
 //#region src/timeprefs.ts
-var Ke = "pit_lane_live_board_time", V = "plb-time-prefs", H = {
+var ut = "pit_lane_live_board_time", H = "plb-time-prefs", U = {
 	zone: "home_assistant",
 	both: !1
-}, qe;
-function Je() {
-	return H;
+}, dt;
+function ft() {
+	return U;
 }
-function Ye(e) {
-	return qe ??= e.callWS({
+function pt(e) {
+	return dt ??= e.callWS({
 		type: "frontend/get_user_data",
-		key: Ke
+		key: ut
 	}).then((e) => {
 		let t = e?.value ?? {};
-		return H = {
+		return U = {
 			zone: [
 				"home_assistant",
 				"device",
 				"circuit"
 			].includes(String(t.zone)) ? t.zone : "home_assistant",
 			both: t.both === !0
-		}, window.dispatchEvent(new Event(V)), H;
-	}).catch(() => H), qe;
+		}, window.dispatchEvent(new Event(H)), U;
+	}).catch(() => U), dt;
 }
-async function Xe(e, t) {
-	let n = H;
-	H = t, window.dispatchEvent(new Event(V));
+async function mt(e, t) {
+	let n = U;
+	U = t, window.dispatchEvent(new Event(H));
 	try {
 		await e.callWS({
 			type: "frontend/set_user_data",
-			key: Ke,
+			key: ut,
 			value: t
 		});
 	} catch (e) {
-		throw H = n, window.dispatchEvent(new Event(V)), e;
+		throw U = n, window.dispatchEvent(new Event(H)), e;
 	}
 }
 //#endregion
 //#region src/format.ts
-function U(e) {
-	return Be(e) === "it" ? "it-IT" : "en-GB";
+function W(e) {
+	return rt(e) === "it" ? "it-IT" : "en-GB";
 }
-var Ze = /* @__PURE__ */ new Map(), Qe = /* @__PURE__ */ new Map();
-function W(e, t) {
-	let n = `${U(e)}|${JSON.stringify(t)}`, r = Ze.get(n);
-	return r || (r = new Intl.DateTimeFormat(U(e), t), Ze.set(n, r)), r;
-}
-function $e(e, t) {
-	let n = `${U(e)}|${t}`, r = Qe.get(n);
-	return r || (r = new Intl.NumberFormat(U(e), { maximumFractionDigits: t }), Qe.set(n, r)), r;
-}
-function et() {
-	return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-}
-function tt(e) {
-	return e.locale?.time_zone === "local" ? et() : e.config.time_zone;
-}
-function G(e, t) {
-	let n = Je().zone;
-	return n === "circuit" && t ? t : n === "device" ? et() : tt(e);
-}
-function nt(e, t, n, r) {
-	return t ? W(e, {
-		weekday: "short",
-		hour: "2-digit",
-		minute: "2-digit",
-		timeZone: G(e, r)
-	}).format(new Date(t)) : W(e, {
+var ht = /* @__PURE__ */ new Map(), gt = /* @__PURE__ */ new Map(), _t = {
+	day: {
 		weekday: "short",
 		day: "numeric",
-		month: "short",
-		timeZone: "UTC"
-	}).format(/* @__PURE__ */ new Date(`${n}T12:00:00Z`));
-}
-function rt(e, t, n) {
-	if (!t || !n || !Je().both) return null;
-	let r = G(e, n), i = r === n ? tt(e) : n;
-	if (i === r) return null;
-	let a = (n) => W(e, {
+		month: "short"
+	},
+	weekdayTime: {
 		weekday: "short",
 		hour: "2-digit",
+		minute: "2-digit"
+	},
+	date: {
+		day: "numeric",
+		month: "short",
+		year: "numeric"
+	},
+	dayMonth: {
+		day: "numeric",
+		month: "short"
+	},
+	clock: {
+		hour: "2-digit",
 		minute: "2-digit",
+		second: "2-digit"
+	},
+	clockShort: {
+		hour: "2-digit",
+		minute: "2-digit"
+	}
+};
+function G(e, t, n) {
+	let r = `${W(e)}|${t}|${n}`, i = ht.get(r);
+	return i || (i = new Intl.DateTimeFormat(W(e), {
+		..._t[t],
 		timeZone: n
-	}).format(new Date(t)), o = a(i);
+	}), ht.set(r, i)), i;
+}
+function vt(e, t) {
+	let n = `${W(e)}|${t}`, r = gt.get(n);
+	return r || (r = new Intl.NumberFormat(W(e), { maximumFractionDigits: t }), gt.set(n, r)), r;
+}
+function yt() {
+	return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+}
+function bt(e) {
+	return e.locale?.time_zone === "local" ? yt() : e.config.time_zone;
+}
+function K(e, t) {
+	let n = ft().zone;
+	return n === "circuit" && t ? t : n === "device" ? yt() : bt(e);
+}
+function xt(e, t, n, r) {
+	return t ? G(e, "weekdayTime", K(e, r)).format(new Date(t)) : G(e, "day", "UTC").format(/* @__PURE__ */ new Date(`${n}T12:00:00Z`));
+}
+function St(e, t, n) {
+	if (!t || !n || !ft().both) return null;
+	let r = K(e, n), i = r === n ? bt(e) : n;
+	if (i === r) return null;
+	let a = (n) => G(e, "weekdayTime", n).format(new Date(t)), o = a(i);
 	return o === a(r) ? null : {
 		time: o,
 		local: i === n
 	};
 }
-function it(e, t) {
+function Ct(e, t) {
 	if (!t) return "";
 	let n = t.length === 10, r = n ? /* @__PURE__ */ new Date(`${t}T12:00:00Z`) : new Date(t);
-	return W(e, {
-		day: "numeric",
-		month: "short",
-		year: "numeric",
-		timeZone: n ? "UTC" : G(e)
-	}).format(r);
+	return G(e, "date", n ? "UTC" : K(e)).format(r);
 }
-function at(e, t, n) {
-	let r = W(e, {
-		day: "numeric",
-		month: "short",
-		timeZone: "UTC"
-	}), i = /* @__PURE__ */ new Date(`${t}T12:00:00Z`), a = /* @__PURE__ */ new Date(`${n}T12:00:00Z`);
+function wt(e, t, n) {
+	let r = G(e, "dayMonth", "UTC"), i = /* @__PURE__ */ new Date(`${t}T12:00:00Z`), a = /* @__PURE__ */ new Date(`${n}T12:00:00Z`);
 	return i.getUTCMonth() === a.getUTCMonth() ? `${i.getUTCDate()}–${r.format(a)}` : `${r.format(i)} – ${r.format(a)}`;
 }
-function ot(e) {
+function Tt(e) {
 	return new Date(/[zZ]|[+-]\d\d:\d\d$/.test(e) ? e : `${e}Z`);
 }
-function K(e, t) {
-	return t ? W(e, {
-		hour: "2-digit",
-		minute: "2-digit",
-		second: "2-digit",
-		timeZone: G(e)
-	}).format(ot(t)) : "";
+var Et = /* @__PURE__ */ new Map(), Dt = "";
+function q(e, t, n = !1) {
+	if (!t) return "";
+	let r = K(e), i = `${W(e)}|${r}`;
+	(i !== Dt || Et.size > 2e3) && (Et.clear(), Dt = i);
+	let a = n ? `s${t}` : t, o = Et.get(a);
+	return o === void 0 && (o = G(e, n ? "clockShort" : "clock", r).format(Tt(t)), Et.set(a, o)), o;
 }
-function st(e, t) {
-	return t ? W(e, {
-		weekday: "short",
-		hour: "2-digit",
-		minute: "2-digit",
-		timeZone: G(e)
-	}).format(ot(t)) : "";
+function Ot(e, t) {
+	return t ? G(e, "weekdayTime", K(e)).format(Tt(t)) : "";
 }
-function ct(e) {
+function kt(e) {
 	let t = Math.max(0, Math.floor(e / 1e3)), n = Math.floor(t / 86400), r = Math.floor(t % 86400 / 3600), i = Math.floor(t % 3600 / 60), a = t % 60, o = (e) => String(e).padStart(2, "0");
 	return n ? `${n} d ${o(r)} h ${o(i)} m` : r ? `${r} h ${o(i)} m` : `${o(i)} m ${o(a)} s`;
 }
-function lt(e) {
+function At(e) {
 	if (e === null) return "";
 	let t = Math.max(0, Math.round(e)), n = Math.floor(t / 3600), r = Math.floor(t % 3600 / 60), i = t % 60, a = (e) => String(e).padStart(2, "0");
 	return n ? `${n}:${a(r)}:${a(i)}` : `${a(r)}:${a(i)}`;
 }
-function q(e, t, n = 1) {
-	return t == null ? "—" : $e(e, n).format(t);
+function J(e, t, n = 1) {
+	return t == null ? "—" : vt(e, n).format(t);
 }
-function ut(e, t) {
+function jt(e, t) {
 	return !t || !e || e.language !== t.language || e.locale?.language !== t.locale?.language || e.config?.time_zone !== t.config?.time_zone || e.user?.is_admin !== t.user?.is_admin;
 }
 //#endregion
 //#region src/parts.ts
-function dt(e) {
+function Mt(e) {
 	return e ? `${e.no_spoiler}|${e.revealed.join(",")}` : "";
 }
-function J(e) {
+function Nt(e, t, n = !1) {
+	if (!t) return "";
+	if (/^LAP\s*\d+$/i.test(t)) return n ? "" : e("live.leader");
+	let r = /^\+?(\d+)\s*L(?:APS?)?$/i.exec(t);
+	return r ? e(r[1] === "1" ? "live.lappedOne" : "live.lapped", { n: r[1] }) : t;
+}
+function Pt(e, t, n) {
+	let r = /(\d)\s*$/.exec(n ?? "")?.[1], i = t === "practice" && r ? `sessions.practice_${r}` : t ? `sessions.${t}` : "", a = i && e(i);
+	return a && a !== i ? a : n ?? "";
+}
+function Ft(e) {
 	return (t) => {
 		(t.key === "Enter" || t.key === " ") && (t.preventDefault(), e());
 	};
 }
-function ft(e, t, n, r) {
+function It(e, t, n, r) {
 	let i = t === "unknown" ? "?" : t[0].toUpperCase();
-	return T`<span class="tyre" title=${e(`tyres.${t}`)}>
-    <span class="tyre-dot" style="--c:var(${He[t] ?? He.unknown})">${i}</span>
-    ${r === null ? O : T`<small class="num">${r}</small>`}
-    ${n === !1 ? T`<span class="used">${e("live.used")}</span>` : O}
+	return w`<span class="tyre" title=${e(`tyres.${t}`)}>
+    <span class="tyre-dot" style="--c:var(${V[t] ?? V.unknown})">${i}</span>
+    ${r === null ? D : w`<small class="num">${r}</small>`}
+    ${n === !1 ? w`<span class="used">${e("live.used")}</span>` : D}
   </span>`;
 }
-function pt(e, t = !0) {
-	return e == null ? O : e > 0 ? T`<span class="gained up">▲${e}</span>` : e < 0 ? T`<span class="gained down">▼${-e}</span>` : t ? T`<span class="gained muted">–</span>` : O;
+function Lt(e, t = !0) {
+	return e == null ? D : e > 0 ? w`<span class="gained up">▲${e}</span>` : e < 0 ? w`<span class="gained down">▼${-e}</span>` : t ? w`<span class="gained muted">–</span>` : D;
 }
 function Y(e, t, n) {
-	return T`<span class="drv"
-    ><span class="bar" style="background:${Ge(t, n)}"></span>${e ?? "—"}</span
+	return w`<span class="drv"
+    ><span class="bar" style="background:${lt(t, n)}"></span>${e ?? "—"}</span
   >`;
 }
-function mt(e, t, n, r) {
-	let i = rt(t, n, r);
-	return i ? T`<small class="also">${e(i.local ? "time.atTrack" : "time.yours", { time: i.time })}</small>` : O;
+function Rt(e, t, n, r) {
+	let i = St(t, n, r);
+	return i ? w`<small class="also">${e(i.local ? "time.atTrack" : "time.yours", { time: i.time })}</small>` : D;
 }
-function ht(e) {
-	return !e?.length || e.every((e) => !e) ? O : T`<span class="seg" aria-hidden="true">${e.map((e) => T`<i class=${e}></i>`)}</span>`;
+function zt(e) {
+	return !e?.length || e.every((e) => !e) ? D : w`<span class="seg" aria-hidden="true">${e.map((e) => w`<i class=${e}></i>`)}</span>`;
 }
-function gt(e) {
-	return T`<div class="card loading">${e("common.loading")}</div>`;
+function Bt(e) {
+	return w`<div class="card loading">${e("common.loading")}</div>`;
 }
 function X(e, t) {
-	return T`<div class="card error">
+	return w`<div class="card error">
     <div>${e("common.unavailable")}</div>
     <button class="btn flat" @click=${t}>${e("common.retry")}</button>
   </div>`;
 }
 //#endregion
-//#region node_modules/lit-html/directive.js
-var _t = {
-	ATTRIBUTE: 1,
-	CHILD: 2,
-	PROPERTY: 3,
-	BOOLEAN_ATTRIBUTE: 4,
-	EVENT: 5,
-	ELEMENT: 6
-}, vt = (e) => (...t) => ({
-	_$litDirective$: e,
-	values: t
-}), yt = class {
-	constructor(e) {}
-	get _$AU() {
-		return this._$AM._$AU;
-	}
-	_$AT(e, t, n) {
-		this._$Ct = e, this._$AM = t, this._$Ci = n;
-	}
-	_$AS(e, t) {
-		return this.update(e, t);
-	}
-	update(e, t) {
-		return this.render(...t);
-	}
-}, { I: bt } = Ae, xt = (e) => e, St = () => document.createComment(""), Z = (e, t, n) => {
-	let r = e._$AA.parentNode, i = t === void 0 ? e._$AB : t._$AA;
-	if (n === void 0) n = new bt(r.insertBefore(St(), i), r.insertBefore(St(), i), e, e.options);
-	else {
-		let t = n._$AB.nextSibling, a = n._$AM, o = a !== e;
-		if (o) {
-			let t;
-			n._$AQ?.(e), n._$AM = e, n._$AP !== void 0 && (t = e._$AU) !== a._$AU && n._$AP(t);
-		}
-		if (t !== i || o) {
-			let e = n._$AA;
-			for (; e !== t;) {
-				let t = xt(e).nextSibling;
-				xt(r).insertBefore(e, i), e = t;
-			}
-		}
-	}
-	return n;
-}, Q = (e, t, n = e) => (e._$AI(t, n), e), Ct = {}, wt = (e, t = Ct) => e._$AH = t, Tt = (e) => e._$AH, Et = (e) => {
-	e._$AR(), e._$AA.remove();
-}, Dt = vt(class extends yt {
-	constructor() {
-		super(...arguments), this.key = O;
-	}
-	render(e, t) {
-		return this.key = e, t;
-	}
-	update(e, [t, n]) {
-		return t !== this.key && (wt(e), this.key = t), n;
-	}
-}), Ot = class extends N {
+//#region src/clock.ts
+var Vt = class extends j {
 	constructor(...e) {
 		super(...e), this.to = "", this.now = Date.now();
 	}
@@ -1847,14 +2032,14 @@ var _t = {
 	}
 	render() {
 		let e = Date.parse(this.to);
-		return Number.isFinite(e) ? ct(e - this.now) : "";
+		return Number.isFinite(e) ? kt(e - this.now) : "";
 	}
 	static {
 		this.styles = o`
     :host { font-variant-numeric: tabular-nums; }
   `;
 	}
-}, kt = class extends N {
+}, Ht = class extends j {
 	constructor(...e) {
 		super(...e), this.age = 0, this.at = Date.now(), this.precise = !0, this.now = Date.now();
 	}
@@ -1862,7 +2047,7 @@ var _t = {
 		this.properties = {
 			hass: {
 				attribute: !1,
-				hasChanged: ut
+				hasChanged: jt
 			},
 			age: { type: Number },
 			at: { type: Number },
@@ -1879,7 +2064,7 @@ var _t = {
 	render() {
 		if (!this.hass) return "";
 		let e = this.age + Math.max(0, this.now - this.at) / 1e3;
-		return L(this.hass)("live.updated", { n: q(this.hass, e, +!!this.precise) });
+		return L(this.hass)("live.updated", { n: J(this.hass, e, +!!this.precise) });
 	}
 	static {
 		this.styles = o`
@@ -1887,14 +2072,16 @@ var _t = {
   `;
 	}
 };
-function At(e, t, n, r) {
-	return T`<plb-age .hass=${e} .age=${t} .at=${n} ?precise=${r}></plb-age>`;
+function Ut(e, t, n, r) {
+	return w`<plb-age .hass=${e} .age=${t} .at=${n} ?precise=${r}></plb-age>`;
 }
 //#endregion
 //#region src/pages/calendar.ts
-var jt = class extends N {
+var Wt = 6e5, Gt = class extends j {
 	constructor(...e) {
-		super(...e), this.seasons = [], this.failed = !1, this.now = Date.now(), this.request = 0, this.spoilers = "";
+		super(...e), this.seasons = [], this.failed = !1, this.now = Date.now(), this.clock = 0, this.request = 0, this.spoilers = "", this.loadedAt = 0, this.scrolled = !1, this.visibility = () => {
+			document.visibilityState === "visible" && this.tick();
+		};
 	}
 	static {
 		this.properties = {
@@ -1904,43 +2091,53 @@ var jt = class extends N {
 			season: { state: !0 },
 			data: { state: !0 },
 			failed: { state: !0 },
-			now: { state: !0 }
+			now: { state: !0 },
+			clock: { attribute: !1 }
 		};
 	}
 	connectedCallback() {
-		super.connectedCallback(), this.timer = window.setInterval(() => this.now = Date.now(), 3e4);
+		super.connectedCallback(), this.timer = window.setInterval(() => this.tick(), 3e4), document.addEventListener("visibilitychange", this.visibility), this.data && this.tick();
 	}
 	disconnectedCallback() {
-		super.disconnectedCallback(), window.clearInterval(this.timer);
+		super.disconnectedCallback(), window.clearInterval(this.timer), document.removeEventListener("visibilitychange", this.visibility);
+	}
+	tick() {
+		this.now = Date.now(), this.data && document.visibilityState !== "hidden" && (this.data.meetings.some((e) => e.sessions.some((e) => {
+			let t = e.start ? Date.parse(e.start) : NaN;
+			return t > this.loadedAt && t <= this.now;
+		})) || this.now - this.loadedAt > Wt) && this.load();
 	}
 	willUpdate(e) {
 		this.season === void 0 && this.settings && (this.season = this.settings.season);
-		let t = dt(this.settings);
+		let t = Mt(this.settings);
 		(e.has("season") || t !== this.spoilers) && (this.spoilers = t, this.load());
 	}
 	async load() {
 		if (!this.hass || this.season === void 0) return;
-		let e = ++this.request;
-		this.failed = !1;
+		let e = ++this.request, t = !!this.data && this.data.season === this.season;
+		t || (this.failed = !1);
 		try {
 			let t = await F.calendar(this.hass, this.season);
-			e === this.request && (this.data = t);
+			e === this.request && (this.data = t, this.failed = !1, this.loadedAt = Date.now());
 		} catch {
-			e === this.request && (this.failed = !0);
+			e === this.request && !t ? this.failed = !0 : e === this.request && (this.loadedAt = Date.now() - Wt + 6e4);
 		}
+	}
+	updated() {
+		!this.scrolled && this.data && this.data.season === this.settings?.season && (this.scrolled = !0, !(this.getBoundingClientRect().width > 640) && this.renderRoot.querySelector(".meet.live, .meet.next")?.scrollIntoView({ block: "start" }));
 	}
 	render() {
 		let e = L(this.hass), t = this.seasons.length ? this.seasons : [this.season ?? 0];
-		return T`
+		return w`
       <div class="toolbar">
         <h1>${e("calendar.title")}</h1>
         <select aria-label=${e("common.season")} @change=${(e) => {
 			this.data = void 0, this.season = Number(e.target.value);
 		}}>
-          ${t.map((e) => T`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
+          ${t.map((e) => w`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
         </select>
       </div>
-      ${this.failed ? X(e, () => this.load()) : !this.data || this.data.season !== this.season ? gt(e) : this.data.meetings.length ? T`<div class="cal">${this.data.meetings.map((e) => this.renderMeeting(e))}</div>` : T`<div class="card state">${e("calendar.empty")}</div>`}
+      ${this.failed ? X(e, () => this.load()) : !this.data || this.data.season !== this.season ? Bt(e) : this.data.meetings.length ? w`<div class="cal">${this.data.meetings.map((e) => this.renderMeeting(e))}</div>` : w`<div class="card state">${e("calendar.empty")}</div>`}
     `;
 	}
 	go(e) {
@@ -1952,16 +2149,16 @@ var jt = class extends N {
 	}
 	renderMeeting(e) {
 		let t = L(this.hass), n = e.sessions[0]?.date, r = e.sessions[e.sessions.length - 1]?.date, i = e.state === "next" ? e.sessions.find((e) => e.start && Date.parse(e.start) > this.now) : void 0;
-		return T`<div class="card meet ${e.state}">
+		return w`<div class="card meet ${e.state}">
       <div class="meet-head"><span class="round">${t("calendar.round", { n: e.round })}</span><h3>${e.name}</h3></div>
-      <div class="where">${[e.locality, e.country].filter(Boolean).join(" · ")}${n && r ? ` · ${at(this.hass, n, r)}` : ""}</div>
-      ${e.sprint || e.state === "next" || e.state === "live" ? T`<div class="flagline">
-            ${e.sprint ? T`<span class="pill sprint">${t("common.sprint")}</span>` : O}
-            ${e.state === "next" ? T`<span class="pill">${t("calendar.next")}</span>` : O}
-            ${e.state === "live" ? T`<span class="pill live">${t("calendar.live")}</span>` : O}
-          </div>` : O}
-      ${e.state === "done" ? T`<div class="podium">
-              ${e.podium_hidden ? T`<div class="hidden-cell">${t("spoiler.hiddenRound")}</div>` : (e.podium ?? []).map((e, t) => T`<div><b>${t + 1}</b>${Y(e.name, e.team_id)}</div>`)}
+      <div class="where">${[e.locality, e.country].filter(Boolean).join(" · ")}${n && r ? ` · ${wt(this.hass, n, r)}` : ""}</div>
+      ${e.sprint || e.state === "next" || e.state === "live" ? w`<div class="flagline">
+            ${e.sprint ? w`<span class="pill sprint">${t("common.sprint")}</span>` : D}
+            ${e.state === "next" ? w`<span class="pill">${t("calendar.next")}</span>` : D}
+            ${e.state === "live" ? w`<span class="pill live">${t("calendar.live")}</span>` : D}
+          </div>` : D}
+      ${e.state === "done" ? w`<div class="podium">
+              ${e.podium_hidden ? w`<div class="hidden-cell">${t("spoiler.hiddenRound")}</div>` : (e.podium ?? []).map((e, t) => w`<div><b>${t + 1}</b>${Y(e.name, e.team_id)}</div>`)}
             </div>
             <button class="link more" @click=${() => this.go({
 			page: "results",
@@ -1969,19 +2166,21 @@ var jt = class extends N {
 			round: e.round
 		})}>
               ${t("calendar.results")} →
-            </button>` : T`<ul>
-            ${e.sessions.map((n) => T`<li><span>${t(`sessions.${n.kind}`)}</span><span class="num">${nt(this.hass, n.start, n.date, e.timezone)}${mt(t, this.hass, n.start, e.timezone)}</span></li>`)}
+            </button>` : w`<ul>
+            ${e.sessions.map((n) => w`<li><span>${t(`sessions.${n.kind}`)}</span><span class="num">${xt(this.hass, n.start, n.date, e.timezone)}${Rt(t, this.hass, n.start, e.timezone)}</span></li>`)}
           </ul>`}
-      ${e.state === "live" ? T`<button class="link more" @click=${() => this.go({ page: "live" })}>${t("calendar.watch")} →</button>` : O}
-      ${i?.start ? T`<div class="countdown">${t(`sessions.${i.kind}`)} · ${t("calendar.startsIn")}
-            <b class="num">${ct(Date.parse(i.start) - this.now)}</b></div>` : O}
+      ${e.state === "live" ? w`<button class="link more" @click=${() => this.go({ page: "live" })}>${t("calendar.watch")} →</button>` : D}
+      ${i?.start ? w`<div class="countdown">${t(`sessions.${i.kind}`)} · ${t("calendar.startsIn")}
+            <b class="num">${kt(Date.parse(i.start) - this.now)}</b></div>` : D}
     </div>`;
 	}
 	static {
 		this.styles = [B, o`
       :host { display: block; }
-      .cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--plb-gap); align-items: start; }
-      .meet { display: grid; }
+      :host { container-type: inline-size; }
+      .cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--plb-gap); align-items: stretch; }
+      .meet { display: flex; flex-direction: column; scroll-margin-top: 120px; }
+      .meet > .more:first-of-type { margin-top: auto; }
       .meet-head { display: flex; align-items: baseline; gap: 10px; padding: 14px 16px 6px; }
       .round { font-size: 12px; font-weight: 600; color: var(--secondary-text-color); letter-spacing: 0.06em; }
       h3 { margin: 0; font-size: 17px; font-weight: 500; }
@@ -2001,20 +2200,34 @@ var jt = class extends N {
       .podium { display: grid; gap: 4px; padding: 0 16px 10px; font-size: 13px; }
       .podium div { display: flex; align-items: center; gap: 8px; }
       .podium b { width: 18px; color: var(--secondary-text-color); font-weight: 500; }
-      .more { justify-self: start; margin: 0 16px 14px; font-size: 13px; }
-      @media (max-width: 640px) {
+      .more { align-self: flex-start; margin: 0 16px 14px; font-size: 13px; }
+      .countdown { margin-top: auto; }
+      @container (max-width: 640px) {
         .cal { grid-template-columns: 1fr; }
         li span:first-child { width: 130px; }
       }
     `];
 	}
-}, Mt = (e, t, n) => {
+}, Kt = {}, Z = Re(class extends ze {
+	constructor() {
+		super(...arguments), this.ot = Kt;
+	}
+	render(e, t) {
+		return t();
+	}
+	update(e, [t, n]) {
+		if (Array.isArray(t)) {
+			if (Array.isArray(this.ot) && this.ot.length === t.length && t.every((e, t) => e === this.ot[t])) return E;
+		} else if (this.ot === t) return E;
+		return this.ot = Array.isArray(t) ? Array.from(t) : t, this.render(t, n);
+	}
+}), qt = (e, t, n) => {
 	let r = /* @__PURE__ */ new Map();
 	for (let i = t; i <= n; i++) r.set(e[i], i);
 	return r;
-}, $ = vt(class extends yt {
+}, Q = Re(class extends ze {
 	constructor(e) {
-		if (super(e), e.type !== _t.CHILD) throw Error("repeat() can only be used in text expressions");
+		if (super(e), e.type !== Le.CHILD) throw Error("repeat() can only be used in text expressions");
 	}
 	dt(e, t, n) {
 		let r;
@@ -2030,36 +2243,64 @@ var jt = class extends N {
 		return this.dt(e, t, n).values;
 	}
 	update(e, [t, n, r]) {
-		let i = Tt(e), { values: a, keys: o } = this.dt(t, n, r);
+		let i = qe(e), { values: a, keys: o } = this.dt(t, n, r);
 		if (!Array.isArray(i)) return this.ut = o, a;
 		let s = this.ut ??= [], c = [], l, u, d = 0, f = i.length - 1, p = 0, m = a.length - 1;
 		for (; d <= f && p <= m;) if (i[d] === null) d++;
 		else if (i[f] === null) f--;
-		else if (s[d] === o[p]) c[p] = Q(i[d], a[p]), d++, p++;
-		else if (s[f] === o[m]) c[m] = Q(i[f], a[m]), f--, m--;
-		else if (s[d] === o[m]) c[m] = Q(i[d], a[m]), Z(e, c[m + 1], i[d]), d++, m--;
-		else if (s[f] === o[p]) c[p] = Q(i[f], a[p]), Z(e, i[d], i[f]), f--, p++;
-		else if (l === void 0 && (l = Mt(o, p, m), u = Mt(s, d, f)), l.has(s[d])) {
+		else if (s[d] === o[p]) c[p] = N(i[d], a[p]), d++, p++;
+		else if (s[f] === o[m]) c[m] = N(i[f], a[m]), f--, m--;
+		else if (s[d] === o[m]) c[m] = N(i[d], a[m]), M(e, c[m + 1], i[d]), d++, m--;
+		else if (s[f] === o[p]) c[p] = N(i[f], a[p]), M(e, i[d], i[f]), f--, p++;
+		else if (l === void 0 && (l = qt(o, p, m), u = qt(s, d, f)), l.has(s[d])) {
 			if (l.has(s[f])) {
 				let t = u.get(o[p]), n = t === void 0 ? null : i[t];
 				if (n === null) {
-					let t = Z(e, i[d]);
-					Q(t, a[p]), c[p] = t;
-				} else c[p] = Q(n, a[p]), Z(e, i[d], n), i[t] = null;
+					let t = M(e, i[d]);
+					N(t, a[p]), c[p] = t;
+				} else c[p] = N(n, a[p]), M(e, i[d], n), i[t] = null;
 				p++;
-			} else Et(i[f]), f--;
-		} else Et(i[d]), d++;
+			} else Je(i[f]), f--;
+		} else Je(i[d]), d++;
 		for (; p <= m;) {
-			let t = Z(e, c[m + 1]);
-			Q(t, a[p]), c[p++] = t;
+			let t = M(e, c[m + 1]);
+			N(t, a[p]), c[p++] = t;
 		}
 		for (; d <= f;) {
 			let e = i[d++];
-			e !== null && Et(e);
+			e !== null && Je(e);
 		}
-		return this.ut = o, wt(e, c), D;
+		return this.ut = o, Ke(e, c), E;
 	}
-}), Nt = 4, Pt = {
+});
+//#endregion
+//#region src/merge.ts
+function Jt(e, t) {
+	let n = new Map((e ?? []).map((e) => [e.number, e])), r = [];
+	for (let e of t.order) {
+		let i = String(e), a = t.rows[i] ?? n.get(i);
+		a && r.push(a);
+	}
+	return r;
+}
+function Yt(e, t) {
+	if (t.full || !e) {
+		if (!t.tower_patch) return t;
+		let { tower_patch: e, ...n } = t;
+		return {
+			...n,
+			tower: Jt(void 0, e)
+		};
+	}
+	let { tower_patch: n, ...r } = t, i = {
+		...e,
+		...r
+	};
+	return n && (i.tower = Jt(e.tower, n)), i;
+}
+//#endregion
+//#region src/pages/stewards.ts
+var Xt = 4, Zt = {
 	clear: "st-clear",
 	yellow: "st-yellow",
 	safety_car: "st-sc",
@@ -2068,13 +2309,16 @@ var jt = class extends N {
 	red_flag: "st-red",
 	chequered: "st-chequered"
 };
-function Ft(e) {
-	return e ? Pt[e] ?? "" : "";
+function Qt(e) {
+	return e ? Zt[e] ?? "" : "";
 }
-function It(e, t) {
+function $t(e, t) {
 	return (!t || t === "clear" || t === "chequered") && !e.yellow && !e.red_flag && !e.safety_car && !e.virtual_safety_car && !e.penalties.length && !e.investigations.length && !e.track_limits.length;
 }
-function Lt(e, t) {
+function en(e) {
+	return !e.penalties.length && !e.investigations.length && !e.track_limits.length;
+}
+function tn(e, t) {
 	switch (t.kind) {
 		case "time_penalty": return `+${t.seconds ?? "?"}s`;
 		case "drive_through": return e("stewards.short.drive_through");
@@ -2084,74 +2328,79 @@ function Lt(e, t) {
 		default: return e(`stewards.kind.${t.kind}`);
 	}
 }
-function Rt(e) {
+function nn(e) {
 	return e.cars.map((e) => e.tla).join(" · ");
 }
-function zt(e, t, n) {
-	return e.length <= Nt ? e.map(t) : T`${e.slice(0, Nt).map(t)}
-    <details><summary>${n("stewards.showAll", { n: e.length - Nt })}</summary>${e.slice(Nt).map(t)}</details>`;
+function rn(e) {
+	return e.reason ? `${nn(e)} ${e.reason}` : nn(e);
 }
-function Bt(e, t) {
-	return T`<li class=${t.served ? "served" : ""}>
-    <span class="pen">${Lt(e, t)}</span>
-    <span class="what"><b>${Rt(t)}</b>${t.reason ? T` <span class="why">${t.reason}</span>` : O}</span>
-    <span class="when">${t.served ? T`✓ ${e("stewards.served")}` : t.lap ? `${e("common.lap")} ${t.lap}` : ""}</span>
+function an(e, t, n) {
+	return e.length <= Xt ? e.map(t) : w`${e.slice(0, Xt).map(t)}
+    <details><summary>${n("stewards.showAll", { n: e.length - Xt })}</summary>${e.slice(Xt).map(t)}</details>`;
+}
+function on(e, t) {
+	return w`<li class=${t.served ? "served" : ""}>
+    <span class="pen">${tn(e, t)}</span>
+    <span class="what" title=${rn(t)}><b>${nn(t)}</b>${t.reason ? w` <span class="why">${t.reason}</span>` : D}</span>
+    <span class="when">${t.served ? w`✓ ${e("stewards.served")}` : t.lap ? `${e("common.lap")} ${t.lap}` : ""}</span>
   </li>`;
 }
-function Vt(e, t) {
-	return T`<li>
+function sn(e, t) {
+	return w`<li>
     <span class="tag">${e(`stewards.kind.${t.status ?? t.kind}`)}</span>
-    <span class="what"><b>${Rt(t)}</b>${t.reason ? T` <span class="why">${t.reason}</span>` : O}</span>
+    <span class="what two" title=${rn(t)}><b>${nn(t)}</b>${t.reason ? w` <span class="why">${t.reason}</span>` : D}</span>
     <span class="when">${t.turn ? e("stewards.turn", { n: t.turn }) : t.lap ? `${e("common.lap")} ${t.lap}` : ""}</span>
   </li>`;
 }
-function Ht(e, t, n) {
-	let r = t.safety_car ?? t.virtual_safety_car, i = t.safety_car ? "sc" : "vsc";
-	return T`<div class="col">
+function cn(e, t, n, r) {
+	let i = t.safety_car ?? t.virtual_safety_car, a = t.safety_car ? "sc" : "vsc";
+	return w`<div class="col">
     <h4>${e("stewards.track")}</h4>
-    ${n ? T`<span class="status-pill ${Ft(n)}">${e(`live.status.${n}`)}</span>` : T`<span class="muted">—</span>`}
-    ${r ? T`<div class="phase">${e(`stewards.${i}.${r}`)}</div>` : O}
-    ${t.yellow_sectors.length ? T`<div class="sectors">${t.yellow_sectors.map((t) => T`<span class="sector-chip ${t.flag}" title=${e(`stewards.${t.flag}`)}
-            >S${t.sector}${t.flag === "double_yellow" ? T`<small>×2</small>` : O}</span>`)}</div>` : O}
+    ${n ? w`<span class="status-pill ${Qt(n)}">${e(`live.status.${n}`)}</span>` : w`<span class="muted">—</span>`}
+    ${i ? w`<div class="phase">${e(`stewards.${a}.${i}`)}</div>` : D}
+    ${r.length ? w`<div class="sectors">${r.map((t) => w`<span class="sector-chip ${t.flag}" title=${e(`stewards.${t.flag}`)}
+            >S${t.sector}${t.flag === "double_yellow" ? w`<small>×2</small>` : D}</span>`)}</div>` : D}
   </div>`;
 }
-function Ut(e, t, n, r, i) {
-	let a = t.penalties.filter((e) => !e.served).length;
-	return T`<button class="compact" @click=${i} aria-expanded=${r ? "true" : "false"}>
-    ${n ? T`<span class="status-pill ${Ft(n)}">${e(`live.status.${n}`)}</span>` : O}
-    ${t.yellow_sectors.map((e) => T`<span class="sector-chip ${e.flag}">S${e.sector}</span>`)}
-    ${t.penalties.length ? T`<span class="count ${a ? "hot" : ""}">${e("stewards.penalties")} ${t.penalties.length}</span>` : O}
-    ${t.investigations.length ? T`<span class="count">${e("stewards.investigations")} ${t.investigations.length}</span>` : O}
-    ${t.track_limits.length ? T`<span class="count">${e("stewards.trackLimits")} ${t.track_limits.length}</span>` : O}
+function ln(e, t, n, r, i, a) {
+	let o = t.penalties.filter((e) => !e.served).length;
+	return w`<button class="compact" @click=${i} aria-expanded=${r ? "true" : "false"}>
+    ${n ? w`<span class="status-pill ${Qt(n)}">${e(`live.status.${n}`)}</span>` : D}
+    ${a.map((e) => w`<span class="sector-chip ${e.flag}">S${e.sector}</span>`)}
+    ${t.penalties.length ? w`<span class="count ${o ? "hot" : ""}">${e("stewards.penalties")} ${t.penalties.length}</span>` : D}
+    ${t.investigations.length ? w`<span class="count">${e("stewards.investigations")} ${t.investigations.length}</span>` : D}
+    ${t.track_limits.length ? w`<span class="count">${e("stewards.trackLimits")} ${t.track_limits.length}</span>` : D}
     <span class="chevron">${r ? "▴" : "▾"}</span>
   </button>`;
 }
-function Wt(e, t, n, r = !1, i = () => void 0) {
-	return t ? It(t, n) ? T`<div class="card stewards calm">
-      <span class="status-pill ${Ft(n ?? "clear")}">${e(`live.status.${n ?? "clear"}`)}</span>
+function un(e, t, n, r = !1, i = () => void 0, a = !1) {
+	if (!t) return D;
+	let o = a || n === "chequered", s = o ? [] : t.yellow_sectors;
+	return $t(t, n) || o && en(t) ? w`<div class="card stewards calm">
+      <span class="status-pill ${Qt(n ?? "clear")}">${e(`live.status.${n ?? "clear"}`)}</span>
       <span class="muted">${e("stewards.calm")}</span>
-    </div>` : T`<section class="card stewards ${t.red_flag ? "accent-red" : t.safety_car || t.virtual_safety_car ? "accent-sc" : ""} ${r ? "open" : ""}" aria-label=${e("stewards.title")}>
+    </div>` : w`<section class="card stewards ${t.red_flag ? "accent-red" : t.safety_car || t.virtual_safety_car ? "accent-sc" : ""} ${r ? "open" : ""}" aria-label=${e("stewards.title")}>
     <div class="card-head">${e("stewards.title")}</div>
-    ${Ut(e, t, n, r, i)}
+    ${ln(e, t, n, r, i, s)}
     <div class="cols">
-      ${Ht(e, t, n)}
+      ${cn(e, t, n, s)}
       <div class="col">
         <h4>${e("stewards.penalties")} <small>${t.penalties.length || ""}</small></h4>
-        ${t.penalties.length ? T`<ul>${zt(t.penalties, (t) => Bt(e, t), e)}</ul>` : T`<span class="muted">${e("stewards.none")}</span>`}
+        ${t.penalties.length ? w`<ul>${an(t.penalties, (t) => on(e, t), e)}</ul>` : w`<span class="muted">${e("stewards.none")}</span>`}
       </div>
       <div class="col">
         <h4>${e("stewards.investigations")} <small>${t.investigations.length || ""}</small></h4>
-        ${t.investigations.length ? T`<ul>${zt(t.investigations, (t) => Vt(e, t), e)}</ul>` : T`<span class="muted">${e("stewards.none")}</span>`}
+        ${t.investigations.length ? w`<ul>${an(t.investigations, (t) => sn(e, t), e)}</ul>` : w`<span class="muted">${e("stewards.none")}</span>`}
       </div>
       <div class="col">
         <h4>${e("stewards.trackLimits")}</h4>
-        ${t.track_limits.length ? T`<ul>${zt(t.track_limits, (t) => T`<li><b>${t.tla}</b><span class="what">${e("stewards.deleted", { n: t.deleted })}</span>
-                ${t.black_and_white ? T`<span class="bw" title=${e("stewards.kind.black_and_white_flag")}>⚑</span>` : O}</li>`, e)}</ul>` : T`<span class="muted">${e("stewards.none")}</span>`}
+        ${t.track_limits.length ? w`<ul>${an(t.track_limits, (t) => w`<li><b>${t.tla}</b><span class="what">${e("stewards.deleted", { n: t.deleted })}</span>
+                ${t.black_and_white ? w`<span class="bw" title=${e("stewards.kind.black_and_white_flag")}>⚑</span>` : D}</li>`, e)}</ul>` : w`<span class="muted">${e("stewards.none")}</span>`}
       </div>
     </div>
-  </section>` : O;
+  </section>`;
 }
-var Gt = o`
+var dn = o`
   /* Sized by its own width, not the window's: the same card sits in the panel
      and, narrower, on a dashboard. */
   .stewards { margin-bottom: var(--plb-gap); container-type: inline-size; }
@@ -2166,13 +2415,16 @@ var Gt = o`
   .stewards li { display: flex; align-items: baseline; gap: 8px; font-size: 13px; min-width: 0; }
   .stewards li.served { color: var(--plb-muted); }
   .stewards .what { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stewards .what.two { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
   .stewards .why { color: var(--secondary-text-color); font-size: 12px; }
   .stewards .when { color: var(--secondary-text-color); font-size: 11px; white-space: nowrap; }
   .stewards .pen { flex: none; min-width: 36px; text-align: center; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 700;
     background: var(--error-color, #db4437); color: #fff; font-variant-numeric: tabular-nums; }
-  .stewards li.served .pen { background: var(--secondary-background-color); color: var(--plb-muted); }
+  .stewards li.served .pen { background: none; color: var(--secondary-text-color);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 30%, transparent); }
   .stewards .tag { flex: none; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.03em;
-    background: color-mix(in srgb, var(--warning-color, #ffa600) 20%, transparent); }
+    color: var(--primary-text-color); background: color-mix(in srgb, var(--warning-color, #ffa600) 22%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warning-color, #ffa600) 60%, transparent); }
   .stewards .col > .status-pill { justify-self: start; }
   .stewards .compact { display: none; width: 100%; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 12px; border: 0;
     background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
@@ -2187,7 +2439,7 @@ var Gt = o`
   .sector-chip.double_yellow { outline: 2px solid #f2c200; outline-offset: 1px; }
   .sector-chip small { font-size: 10px; }
   .stewards .bw { font-size: 14px; }
-  .stewards details summary { cursor: pointer; font-size: 12px; color: var(--primary-color); list-style: none; }
+  .stewards details summary { cursor: pointer; font-size: 12px; color: var(--plb-primary-text); list-style: none; }
   .stewards details[open] summary { display: none; }
   .stewards details { display: grid; gap: 6px; }
   @container (max-width: 1000px) {
@@ -2202,37 +2454,44 @@ var Gt = o`
     .stewards.open .cols { display: grid; }
     .stewards .col + .col { border-left: 0; border-top: 1px solid var(--divider-color); }
   }
-`, Kt = o`
+`, fn = o`
   .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; letter-spacing: 0.04em; }
   .status-pill::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
-  .st-clear { background: color-mix(in srgb, var(--plb-green) 16%, transparent); color: var(--plb-green); }
-  .st-yellow { background: color-mix(in srgb, var(--plb-yellow) 22%, transparent); color: #a07d00; }
+  .st-clear { background: color-mix(in srgb, var(--plb-green) 16%, transparent); color: var(--plb-green-text); }
+  .st-yellow { background: color-mix(in srgb, var(--plb-yellow) 22%, transparent); color: var(--plb-yellow-text); }
   .st-sc { background: #f2c200; color: #1a1a1a; }
   .st-red { background: var(--error-color, #db4437); color: #fff; }
   .st-chequered { background: var(--secondary-background-color); color: var(--primary-text-color); }
   .st-chequered::before { border-radius: 2px; background: repeating-conic-gradient(#222 0 25%, #fff 0 50%) 0 0 / 5px 5px;
   box-shadow: 0 0 0 1px var(--divider-color); }
-`, qt = {
+`, pn = {
 	all: null,
 	flags: "flag",
 	penalties: "penalty",
 	other: "other"
-}, Jt = /* @__PURE__ */ new Set([
+}, mn = /* @__PURE__ */ new Set([
 	"live",
 	"stale",
 	"lost",
 	"final"
-]), Yt = class extends N {
+]), hn = /* @__PURE__ */ new Set(["race", "sprint"]), gn = class extends j {
 	constructor(...e) {
-		super(...e), this.selected = "", this.filter = "all", this.playing = "", this.failed = !1, this.starting = !1, this.stewardsOpen = !1, this.subscribing = !1, this.receivedAt = Date.now();
+		super(...e), this.kiosk = !1, this.clock = 0, this.selected = "", this.filter = "all", this.playing = "", this.failed = !1, this.starting = !1, this.stewardsOpen = !1, this.subscribing = !1, this.receivedAt = Date.now(), this.byNumber = /* @__PURE__ */ new Map(), this.visibility = () => {
+			document.visibilityState === "visible" && this.requestUpdate();
+		};
 	}
 	static {
 		this.properties = {
 			hass: {
 				attribute: !1,
-				hasChanged: ut
+				hasChanged: jt
 			},
 			settings: { attribute: !1 },
+			kiosk: {
+				type: Boolean,
+				reflect: !0
+			},
+			clock: { attribute: !1 },
 			view: { state: !0 },
 			selected: { state: !0 },
 			filter: { state: !0 },
@@ -2242,8 +2501,14 @@ var Gt = o`
 			stewardsOpen: { state: !0 }
 		};
 	}
+	connectedCallback() {
+		super.connectedCallback(), document.addEventListener("visibilitychange", this.visibility), this.hasUpdated && this.requestUpdate();
+	}
 	disconnectedCallback() {
-		super.disconnectedCallback(), window.clearTimeout(this.retry), this.retry = void 0, this.unsubscribe?.(), this.unsubscribe = void 0, this.stopAudio();
+		super.disconnectedCallback(), document.removeEventListener("visibilitychange", this.visibility), window.clearTimeout(this.retry), this.retry = void 0, this.unsubscribe?.(), this.unsubscribe = void 0, this.stopAudio();
+	}
+	shouldUpdate() {
+		return document.visibilityState !== "hidden" || !this.hasUpdated;
 	}
 	willUpdate() {
 		this.hass && !this.unsubscribe && !this.subscribing && this.retry === void 0 && this.subscribe();
@@ -2267,10 +2532,7 @@ var Gt = o`
 		}
 	}
 	receive(e) {
-		this.view = e.full || !this.view ? e : {
-			...this.view,
-			...e
-		}, this.receivedAt = Date.now();
+		this.view = Yt(this.view, e), this.receivedAt = Date.now();
 	}
 	select(e) {
 		this.selected = this.selected === e ? "" : e;
@@ -2304,103 +2566,161 @@ var Gt = o`
 		let e = L(this.hass), t = this.view;
 		if (!t) return this.failed ? X(e, () => {
 			window.clearTimeout(this.retry), this.retry = void 0, this.subscribe();
-		}) : T`<div class="card loading">${e("common.loading")}</div>`;
-		if (Jt.has(t.state)) return this.renderBoard(e, t);
+		}) : w`<div class="card loading">${e("common.loading")}</div>`;
+		if (mn.has(t.state)) return this.renderBoard(e, t);
 		switch (t.state) {
-			case "hidden": return T`<div class="card state">${z(R.eyeOff, 56)}<h2>${e("live.hidden")}</h2>
+			case "hidden": return w`<div class="card state">${z(R.eyeOff, 56)}<h2>${e("live.hidden")}</h2>
           <div>${e("live.hiddenHelp", {
 				meeting: t.header?.meeting ?? "",
-				session: t.header?.session ?? ""
+				session: Pt(e, t.header?.kind, t.header?.session)
 			})}</div>
           <button class="btn" @click=${() => this.dispatchEvent(new CustomEvent("plb-spoiler-off", {
 				bubbles: !0,
 				composed: !0
 			}))}>${e("live.showAll")}</button></div>`;
-			case "syncing": return T`<div class="card state">${z(R.clock, 56)}<h2>${e("live.syncing")}</h2>
+			case "syncing": return w`<div class="card state">${z(R.clock, 56)}<h2>${e("live.syncing")}</h2>
           <div>${e("live.syncingHelp", { n: t.delay })}</div></div>`;
-			case "connecting": return T`<div class="card state">${z(R.timer, 56)}<h2>${e("live.connecting")}</h2></div>`;
+			case "connecting": return w`<div class="card state"><span class="spin">${z(R.timer, 56)}</span><h2>${e("live.connecting")}</h2></div>`;
 			case "paused": return this.renderPaused(e, t);
 			default: return this.renderIdle(e, t);
 		}
 	}
 	nextBlock(e, t) {
-		return t ? T`<div>${e("live.next", {
+		return t ? w`<div>${e("live.next", {
 			meeting: t.meeting,
 			session: e(`sessions.${t.kind}`)
 		})}</div>
-      ${t.start ? T`<div class="big num"><plb-countdown .to=${t.start}></plb-countdown></div>
-            <div>${e("live.startsIn")} · ${nt(this.hass, t.start, t.date, t.timezone)}
-              ${mt(e, this.hass, t.start, t.timezone)}</div>` : O}` : T`<div>${e("live.noNext")}</div>`;
+      ${t.start ? w`<div class="starts">${e("live.startsIn")}</div>
+            <div class="big num"><plb-countdown .to=${t.start}></plb-countdown></div>
+            <div>${xt(this.hass, t.start, t.date, t.timezone)}
+              ${Rt(e, this.hass, t.start, t.timezone)}</div>` : D}` : w`<div>${e("live.noNext")}</div>`;
 	}
 	playButton(e) {
-		return T`<button class="btn play-live" ?disabled=${this.starting} @click=${() => this.start()}>
+		return w`<button class="btn play-live" ?disabled=${this.starting} @click=${() => this.start()}>
       ${z(R.play, 18)}${e("settings.start")}</button>`;
 	}
 	renderPaused(e, t) {
-		return T`<div class="card state">${z(R.pause, 56)}<h2>${e("live.paused")}</h2>
-      <div>${e("settings.pausedHelp")}</div>
+		return w`<div class="card state">${z(R.pause, 56)}<h2>${e("live.paused")}</h2>
+      <div>${e("live.pausedHelp")}</div>
       ${this.playButton(e)}
-      ${t.auto_start ? T`<div class="muted">${e("live.autoStart")}</div>` : O}
+      ${t.auto_start ? w`<div class="muted">${e("live.autoStart")}</div>` : D}
       <div class="next">${this.nextBlock(e, t.next_session)}</div>
     </div>`;
 	}
 	renderIdle(e, t) {
-		return T`<div class="card state">${z(R.timer, 56)}<h2>${e("live.idle")}</h2>
+		return w`<div class="card state">${z(R.timer, 56)}<h2>${e("live.idle")}</h2>
       ${this.nextBlock(e, t.next_session)}
     </div>`;
 	}
 	stripEnd(e, t) {
-		if (t.state !== "final") return T`<span class="age">${At(this.hass, t.data_age ?? 0, this.receivedAt, t.state === "live")}</span>`;
+		if (t.state !== "final") return w`<span class="age">${Ut(this.hass, t.data_age ?? 0, this.receivedAt, t.state === "live")}</span>`;
 		let n = t.next_session;
-		return n ? T`<div class="next-slot">
+		return n ? w`<div class="next-slot">
       <small>${e("live.nextShort")}</small>
       <b>${n.meeting} · ${e(`sessions.${n.kind}`)}</b>
-      ${n.start ? T`<span class="num"><plb-countdown .to=${n.start}></plb-countdown></span>` : O}
-    </div>` : O;
+      ${n.start ? w`<span class="num"><plb-countdown .to=${n.start}></plb-countdown></span>` : D}
+    </div>` : D;
+	}
+	stripStart(e, t) {
+		let n = t.header, r = t.state === "final", i = n?.kind === "qualifying" || n?.kind === "sprint_qualifying";
+		return w`<div><h1>${n?.meeting ?? ""}</h1><div class="sub">${Pt(e, n?.kind, n?.session)}${n?.circuit ? ` · ${n.circuit}` : ""}</div></div>
+      ${i && n?.part ? w`<div class="laps num">Q${n.part}${!r && n.remaining !== null ? w`<small> · ${At(n.remaining)} ${e("live.remaining")}</small>` : D}</div>` : n?.lap ? w`<div class="laps num">${e("common.lap")} ${n.lap}${n.total_laps ? w`<small> / ${n.total_laps}</small>` : D}</div>` : !r && n?.remaining !== null && n?.remaining !== void 0 ? w`<div class="laps num">${At(n.remaining)} <small>${e("live.remaining")}</small></div>` : D}
+      ${r ? w`<span class="final-pill">${e("live.final")}</span>
+            <span class="sub">${e("live.ended", { time: Ot(this.hass, t.ended) })}</span>` : D}
+      ${r && t.paused ? w`<span class="paused-pill">${e("live.pausedShort")}</span>${this.playButton(e)}` : D}`;
 	}
 	renderBoard(e, t) {
-		let n = t.header, r = t.state === "final", i = t.state === "stale" ? T`<div class="banner">${z(R.alert)}${e("live.stale", { n: Math.round(t.data_age ?? 0) })}</div>` : t.state === "lost" ? T`<div class="banner lost">${z(R.alert)}${e("live.lost")}</div>` : O, a = n?.kind === "qualifying" || n?.kind === "sprint_qualifying", o = t.state === "live" || t.state === "stale";
-		return T`${i}
+		let n = t.header, r = t.state === "final", i = t.state === "stale" ? w`<div class="banner">${z(R.alert)}${e("live.stale", { n: Math.round(t.data_age ?? 0) })}</div>` : t.state === "lost" ? w`<div class="banner lost">${z(R.alert)}${e("live.lost")}</div>` : D, a = n?.kind === "qualifying" || n?.kind === "sprint_qualifying", o = t.state === "live" || t.state === "stale", s = this.hass, c = t.tower ?? [], l = this.settings?.favourites;
+		return w`${i}
       <div class="card strip">
-        <div><h1>${n?.meeting ?? ""}</h1><div class="sub">${n?.session ?? ""}${n?.circuit ? ` · ${n.circuit}` : ""}</div></div>
-        ${a && n?.part ? T`<div class="laps num">Q${n.part}${!r && n.remaining !== null ? T`<small> · ${lt(n.remaining)} ${e("live.remaining")}</small>` : O}</div>` : n?.lap ? T`<div class="laps num">${e("common.lap")} ${n.lap}${n.total_laps ? T`<small> / ${n.total_laps}</small>` : O}</div>` : !r && n?.remaining !== null && n?.remaining !== void 0 ? T`<div class="laps num">${lt(n.remaining)} <small>${e("live.remaining")}</small></div>` : O}
-        ${r ? T`<span class="final-pill">${e("live.final")}</span>
-              <span class="sub">${e("live.ended", { time: st(this.hass, t.ended) })}</span>` : O}
-        ${r && t.paused ? T`<span class="paused-pill">${e("live.pausedShort")}</span>${this.playButton(e)}` : O}
+        ${Z([
+			s,
+			this.clock,
+			n,
+			t.state,
+			t.ended,
+			t.paused,
+			this.starting
+		], () => this.stripStart(e, t))}
         <span class="spacer"></span>
         ${this.stripEnd(e, t)}
       </div>
-      ${Wt(e, t.stewards, n?.track_status, this.stewardsOpen, () => this.stewardsOpen = !this.stewardsOpen)}
+      ${Z([
+			s,
+			this.clock,
+			t.stewards,
+			n?.track_status,
+			this.stewardsOpen,
+			r
+		], () => un(e, t.stewards, n?.track_status, this.stewardsOpen, () => this.stewardsOpen = !this.stewardsOpen, r))}
       <div class="grid ${t.state === "lost" ? "dim" : ""}">
         <div class="col">
-          <div class="card scroll">${this.renderTower(e, t.tower ?? [], a)}</div>
-          <div class="pair">${this.renderWeather(e, t)}${this.renderPits(e, t)}</div>
+          <div class="card scroll">${Z([
+			s,
+			this.clock,
+			c,
+			a,
+			n?.part,
+			this.selected,
+			l
+		], () => this.renderTower(e, c, a))}</div>
+          ${Z([
+			s,
+			this.clock,
+			t.weather,
+			t.pits,
+			c,
+			n?.kind
+		], () => w`<div class="pair">${this.renderWeather(e, t)}${this.renderPits(e, t)}</div>`)}
         </div>
         <div class="col">
-          ${r ? O : this.renderMap(e, t, o)}${this.renderRaceControl(e, t.race_control ?? [])}${this.renderRadio(e, t)}
+          ${r ? D : Z([
+			s,
+			this.clock,
+			t.map_available,
+			t.map_reason,
+			o,
+			c,
+			this.selected,
+			this.settings?.is_admin
+		], () => this.renderMap(e, t, o))}
+          ${Z([
+			s,
+			this.clock,
+			t.race_control,
+			this.filter
+		], () => this.renderRaceControl(e, t.race_control ?? []))}
+          ${Z([
+			s,
+			this.clock,
+			t.radio,
+			this.playing,
+			this.selected,
+			c
+		], () => this.renderRadio(e, t))}
         </div>
       </div>`;
 	}
 	timed(e, t = "") {
-		return e ? T`<span class="t ${e.overall_best ? "ob" : e.personal_best ? "pb" : e.previous ? "prev" : ""} ${t}">${e.time}</span>` : T`<span class="t prev ${t}">—</span>`;
+		return e ? w`<span class="t ${e.overall_best ? "ob" : e.personal_best ? "pb" : e.previous ? "prev" : ""} ${t}">${e.time}</span>` : w`<span class="t prev ${t}">—</span>`;
 	}
 	badge(e, t) {
-		return t.status === "retired" ? T`<span class="badge ret">${e("live.ret")}</span>` : t.status === "stopped" ? T`<span class="badge ret">${e("live.stop")}</span>` : t.in_pit ? T`<span class="badge pit">${e("live.pit")}</span>` : t.pit_out ? T`<span class="badge out">${e("live.out")}</span>` : O;
+		return t.status === "retired" ? w`<span class="badge ret">${e("live.ret")}</span>` : t.status === "stopped" ? w`<span class="badge ret">${e("live.stop")}</span>` : t.in_pit ? w`<span class="badge pit">${e("live.pit")}</span>` : t.pit_out ? w`<span class="badge out">${e("live.out")}</span>` : D;
 	}
 	renderTower(e, t, n) {
 		let r = this.view?.header?.part ?? 1, i = n ? t.findIndex((e) => e.qualifying?.cutoff) : -1;
-		return T`<table class="tower">
+		return w`<table class="tower">
       <thead><tr>
         <th class="pos">${e("common.pos")}</th><th>${e("common.driver")}</th>
-        ${n ? T`${[
+        ${n ? w`${[
 			1,
 			2,
 			3
-		].map((e) => T`<th class=${e === r ? "" : "col-s"}>Q${e}</th>`)}<th>${e("live.gap")}</th>` : T`<th></th><th>${e("live.gap")}</th><th class="col-int">${e("live.int")}</th><th>${e("live.last")}</th><th class="col-best">${e("live.best")}</th>`}
+		].map((e) => w`<th class=${e === r ? "" : "col-s"}>Q${e}</th>`)}<th>${e("live.gap")}</th>` : w`<th class="col-gain"></th><th>${e("live.gap")}</th><th class="col-int">${e("live.int")}</th><th class="col-last">${e("live.last")}</th><th class="col-best">${e("live.best")}</th>`}
         <th class="col-s">S1</th><th class="col-s">S2</th><th class="col-s">S3</th>
-        <th>${e("live.tyre")}</th>${n ? O : T`<th class="col-pits">${e("live.pits")}</th>`}
+        <th>${e("live.tyre")}</th>${n ? D : w`<th class="col-pits">${e("live.pits")}</th>`}
       </tr></thead>
-      ${$(t, (e) => e.number, (t, a) => T`<tbody>${this.row(e, t, a, n, r, a === i - 1)}</tbody>`)}
+      ${Q(t, (e) => e.number, (t, a) => w`<tbody>${this.row(e, t, a, n, r, a === i - 1)}</tbody>`)}
     </table>`;
 	}
 	row(e, t, n, r, i, a) {
@@ -2410,136 +2730,143 @@ var Gt = o`
 			a ? "zone" : "",
 			n % 2 ? "" : "alt"
 		].join(" "), l = t.qualifying, u = () => this.select(t.number);
-		return T`<tr class=${c} tabindex="0" aria-selected=${s ? "true" : "false"}
-        @click=${u} @keydown=${J(u)}>
+		return w`<tr class=${c} tabindex="0" aria-selected=${s ? "true" : "false"}
+        @click=${u} @keydown=${Ft(u)}>
       <td class="pos num">${t.position ?? "—"}</td>
       <td><div class="drv"><span class="bar" style="background:${t.colour ?? "var(--divider-color)"}"></span>
-        ${this.settings?.favourites?.includes(t.tla) ? T`<span class="fav" title=${e("drivers.followed")}>★</span>` : O}
+        ${this.settings?.favourites?.includes(t.tla) ? w`<span class="fav" title=${e("drivers.followed")}>★</span>` : D}
         <span class="tla" title=${t.name ?? ""}>${t.tla}</span><small>${t.number}</small>
-        ${t.penalty ? T`<span class="badge pen" title=${e("stewards.unserved")}>+${t.penalty}s</span>` : O}
+        ${t.penalty ? w`<span class="badge pen" title=${e("stewards.unserved")}>+${t.penalty}s</span>` : D}
         ${this.badge(e, t)}
-        ${t.status === "knocked_out" ? T`<span class="badge ko">${e("live.ko")}</span>` : O}</div></td>
-      ${r && l ? T`${[
+        ${t.status === "knocked_out" ? w`<span class="badge ko">${e("live.ko")}</span>` : D}</div></td>
+      ${r && l ? w`${[
 			0,
 			1,
 			2
-		].map((e) => T`<td class="t ${e + 1 === i ? "" : "col-s muted"}">${l.part_bests[e] ?? ""}</td>`)}<td class="t">${l.gap ?? ""}</td>` : T`<td>${pt(t.gained)}</td><td class="t">${t.gap ?? ""}</td><td class="t col-int">${t.interval ?? ""}</td>
-            <td>${this.timed(t.last_lap)}</td>
-            <td class="col-best">${t.best_lap ? T`<span class="t">${t.best_lap.time}</span>` : ""}</td>`}
-      ${t.sectors.map((e, n) => T`<td class="col-s">${this.timed(e, "sector")}${ht(t.segments?.[n])}</td>`)}
-      <td>${t.tyre ? ft(e, t.tyre.compound, t.tyre.new, t.tyre.age) : ""}</td>
-      ${r ? O : T`<td class="num col-pits">${t.pit_stops}</td>`}
+		].map((e) => w`<td class="t ${e + 1 === i ? "" : "col-s muted"}">${l.part_bests[e] ?? ""}</td>`)}<td class="t">${l.gap ?? ""}</td>` : w`<td class="col-gain">${Lt(t.gained)}</td><td class="t">${Nt(e, t.gap)}</td><td class="t col-int">${Nt(e, t.interval, !0)}</td>
+            <td class="col-last">${this.timed(t.last_lap)}</td>
+            <td class="col-best">${t.best_lap ? w`<span class="t">${t.best_lap.time}</span>` : ""}</td>`}
+      ${t.sectors.map((e, n) => w`<td class="col-s">${this.timed(e, "sector")}${zt(t.segments?.[n])}</td>`)}
+      <td>${t.tyre ? It(e, t.tyre.compound, t.tyre.new, t.tyre.age) : ""}</td>
+      ${r ? D : w`<td class="num col-pits">${t.pit_stops}</td>`}
     </tr>
-    ${s ? this.details(e, t, r ? 10 : 12) : O}`;
+    ${s ? this.details(e, t, r ? 10 : 12) : D}`;
 	}
 	details(e, t, n) {
-		let r = t.sectors.map((e, t) => T`<span>S${t + 1} ${this.timed(e)}</span>`), i = t.stints ?? [], a = t.pit_rejoin;
-		return T`<tr class="details"><td colspan=${n}>
-      <div><b>${t.name ?? t.tla}</b>${t.team ? T` · ${t.team}` : O}</div>
+		let r = t.sectors.map((e, t) => w`<span>S${t + 1} ${this.timed(e)}</span>`), i = t.stints ?? [], a = t.pit_rejoin;
+		return w`<tr class="details"><td colspan=${n}><div class="dwrap">
+      <div class="dhead"><b>${t.name ?? t.tla}</b>${t.team ? w` · ${t.team}` : D}</div>
       <div class="facts narrow">
-        ${t.interval ? T`<span>${e("live.int")} <span class="t">${t.interval}</span></span>` : O}
-        ${t.best_lap ? T`<span>${e("live.best")} <span class="t">${t.best_lap.time}</span></span>` : O}
+        ${t.interval ? w`<span>${e("live.int")} <span class="t">${Nt(e, t.interval, !0) || "—"}</span></span>` : D}
+        ${t.best_lap ? w`<span>${e("live.best")} <span class="t">${t.best_lap.time}</span></span>` : D}
         ${r}
         <span>${e("live.pits")} ${t.pit_stops}</span>
       </div>
-      ${i.length ? T`<table class="stints">
+      ${i.length ? w`<table class="stints">
             <tr><th>${e("drivers.stint")}</th><th>${e("live.tyre")}</th><th>${e("drivers.laps")}</th><th>${e("drivers.bestInStint")}</th></tr>
-            ${i.map((t, n) => T`<tr>
+            ${i.map((t, n) => w`<tr>
                 <td class="num">${n + 1}</td>
-                <td>${ft(e, t.compound, t.new, null)}</td>
+                <td>${It(e, t.compound, t.new, null)}</td>
                 <td class="num">${t.to_lap && t.to_lap !== t.from_lap ? e("drivers.lapRange", {
 			from: t.from_lap,
 			to: t.to_lap
 		}) : e("drivers.fromLap", { from: t.from_lap })}
                   <small class="muted">(${t.laps})</small></td>
-                <td>${t.best ? T`<span class="t">${t.best.time}</span>${t.best.lap ? T` <small class="muted">${e("drivers.onLap", { lap: t.best.lap })}</small>` : O}` : "—"}</td>
+                <td>${t.best ? w`<span class="t">${t.best.time}</span>${t.best.lap ? w` <small class="muted">${e("drivers.onLap", { lap: t.best.lap })}</small>` : D}` : "—"}</td>
               </tr>`)}
-          </table>` : O}
-      ${a ? T`<div class="rejoin">${z(R.timer, 16)}
-            <span>${e("drivers.rejoin", { position: a.position })}${a.ahead ? T` · ${e("drivers.behindOf", {
+          </table>` : D}
+      ${a ? w`<div class="rejoin">${z(R.timer, 16)}
+            <span>${e("drivers.rejoin", { position: a.position })}${a.ahead ? w` · ${e("drivers.behindOf", {
 			driver: a.ahead,
-			gap: q(this.hass, a.ahead_gap, 1)
-		})}` : O}${a.behind ? T` · ${e("drivers.aheadOf", {
+			gap: J(this.hass, a.ahead_gap, 1)
+		})}` : D}${a.behind ? w` · ${e("drivers.aheadOf", {
 			driver: a.behind,
-			gap: q(this.hass, a.behind_gap, 1)
-		})}` : O}
-              <small class="muted">${e(a.known ? "drivers.lossCircuit" : "drivers.lossGeneric", { loss: q(this.hass, a.loss, 1) })}${a.pitting ? ` ${e("drivers.pitting", { n: a.pitting })}` : ""}</small></span>
-          </div>` : O}
-    </td></tr>`;
+			gap: J(this.hass, a.behind_gap, 1)
+		})}` : D}
+              <small class="muted">${e(a.known ? "drivers.lossCircuit" : "drivers.lossGeneric", { loss: J(this.hass, a.loss, 1) })}${a.pitting ? ` ${e("drivers.pitting", { n: a.pitting })}` : ""}</small></span>
+          </div>` : D}
+    </div></td></tr>`;
 	}
 	driver(e) {
-		return this.view?.tower?.find((t) => t.number === e);
+		let t = this.view?.tower;
+		return t !== this.byNumberOf && (this.byNumberOf = t, this.byNumber = new Map((t ?? []).map((e) => [e.number, e]))), e === null ? void 0 : this.byNumber.get(e);
 	}
 	renderMap(e, t, n) {
-		let r = T`<div class="card-head">${e("live.map")}</div>`;
+		let r = w`<div class="card-head">${e("live.map")}</div>`;
 		if (!t.map_available || !n) {
 			let n = this.settings?.is_admin, i = t.map_reason ?? "not_configured", a = e(i === "no_data" ? "live.mapNoData" : n ? i === "token_problem" ? "live.mapToken" : "live.mapLocked" : "live.mapNotEnabled");
-			return T`<div class="card">${r}<div class="locked">${z(R.lock, 36)}<div>${a}</div></div></div>`;
+			return w`<div class="card">${r}<div class="locked">${z(R.lock, 36)}<div>${a}</div></div></div>`;
 		}
-		return T`<div class="card">${r}
+		return w`<div class="card">${r}
       <plb-live-map .hass=${this.hass} .tower=${t.tower ?? []} .selected=${this.selected}
+        .favourites=${this.settings?.favourites ?? []}
         @plb-select=${(e) => this.select(e.detail)}></plb-live-map></div>`;
 	}
 	renderRaceControl(e, t) {
-		let n = qt[this.filter], r = t.filter((e) => !n || e.kind === n);
-		return T`<div class="card">
+		let n = pn[this.filter], r = t.filter((e) => !n || e.kind === n);
+		return w`<div class="card">
       <div class="card-head">${e("live.raceControl")}</div>
-      <div class="filters">${Object.keys(qt).map((t) => T`<button class="chip small ${this.filter === t ? "on" : ""}" @click=${() => this.filter = t}>${e(`live.${t}`)}</button>`)}</div>
-      <div class="feed">${$(r, (e) => `${e.utc}|${e.message}`, (t) => T`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : ""}</span>
-          <span>${t.message}<time>${K(this.hass, t.utc)}</time></span></div>`)}</div>
+      <div class="filters">${Object.keys(pn).map((t) => w`<button class="chip small ${this.filter === t ? "on" : ""}" aria-pressed=${this.filter === t ? "true" : "false"}
+          @click=${() => this.filter = t}>${e(`live.${t}`)}</button>`)}</div>
+      <div class="feed">${Q(r, (e) => `${e.utc}|${e.message}`, (t) => w`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : q(this.hass, t.utc, !0)}</span>
+          <span>${t.message}${t.lap ? w`<time>${q(this.hass, t.utc)}</time>` : D}</span></div>`)}</div>
     </div>`;
 	}
 	renderRadio(e, t) {
 		let n = t.radio ?? [];
-		return T`<div class="card">
+		return w`<div class="card">
       <div class="card-head">${e("live.radio")}</div>
-      ${n.length ? T`<div class="feed short">${$(n, (e) => e.url, (t) => {
-			let n = this.driver(t.number), r = this.playing === t.url;
-			return T`<div class="radio ${t.number === this.selected ? "sel" : ""}">
+      ${n.length ? w`<div class="feed short">${Q(n, (e) => e.url, (t) => {
+			let n = this.driver(t.number), r = this.playing === t.url, i = q(this.hass, t.utc);
+			return w`<div class="radio ${t.number === this.selected ? "sel" : ""}">
                 <button class="play" @click=${() => this.play(t.url)}
                   aria-label=${e(r ? "live.pause" : "live.play", {
 				driver: n?.tla ?? t.number ?? "",
-				time: K(this.hass, t.utc)
+				time: i
 			})}>${z(r ? R.pause : R.play, 18)}</button>
                 <span class="bar" style="background:${n?.colour ?? "var(--divider-color)"}"></span><b>${n?.tla ?? t.number}</b>
-                <time>${K(this.hass, t.utc)}</time></div>`;
-		})}</div>` : T`<div class="empty">${e("live.noRadio")}</div>`}
+                <time>${i}</time></div>`;
+		})}</div>` : w`<div class="empty">${e("live.noRadio")}</div>`}
     </div>`;
 	}
 	renderWeather(e, t) {
 		let n = t.weather;
-		if (!n) return O;
-		let r = n.wind_direction === null ? "" : T`<span class="wind" style="transform:rotate(${n.wind_direction + 180}deg)">↑</span>`;
-		return T`<div class="card">
+		if (!n) return D;
+		let r = n.wind_direction === null ? "" : w`<span class="wind" style="transform:rotate(${n.wind_direction + 180}deg)">↑</span>`;
+		return w`<div class="card">
       <div class="card-head">${e("live.weather")}</div>
       <div class="weather">
-        <div><small>${e("live.air")}</small><b class="num">${q(this.hass, n.air)}°</b></div>
-        <div><small>${e("live.track")}</small><b class="num">${q(this.hass, n.track)}°</b></div>
+        <div><small>${e("live.air")}</small><b class="num">${J(this.hass, n.air)}°</b></div>
+        <div><small>${e("live.track")}</small><b class="num">${J(this.hass, n.track)}°</b></div>
         <div><small>${e("live.rain")}</small><b>${n.rain ? e("live.wet") : e("live.dry")}</b></div>
-        <div><small>${e("live.humidity")}</small><b class="num">${q(this.hass, n.humidity, 0)}%</b></div>
-        <div><small>${e("live.wind")}</small><b class="num">${e("live.windSpeed", { n: q(this.hass, n.wind_speed) })} ${r}</b></div>
-        <div><small>${e("live.pressure")}</small><b class="num">${q(this.hass, n.pressure, 0)}</b></div>
+        <div><small>${e("live.humidity")}</small><b class="num">${J(this.hass, n.humidity, 0)}%</b></div>
+        <div><small>${e("live.wind")}</small><b class="num">${e("live.windSpeed", { n: J(this.hass, n.wind_speed) })} ${r}</b></div>
+        <div><small>${e("live.pressure")}</small><b class="num">${J(this.hass, n.pressure, 0)}</b></div>
       </div>
     </div>`;
 	}
 	renderPits(e, t) {
+		if (!hn.has(t.header?.kind ?? "")) return D;
 		let n = t.pits ?? [];
-		return T`<div class="card">
+		return w`<div class="card">
       <div class="card-head">${e("live.pitStops")}<span class="spacer"></span><small>${e("live.pitLane")}</small></div>
-      ${n.length ? T`<div class="feed short pits">${$(n, (e) => `${e.number}|${e.lap}`, (t) => {
+      ${n.length ? w`<div class="feed short pits">${Q(n, (e) => `${e.number}|${e.lap}`, (t) => {
 			let n = this.driver(t.number);
-			return T`<div><span class="bar" style="background:${n?.colour ?? "var(--divider-color)"}"></span><b>${n?.tla ?? t.number}</b>
+			return w`<div><span class="bar" style="background:${n?.colour ?? "var(--divider-color)"}"></span><b>${n?.tla ?? t.number}</b>
                 <span>${e("common.lap")} ${t.lap}</span><span class="num end">${e("delay.seconds", { n: t.duration })}</span></div>`;
-		})}</div>` : T`<div class="empty">${e("live.noPits")}</div>`}
+		})}</div>` : w`<div class="empty">${e("live.noPits")}</div>`}
     </div>`;
 	}
 	static {
 		this.styles = [
 			B,
-			Kt,
-			Gt,
+			fn,
+			dn,
+			ot,
 			o`
-      :host { display: block; }
+      /* Sized by the panel's own width, not the window's: Home Assistant's sidebar
+         takes a varying part of the window. */
+      :host { display: block; container-type: inline-size; }
       .strip { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 14px 18px; margin-bottom: var(--plb-gap); }
       .strip h1 { margin: 0; font-size: 20px; font-weight: 500; }
       .sub { color: var(--secondary-text-color); font-size: 13px; }
@@ -2557,13 +2884,19 @@ var Gt = o`
       .play-live { display: inline-flex; align-items: center; gap: 6px; }
       .state .play-live svg { width: 18px; height: 18px; opacity: 1; }
       .state .next { display: grid; gap: 8px; justify-items: center; margin-top: 12px; }
+      .state .starts { margin-bottom: -10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+      .spin { display: grid; }
+      .spin svg { animation: plb-spin 1.6s linear infinite; }
+      @keyframes plb-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .spin svg { animation: none; } }
       .banner { display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin-bottom: var(--plb-gap); border-radius: 10px; font-size: 14px;
         background: color-mix(in srgb, var(--warning-color, #ffa600) 16%, transparent); }
       .banner.lost { background: color-mix(in srgb, var(--error-color, #db4437) 16%, transparent); }
       .dim { opacity: 0.45; filter: grayscale(0.6); }
       .grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--plb-gap); align-items: start; }
       .col { display: grid; gap: var(--plb-gap); align-content: start; min-width: 0; }
-      .pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--plb-gap); align-items: start; }
+      .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--plb-gap); align-items: start; }
+      .pair:empty { display: none; }
       .tower { width: 100%; border-collapse: collapse; font-size: 14px; }
       .tower th { text-align: left; font-weight: 500; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
         color: var(--secondary-text-color); padding: 8px 6px; border-bottom: 1px solid var(--divider-color); white-space: nowrap; }
@@ -2573,14 +2906,17 @@ var Gt = o`
       .tower tr.out td { color: var(--plb-muted); }
       .tower tr.zone td { border-bottom: 2px dashed var(--error-color, #db4437); }
       .tower tr:focus-visible td { outline: 2px solid var(--primary-color); outline-offset: -2px; }
-      .tower tr.details td { height: auto; padding: 8px 12px; white-space: normal; cursor: default; font-size: 13px;
-        background: color-mix(in srgb, var(--primary-color) 6%, transparent); }
+      .tower tr.details td { height: auto; padding: 10px 12px 12px; white-space: normal; cursor: default; font-size: 13px;
+        background: color-mix(in srgb, var(--primary-text-color) 4%, transparent); }
+      .tower .dwrap { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 32px; align-items: start; }
+      .tower .dhead { grid-column: 1 / -1; }
+      .tower .dwrap .stints { grid-column: 1; grid-row: 2 / span 2; }
+      .tower .dwrap .rejoin { grid-column: 2; }
       .tower tr.details .facts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 4px; color: var(--secondary-text-color); }
       .tower tr.details .narrow { display: none; }
-      @media (max-width: 900px) { .tower tr.details .narrow { display: flex; } }
-      .tower .stints { border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+      .tower .stints { border-collapse: collapse; margin-top: 4px; font-size: 13px; }
       .tower .stints th { font-size: 10px; padding: 2px 16px 2px 0; border: 0; }
-      .tower .stints td { height: 30px; padding: 0 16px 0 0; border: 0; background: none; cursor: default; }
+      .tower tr.details .stints td { height: 30px; padding: 0 16px 0 0; border: 0; background: none; cursor: default; }
       .tower .rejoin { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; }
       .tower .rejoin small { display: block; font-size: 11px; }
       .fav { color: #f2c200; font-size: 12px; }
@@ -2618,58 +2954,106 @@ var Gt = o`
       .pits div { display: flex; align-items: center; gap: 10px; padding: 7px 16px; border-bottom: 1px solid var(--divider-color); font-size: 13px; }
       .pits .end { margin-left: auto; }
       .empty { padding: 14px 16px; color: var(--secondary-text-color); font-size: 13px; }
-      @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
-      @media (max-width: 900px) { .col-s { display: none; } }
-      @media (max-width: 640px) {
+      @media (pointer: coarse) {
+        .play { width: 40px; height: 40px; }
+      }
+      /* A TV: 22 rows fit in 1080 lines, and the stewards card is one strip. */
+      :host([kiosk]) .tower td { height: 32px; }
+      :host([kiosk]) .tower th { padding: 4px 6px; }
+      :host([kiosk]) .strip { padding: 8px 18px; margin-bottom: 10px; }
+      :host([kiosk]) .grid, :host([kiosk]) .col { gap: 10px; }
+      :host([kiosk]) .stewards { margin-bottom: 10px; }
+      :host([kiosk]) .stewards .card-head { display: none; }
+      :host([kiosk]) .stewards .compact { display: flex; }
+      :host([kiosk]) .stewards .cols { display: none; }
+      :host([kiosk]) .stewards.open .cols { display: grid; }
+      @container (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+      @container (max-width: 900px) {
+        .col-s { display: none; }
+        .tower tr.details .narrow { display: flex; }
+        .tower .dwrap { grid-template-columns: 1fr; }
+        .tower .dwrap .stints, .tower .dwrap .rejoin { grid-column: 1; grid-row: auto; }
+      }
+      @container (max-width: 640px) {
         .col-best, .col-int, .col-pits, .tower .drv small { display: none; }
         .tower td, .tower th { padding: 0 4px; }
         .tower td { height: 44px; }
+        .tower .drv { min-width: 0; gap: 6px; }
         .pos { width: 26px; }
-        .pair { grid-template-columns: 1fr; }
         .strip { padding: 12px 14px; }
         .next-slot { width: 100%; text-align: left; }
+      }
+      /* A phone: position, driver, gap, last lap and tyre (SPEC §7). */
+      @container (max-width: 480px) {
+        .col-gain { display: none; }
+        .tyre .used { display: none; }
+        .tower { font-size: 13px; }
       }
     `
 		];
 	}
-}, Xt = class extends N {
+}, _n = 5e3, vn = 6e4, yn = .05, bn = 30, xn = 15, Sn = [
+	"r",
+	"l",
+	"t",
+	"b"
+], $ = {
+	r: [9, -15 / 2],
+	l: [-39, -15 / 2],
+	t: [-15, -23],
+	b: [-15, 8]
+}, Cn = class extends j {
 	constructor(...e) {
-		super(...e), this.tower = [], this.selected = "", this.cars = [], this.path = "", this.subscribing = !1, this.onScreen = !1, this.visibility = () => this.sync();
+		super(...e), this.tower = [], this.selected = "", this.favourites = [], this.cars = [], this.width = 0, this.path = "", this.subscribing = !1, this.backoff = _n, this.onScreen = !1, this.sides = /* @__PURE__ */ new Map(), this.focusNumber = "", this.visibility = () => this.sync();
 	}
 	static {
 		this.properties = {
 			hass: {
 				attribute: !1,
-				hasChanged: ut
+				hasChanged: jt
 			},
 			tower: { attribute: !1 },
 			selected: { type: String },
+			favourites: { attribute: !1 },
 			outline: { state: !0 },
-			cars: { state: !0 }
+			cars: { state: !0 },
+			width: { state: !0 }
 		};
 	}
 	connectedCallback() {
 		super.connectedCallback(), this.observer = new IntersectionObserver((e) => {
 			this.onScreen = e.some((e) => e.isIntersecting), this.sync();
-		}), this.observer.observe(this), document.addEventListener("visibilitychange", this.visibility);
+		}), this.observer.observe(this), this.resize = new ResizeObserver((e) => {
+			let t = Math.round(e[0]?.contentRect.width ?? 0);
+			Math.abs(t - this.width) > 2 && (this.width = t);
+		}), this.resize.observe(this), document.addEventListener("visibilitychange", this.visibility);
 	}
 	disconnectedCallback() {
-		super.disconnectedCallback(), this.observer?.disconnect(), document.removeEventListener("visibilitychange", this.visibility), this.stop();
+		super.disconnectedCallback(), this.observer?.disconnect(), this.resize?.disconnect(), document.removeEventListener("visibilitychange", this.visibility), this.stop();
 	}
 	stop() {
-		this.unsubscribe?.(), this.unsubscribe = void 0;
+		window.clearTimeout(this.retry), this.retry = void 0, this.unsubscribe?.(), this.unsubscribe = void 0;
 	}
 	sync() {
 		let e = this.isConnected && this.onScreen && document.visibilityState === "visible";
-		e && !this.unsubscribe && !this.subscribing && this.hass ? this.subscribe() : e || this.stop();
+		e && !this.unsubscribe && !this.subscribing && this.retry === void 0 && this.hass ? this.subscribe() : e || this.stop();
 	}
 	async subscribe() {
 		this.subscribing = !0;
+		let e = !1;
 		try {
 			let e = await F.subscribeMap(this.hass, (e) => this.receive(e));
-			this.unsubscribe = e;
-		} catch {} finally {
+			this.unsubscribe = e, this.backoff = _n;
+		} catch {
+			e = !0;
+		} finally {
 			this.subscribing = !1;
+		}
+		if (e) {
+			this.isConnected && (this.retry = window.setTimeout(() => {
+				this.retry = void 0, this.sync();
+			}, this.backoff), this.backoff = Math.min(this.backoff * 2, vn));
+			return;
 		}
 		this.sync();
 	}
@@ -2687,53 +3071,176 @@ var Gt = o`
 			composed: !0
 		}));
 	}
-	driver(e) {
-		return this.tower.find((t) => t.number === e);
+	key(e, t, n) {
+		if (e.key === "Enter" || e.key === " ") {
+			e.preventDefault(), this.select(n);
+			return;
+		}
+		let r = {
+			ArrowRight: 1,
+			ArrowDown: 1,
+			ArrowLeft: -1,
+			ArrowUp: -1
+		}[e.key];
+		if (!r) return;
+		e.preventDefault();
+		let i = t[(t.indexOf(n) + r + t.length) % t.length];
+		this.focusNumber = i, this.renderRoot.querySelector(`[data-number="${i}"]`)?.focus(), this.requestUpdate();
+	}
+	placeLabels(e, t, n) {
+		let r = e.map((e) => [
+			e.x - 7,
+			e.y - 7,
+			e.x + 7,
+			e.y + 7
+		]), i = /* @__PURE__ */ new Map(), a = (e) => r.some((t) => e[0] < t[2] && e[2] > t[0] && e[1] < t[3] && e[3] > t[1]);
+		for (let o of e) {
+			let e = this.sides.get(o.number), s = e ? [e, ...Sn.filter((t) => t !== e)] : [...Sn], c = null, l = null;
+			for (let e of s) {
+				let [i, s] = $[e], u = [
+					o.x + i,
+					o.y + s,
+					o.x + i + bn,
+					o.y + s + xn
+				], d = u[0] >= 0 && u[2] <= t && u[1] >= 0 && u[3] <= n;
+				if (d && !l && (l = u), d && !a(u)) {
+					c = e, r.push(u);
+					break;
+				}
+			}
+			!c && o.important && l && (c = s.find((e) => {
+				let [r, i] = $[e];
+				return o.x + r >= 0 && o.x + r + bn <= t && o.y + i >= 0 && o.y + i + xn <= n;
+			}) ?? null, r.push(l)), i.set(o.number, c), c && this.sides.set(o.number, c);
+		}
+		return i;
 	}
 	render() {
 		let e = L(this.hass), t = this.outline;
-		if (!t) return T`<div class="locked">${e("live.mapDrawing")}</div>`;
-		let n = [...this.cars.filter((e) => e.number !== this.selected), ...this.cars.filter((e) => e.number === this.selected)];
-		return T`<svg viewBox="0 0 ${t.width} ${t.height}" role="img" aria-label=${e("live.map")}>
-      ${this.path ? E`<path class="track" d=${this.path}></path><path class="track-line" d=${this.path}></path>` : O}
-      ${$(n, (e) => e.number, (e) => {
-			let t = e.number === this.selected, n = this.driver(e.number), r = () => this.select(e.number);
-			return E`<g class="car" style="transform:translate(${e.x}px,${e.y}px)" @click=${r}
-            @keydown=${J(r)} tabindex="0" role="button" aria-label=${n?.tla ?? e.number}>
-          <circle r=${t ? 17 : 12} fill=${n?.colour ?? "var(--divider-color)"}
-            stroke=${t ? "var(--primary-text-color)" : "var(--card-background-color)"} stroke-width="4"
-            opacity=${e.on_track ? 1 : .4}></circle>
-          <text x="16" y="-12">${n?.tla ?? e.number}</text></g>`;
+		if (!t) return w`<div class="locked">${e("live.mapDrawing")}</div>`;
+		let n = Math.max(t.width, t.height) * yn, r = t.width + 2 * n, i = t.height + 2 * n, a = new Map(this.tower.map((e) => [e.number, e])), o = new Set(this.favourites), s = this.selected.toUpperCase(), c = this.cars.filter((e) => {
+			let t = a.get(e.number);
+			return t ? t.status !== "retired" : !this.tower.length;
+		}), l = (e) => {
+			let t = a.get(e);
+			return !!s && (e === s || t?.tla === s);
+		}, u = (this.width || 380) / r, d = c.map((e) => {
+			let t = a.get(e.number), r = l(e.number) || (t ? o.has(t.tla) : !1);
+			return {
+				number: e.number,
+				x: (e.x + n) * u,
+				y: (e.y + n) * u,
+				important: r,
+				position: t?.position ?? 99
+			};
+		}).sort((e, t) => Number(t.important) - Number(e.important) || e.position - t.position), f = this.placeLabels(d, r * u, i * u), p = c.map((e) => e.number), m = p.includes(this.focusNumber) ? this.focusNumber : p.find(l) ?? p[0], h = 100 / r;
+		return w`<div class="map" role="group" aria-label=${e("live.map")} style="aspect-ratio:${r} / ${i}">
+      <svg viewBox="${-n} ${-n} ${r} ${i}" aria-hidden="true">
+        ${this.path ? T`<path class="track" d=${this.path}></path><path class="track-line" d=${this.path}></path>` : D}
+      </svg>
+      ${Q(c, (e) => e.number, (e) => {
+			let t = a.get(e.number), r = l(e.number), i = f.get(e.number);
+			return w`<div class=${[
+				"car",
+				r ? "sel" : "",
+				t?.position === 1 ? "leader" : "",
+				t && o.has(t.tla) ? "fav" : "",
+				e.on_track && t?.status !== "stopped" ? "" : "off"
+			].join(" ")} data-number=${e.number} role="button" tabindex=${e.number === m ? "0" : "-1"}
+            aria-label=${t?.tla ?? e.number} aria-pressed=${r ? "true" : "false"}
+            style="transform:translate(${((e.x + n) * h).toFixed(3)}cqw,${((e.y + n) * h).toFixed(3)}cqw);--c:${t?.colour ?? "var(--divider-color)"}"
+            @click=${() => this.select(e.number)} @keydown=${(t) => this.key(t, p, e.number)}
+            @focus=${() => this.focusNumber = e.number}>
+          <span class="dot"></span>${i ? w`<span class="label ${i}">${t?.tla ?? e.number}</span>` : D}</div>`;
 		})}
-    </svg>`;
+    </div>`;
 	}
 	static {
 		this.styles = o`
-    :host { display: block; }
-    svg { display: block; width: 100%; height: auto; }
+    :host { display: block; padding: 4px; }
+    .map { position: relative; container-type: inline-size; width: 100%; }
+    svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
     .track { fill: none; stroke: var(--secondary-background-color); stroke-width: 18; stroke-linejoin: round; }
     .track-line { fill: none; stroke: var(--secondary-text-color); stroke-width: 3; opacity: 0.5; }
-    .car { transition: transform 0.25s linear; cursor: pointer; will-change: transform; }
-    .car text { font-size: 20px; font-weight: 700; fill: var(--primary-text-color); paint-order: stroke;
-      stroke: var(--card-background-color); stroke-width: 5px; }
+    .car { position: absolute; left: 0; top: 0; width: 0; height: 0; cursor: pointer; outline: none;
+      transition: transform 0.25s linear; will-change: transform; }
+    .dot { position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box;
+      background: var(--c); border: 2px solid var(--card-background-color); }
+    .car.leader .dot { box-shadow: 0 0 0 2px var(--plb-yellow); }
+    .car.fav .dot { box-shadow: 0 0 0 2px #f2c200; }
+    .car.sel { z-index: 2; }
+    .car.sel .dot { left: -9px; top: -9px; width: 18px; height: 18px; border: 3px solid var(--primary-text-color); }
+    .car.off { opacity: 0.4; }
+    .car:focus-visible .dot { box-shadow: 0 0 0 3px var(--primary-color); }
+    /* The dot is small; the target around it is 36 px. */
+    .car::before { content: ""; position: absolute; left: -18px; top: -18px; width: 36px; height: 36px; border-radius: 50%; }
+    .label { position: absolute; width: ${bn}px; height: ${xn}px; line-height: ${xn}px; font-size: 12px; font-weight: 700;
+      color: var(--primary-text-color); text-align: center; pointer-events: none; white-space: nowrap;
+      text-shadow: 0 0 3px var(--card-background-color), 0 0 3px var(--card-background-color), 0 0 2px var(--card-background-color); }
+    .label.r { left: ${$.r[0]}px; top: ${$.r[1]}px; text-align: left; }
+    .label.l { left: ${$.l[0]}px; top: ${$.l[1]}px; text-align: right; }
+    .label.t { left: ${$.t[0]}px; top: ${$.t[1]}px; }
+    .label.b { left: ${$.b[0]}px; top: ${$.b[1]}px; }
+    .car.sel .label { z-index: 1; }
     .locked { padding: 20px 16px; color: var(--secondary-text-color); font-size: 13px; }
     @media (prefers-reduced-motion: reduce) { .car { transition: none; } }
   `;
 	}
-}, Zt = /* @__PURE__ */ new Set([
+}, wn = /* @__PURE__ */ new Set([
 	"strategy",
 	"lap_times",
 	"race_control",
 	"weather"
-]), Qt = class extends N {
+]), Tn = {
+	finished: "finished",
+	lapped: "lapped",
+	retired: "retired",
+	disqualified: "disqualified",
+	"did not start": "did_not_start",
+	"did not qualify": "did_not_qualify",
+	"did not prequalify": "did_not_prequalify",
+	withdrew: "withdrew",
+	"not classified": "not_classified",
+	excluded: "excluded",
+	accident: "accident",
+	collision: "collision",
+	engine: "engine",
+	gearbox: "gearbox",
+	transmission: "transmission",
+	hydraulics: "hydraulics",
+	brakes: "brakes",
+	suspension: "suspension",
+	electrical: "electrical",
+	"power unit": "power_unit",
+	"spun off": "spun_off",
+	puncture: "puncture",
+	overheating: "overheating",
+	"fuel pressure": "fuel_pressure",
+	"oil leak": "oil_leak",
+	"water leak": "water_leak",
+	wheel: "wheel",
+	tyre: "tyre",
+	damage: "damage",
+	mechanical: "mechanical",
+	illness: "illness"
+};
+function En(e, t) {
+	if (!t) return "";
+	let n = /^\+(\d+) Laps?$/i.exec(t);
+	if (n) return e(n[1] === "1" ? "results.lapsDownOne" : "results.lapsDown", { n: n[1] });
+	let r = Tn[t.toLowerCase()];
+	return r ? e(`results.status.${r}`) : t;
+}
+var Dn = class extends j {
 	constructor(...e) {
-		super(...e), this.seasons = [], this.failed = !1, this.tab = "race", this.tabFailed = !1, this.driver = "", this.filter = "all", this.highlight = "", this.request = 0, this.roundsRequest = 0, this.spoilers = "";
+		super(...e), this.seasons = [], this.clock = 0, this.failed = !1, this.tab = "race", this.tabFailed = !1, this.driver = "", this.filter = "all", this.highlight = "", this.request = 0, this.roundsRequest = 0, this.spoilers = "", this.roundsBySeason = /* @__PURE__ */ new Map(), this.tabs = /* @__PURE__ */ new Map();
 	}
 	static {
 		this.properties = {
 			hass: { attribute: !1 },
 			settings: { attribute: !1 },
 			seasons: { attribute: !1 },
+			clock: { attribute: !1 },
 			season: { state: !0 },
 			rounds: { state: !0 },
 			failed: { state: !0 },
@@ -2749,30 +3256,36 @@ var Gt = o`
 	}
 	willUpdate(e) {
 		e.has("target") && this.target?.page === "results" && this.target.season && (this.selected = void 0, this.rounds = void 0, this.season = this.target.season, this.wanted = this.target.round), this.season === void 0 && this.settings && (this.season = this.settings.season);
-		let t = dt(this.settings), n = t !== this.spoilers;
-		this.spoilers = t, (e.has("season") || n) && this.loadRounds(), this.selected && (n || e.has("tab") || e.has("selected")) && this.loadTab();
+		let t = Mt(this.settings), n = t !== this.spoilers;
+		this.spoilers = t, n && (this.roundsBySeason.clear(), this.tabs.clear()), (e.has("season") || n || e.has("target") && this.wanted !== void 0) && this.loadRounds(), this.selected && (n || e.has("tab") || e.has("selected")) && this.loadTab();
 	}
 	async loadRounds() {
 		if (!this.hass || this.season === void 0) return;
 		let e = ++this.roundsRequest;
 		this.failed = !1;
 		try {
-			let t = await F.rounds(this.hass, this.season);
+			let t = this.season, n = this.roundsBySeason.get(t) ?? (await F.rounds(this.hass, t)).rounds;
 			if (e !== this.roundsRequest) return;
-			this.rounds = t.rounds;
-			let n = this.wanted === void 0 ? void 0 : t.rounds.find((e) => e.round === this.wanted);
-			this.wanted = void 0, n && this.open(n);
+			this.roundsBySeason.set(t, n), this.rounds = n;
+			let r = this.wanted === void 0 ? void 0 : n.find((e) => e.round === this.wanted);
+			this.wanted = void 0, r && this.open(r);
 		} catch {
 			e === this.roundsRequest && (this.failed = !0);
 		}
 	}
 	async loadTab() {
 		if (!this.selected || this.season === void 0) return;
-		let e = ++this.request;
-		this.tabFailed = !1, this.result?.tab !== this.tab && (this.result = void 0);
+		let e = ++this.request, t = `${this.season}|${this.selected.round}|${this.tab}`;
+		this.tabFailed = !1;
+		let n = this.tabs.get(t);
+		if (n) {
+			this.result = n;
+			return;
+		}
+		this.result?.tab !== this.tab && (this.result = void 0);
 		try {
-			let t = await F.detail(this.hass, this.season, this.selected.round, this.tab);
-			e === this.request && (this.result = t);
+			let n = await F.detail(this.hass, this.season, this.selected.round, this.tab);
+			n.hidden || this.tabs.set(t, n), e === this.request && (this.result = n);
 		} catch {
 			e === this.request && (this.tabFailed = !0);
 		}
@@ -2784,41 +3297,45 @@ var Gt = o`
 		return L(this.hass)(`tyres.${e}`);
 	}
 	open(e) {
-		this.tab = "race", this.result = void 0, this.driver = "", this.selected = e;
+		this.tab = "race", this.result = void 0, this.driver = "", this.highlight = "", this.selected = e;
 	}
 	render() {
 		let e = L(this.hass);
 		if (this.selected) return this.renderDetail(e, this.selected);
 		let t = this.seasons.length ? this.seasons : [this.season ?? 0];
-		return T`
+		return w`
       <div class="toolbar">
         <h1>${e("results.title")}</h1>
         <select aria-label=${e("common.season")} @change=${(e) => {
 			this.rounds = void 0, this.season = Number(e.target.value);
 		}}>
-          ${t.map((e) => T`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
+          ${t.map((e) => w`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
         </select>
       </div>
-      ${this.failed ? X(e, () => this.loadRounds()) : this.rounds ? this.rounds.length ? T`<div class="card"><div class="scroll"><table class="tbl">
-                <tr><th>${e("common.round")}</th><th>${e("results.grandPrix")}</th><th>${e("results.date")}</th><th>${e("results.winner")}</th></tr>
-                ${[...this.rounds].reverse().map((t) => T`<tr class="click" tabindex="0" @click=${() => this.open(t)} @keydown=${J(() => this.open(t))}>
+      ${this.failed ? X(e, () => this.loadRounds()) : this.rounds ? this.rounds.length ? w`<div class="card"><div class="scroll"><table class="tbl">
+                <tr><th>${e("common.round")}</th><th>${e("results.grandPrix")}</th><th class="phone-hide">${e("results.date")}</th><th>${e("results.winner")}</th><th></th></tr>
+                ${[...this.rounds].reverse().map((t) => w`<tr class="click" tabindex="0" aria-label=${`${e("results.open")}: ${t.name ?? ""}`}
+                      @click=${() => this.open(t)} @keydown=${Ft(() => this.open(t))}>
                     <td class="num">${t.round}</td>
-                    <td>${t.name}${t.sprint ? T` <span class="pill sprint">${e("common.sprint")}</span>` : O}</td>
-                    <td class="num">${it(this.hass, t.date)}</td>
-                    <td>${t.hidden ? T`<span class="hidden-cell">${e("spoiler.hiddenRound")}</span>` : t.winner ? Y(t.winner.name, t.winner.team_id) : "—"}</td>
+                    <td class="gp wrap">${t.name}${t.sprint ? w`<span class="pill sprint">${e("common.sprint")}</span>` : D}
+                      <small class="phone-only">${Ct(this.hass, t.date)}</small></td>
+                    <td class="num phone-hide">${Ct(this.hass, t.date)}</td>
+                    <td class="wrap">${t.hidden ? w`<span class="hidden-cell">${e("spoiler.hiddenRound")}</span>` : t.winner ? Y(t.winner.name, t.winner.team_id) : "—"}</td>
+                    <td class="chev" aria-hidden="true">›</td>
                   </tr>`)}
-              </table></div></div>` : T`<div class="card state">${e("results.empty")}</div>` : gt(e)}
+              </table></div></div>` : w`<div class="card state">${e("results.empty")}</div>` : Bt(e)}
     `;
 	}
 	renderDetail(e, t) {
-		return T`
+		return w`
       <div class="toolbar">
         <button class="link back" @click=${() => this.selected = void 0}>${z(R.back, 18)} ${e("common.back")}</button>
         <h1>${t.name} ${this.season}</h1>
       </div>
       <div class="card">
         <div class="subtabs">
-          ${t.tabs.map((t) => T`<button class="tab ${this.tab === t ? "active" : ""}" @click=${() => this.tab = t}>${e(`results.tabs.${t}`)}</button>`)}
+          ${t.tabs.map((t) => w`<button class="tab ${this.tab === t ? "active" : ""}" aria-pressed=${this.tab === t ? "true" : "false"}
+              @click=${() => this.tab = t}>${e(`results.tabs.${t}`)}</button>`)}
         </div>
         ${this.renderTab(e)}
       </div>
@@ -2827,42 +3344,50 @@ var Gt = o`
 	renderTab(e) {
 		if (this.tabFailed) return X(e, () => this.loadTab());
 		let t = this.result;
-		if (!t || t.tab !== this.tab) return T`<div class="loading">${e("common.loading")}${Zt.has(this.tab) ? T`<br /><small>${e("results.archive")}</small>` : O}</div>`;
-		if (t.hidden) return T`<div class="state">${z(R.eyeOff, 56)}<div>${e("spoiler.revealNote")}</div>
+		if (!t || t.tab !== this.tab) return w`<div class="loading">${e("common.loading")}${wn.has(this.tab) ? w`<br /><small>${e("results.archive")}</small>` : D}</div>`;
+		if (t.hidden) return w`<div class="state">${z(R.eyeOff, 56)}<div>${e("spoiler.revealNote")}</div>
         <button class="btn" @click=${() => this.dispatchEvent(new CustomEvent("plb-reveal", {
 			detail: t.session,
 			bubbles: !0,
 			composed: !0
 		}))}>${e("spoiler.reveal")}</button></div>`;
-		if (!t.available || !t.data) return T`<div class="state">${Zt.has(this.tab) ? e("results.notArchived") : e("common.noData")}</div>`;
+		if (!t.available || !t.data) return w`<div class="state">${wn.has(this.tab) ? e("results.notArchived") : e("common.noData")}</div>`;
 		let n = t.data;
 		switch (this.tab) {
 			case "race":
 			case "sprint": return this.classification(e, n.rows, this.tab === "race");
 			case "qualifying": return this.qualifying(e, n.rows);
-			case "lap_chart": return this.lapChart(n);
-			case "strategy": return this.strategy(n);
+			case "lap_chart": return this.lapChart(e, n);
+			case "strategy": return this.strategy(e, n);
 			case "lap_times": return this.lapTimes(e, n);
 			case "pit_stops": return this.pitStops(e, n);
 			case "race_control": return this.raceControl(e, n.messages);
 			default: return this.weather(e, n.weather);
 		}
 	}
+	finish(e, t, n) {
+		if (n && t.laps !== null && t.laps !== void 0 && t.laps < n && (t.time || /^(lapped|\+\d+ laps?)$/i.test(t.status ?? ""))) {
+			let r = n - t.laps;
+			return e(r === 1 ? "results.lapsDownOne" : "results.lapsDown", { n: r });
+		}
+		return t.time ?? En(e, t.status);
+	}
 	classification(e, t, n) {
-		return T`<div class="scroll"><table class="tbl">
-      <tr><th>${e("common.pos")}</th><th>${e("common.driver")}</th><th></th><th class="wide">${e("common.team")}</th>
+		let r = t.find((e) => e.position === 1)?.laps ?? null;
+		return w`<div class="scroll"><table class="tbl">
+      <tr><th>${e("common.pos")}</th><th>${e("common.driver")}</th><th class="phone-hide"></th><th class="wide">${e("common.team")}</th>
         <th class="r phone-hide">${e("results.grid")}</th><th class="r phone-hide">${e("common.laps")}</th><th>${e("results.time")}</th>
-        <th class="r">${e("common.points")}</th>${n ? T`<th class="wide">${e("results.fastest")}</th>` : O}</tr>
-      ${t.map((e) => T`<tr>
-          <td class="num">${e.position_text && !/^\d+$/.test(e.position_text) ? e.position_text : e.position}</td>
-          <td>${Y(e.name, e.team_id)}</td>
-          <td>${pt(e.gained)}</td>
-          <td class="wide muted">${e.team ?? ""}</td>
-          <td class="r num phone-hide">${e.grid ?? "—"}</td>
-          <td class="r num phone-hide">${e.laps ?? ""}</td>
-          <td class="num">${e.time ?? e.status ?? ""}</td>
-          <td class="r num">${e.points ? q(this.hass, e.points) : ""}</td>
-          ${n ? T`<td class="wide t ${e.fastest_lap?.rank === 1 ? "ob" : ""}">${e.fastest_lap?.time ?? ""}</td>` : O}
+        <th class="r">${e("common.points")}</th>${n ? w`<th class="wide">${e("results.fastest")}</th>` : D}</tr>
+      ${t.map((t) => w`<tr>
+          <td class="num">${t.position_text && !/^\d+$/.test(t.position_text) ? t.position_text : t.position}</td>
+          <td>${Y(t.name, t.team_id)}</td>
+          <td class="phone-hide">${Lt(t.gained)}</td>
+          <td class="wide muted">${t.team ?? ""}</td>
+          <td class="r num phone-hide">${t.grid ?? "—"}</td>
+          <td class="r num phone-hide">${t.laps ?? ""}</td>
+          <td class="num">${this.finish(e, t, r)}</td>
+          <td class="r num">${t.points ? J(this.hass, t.points) : ""}</td>
+          ${n ? w`<td class="wide t ${t.fastest_lap?.rank === 1 ? "ob" : ""}">${t.fastest_lap?.time ?? ""}</td>` : D}
         </tr>`)}
     </table></div>`;
 	}
@@ -2871,82 +3396,100 @@ var Gt = o`
 			q1: n("q1"),
 			q2: n("q2"),
 			q3: n("q3")
-		};
-		return T`<div class="scroll"><table class="tbl">
-      <tr><th>${e("common.pos")}</th><th>${e("common.driver")}</th><th class="wide">${e("common.team")}</th><th>Q1</th><th>Q2</th><th>Q3</th></tr>
-      ${t.map((e) => T`<tr>
+		}, i = (e) => e.q3 ? "q3" : e.q2 ? "q2" : e.q1 ? "q1" : null;
+		return w`<div class="scroll"><table class="tbl">
+      <tr><th>${e("common.pos")}</th><th>${e("common.driver")}</th><th class="wide">${e("common.team")}</th>
+        <th class="phone-hide">Q1</th><th class="phone-hide">Q2</th><th class="phone-hide">Q3</th><th class="phone-only">${e("results.best")}</th></tr>
+      ${t.map((e) => {
+			let t = i(e);
+			return w`<tr>
           <td class="num">${e.position}</td><td>${Y(e.name, e.team_id)}</td><td class="wide muted">${e.team ?? ""}</td>
           ${[
-			"q1",
-			"q2",
-			"q3"
-		].map((t) => T`<td class="t ${e[t] && e[t] === r[t] ? "ob" : ""}">${e[t] ?? ""}</td>`)}
-        </tr>`)}
+				"q1",
+				"q2",
+				"q3"
+			].map((t) => w`<td class="t phone-hide ${e[t] && e[t] === r[t] ? "ob" : ""}">${e[t] ?? ""}</td>`)}
+          <td class="t phone-only">${t ? w`<small class="muted">${t.toUpperCase()}</small> <span class=${e[t] === r[t] ? "t ob" : "t"}>${e[t]}</span>` : ""}</td>
+        </tr>`;
+		})}
     </table></div>`;
 	}
-	lapChart(e) {
-		let t = Math.max(...e.drivers.map((e) => Math.max(0, ...e.positions.filter((e) => e !== null))), 1), n = 24 + t * 22, r = Math.max(e.laps, 1), i = (e) => 36 + e / r * 850, a = (e) => 14 + (e - 1) * 22, o = e.drivers.map((e) => {
+	lapChart(e, t) {
+		let n = Math.max(...t.drivers.map((e) => Math.max(0, ...e.positions.filter((e) => e !== null))), 1), r = 24 + n * 22, i = Math.max(t.laps, 1), a = (e) => 36 + e / i * 850, o = (e) => 14 + (e - 1) * 22, s = /* @__PURE__ */ new Set(), c = t.drivers.map((e) => {
 			let t = "", n = !1;
 			e.positions.forEach((e, r) => {
 				if (e === null) {
 					n = !1;
 					return;
 				}
-				t += `${n ? "L" : "M"}${i(r).toFixed(1)} ${a(e).toFixed(1)}`, n = !0;
+				t += `${n ? "L" : "M"}${a(r).toFixed(1)} ${o(e).toFixed(1)}`, n = !0;
 			});
-			let r = e.positions.map((e) => e !== null).lastIndexOf(!0), o = r >= 0 ? e.positions[r] : null, s = !this.highlight || this.highlight === e.driver_id, c = Ge(e.team_id), l = () => this.highlight = this.highlight === e.driver_id ? "" : e.driver_id ?? "";
-			return E`<g class="line" @click=${l} @keydown=${J(l)} tabindex="0" role="button"
+			let r = e.positions.map((e) => e !== null).lastIndexOf(!0), i = r >= 0 ? e.positions[r] : null, c = !this.highlight || this.highlight === e.driver_id, l = lt(e.team_id), u = e.team_id ?? e.driver_id ?? "", d = s.has(u);
+			s.add(u);
+			let f = () => this.highlight = this.highlight === e.driver_id ? "" : e.driver_id ?? "";
+			return T`<g class="line" @click=${f} @keydown=${Ft(f)} tabindex="0" role="button"
           aria-label=${e.name ?? e.code ?? ""} aria-pressed=${this.highlight === e.driver_id ? "true" : "false"}
-          style="opacity:${s ? 1 : .15}">
-        <path d=${t} fill="none" stroke=${c} stroke-width=${this.highlight === e.driver_id ? 4 : 2}></path>
-        ${o === null ? O : E`<text x=${i(r) + 6} y=${a(o) + 4} style="fill:var(--primary-text-color);font-weight:600">${e.code ?? e.name?.slice(0, 3).toUpperCase()}</text>`}
+          style="opacity:${c ? 1 : .15}">
+        <path d=${t} fill="none" stroke=${l} stroke-width=${this.highlight === e.driver_id ? 4 : 2}
+          stroke-dasharray=${d ? "7 4" : "none"}></path>
+        ${i === null ? D : T`<text class="end" x=${a(r) + 6} y=${o(i) + 4}>${e.code ?? e.name?.slice(0, 3).toUpperCase()}</text>`}
       </g>`;
-		}), s = Array.from({ length: t }, (e, t) => E`<line class="axis" x1="36" x2=${886} y1=${a(t + 1)} y2=${a(t + 1)}></line><text x="8" y=${a(t + 1) + 4}>${t + 1}</text>`), c = Array.from({ length: Math.floor(r / 10) + 1 }, (e, t) => t * 10).map((e) => E`<text x=${i(e)} y=${n} text-anchor="middle">${e || this.gridLabel}</text>`);
-		return T`<div class="chart"><svg viewBox="0 0 ${960} ${n + 6}">${s}${o}${c}</svg></div>`;
+		}), l = Array.from({ length: n }, (e, t) => T`<line class="axis" x1="36" x2=${886} y1=${o(t + 1)} y2=${o(t + 1)}></line><text x="8" y=${o(t + 1) + 4}>${t + 1}</text>`), u = Array.from({ length: Math.floor(i / 10) + 1 }, (e, t) => t * 10).map((e) => T`<text x=${a(e)} y=${r} text-anchor="middle">${e || this.gridLabel}</text>`);
+		return w`<div class="legend muted">${e("results.teammateDashed")}</div>
+      <div class="chart"><svg viewBox="0 0 ${960} ${r + 6}">${l}${c}${u}</svg></div>`;
 	}
-	strategy(e) {
-		let t = Math.max(e.laps, 1), n = (e) => 60 + e / t * 880, r = 10 + e.drivers.length * 26 + 24;
-		return T`<div class="chart"><svg viewBox="0 0 ${960} ${r}">${e.drivers.map((e, t) => E`
+	strategy(e, t) {
+		let n = Math.max(t.laps, 1), r = (e) => 60 + e / n * 880, i = 10 + t.drivers.length * 26 + 24, a = [...new Set(t.drivers.flatMap((e) => e.stints.map((e) => e.compound)))].sort((e, t) => Object.keys(V).indexOf(e) - Object.keys(V).indexOf(t)), o = t.drivers.map((e, t) => T`
       <text x="8" y=${10 + t * 26 + 13} style="font-weight:600;fill:var(--primary-text-color)">${e.tla}</text>
-      ${e.stints.map((e) => E`<rect x=${n(e.start_lap - 1) + 1} y=${10 + t * 26} width=${Math.max(2, n(e.end_lap) - n(e.start_lap - 1) - 2)}
-        height=${18} rx="4" style="fill:var(${`--plb-${e.compound}`}, var(--plb-unknown));stroke:var(--divider-color)"
-        opacity=${e.new ? 1 : .75}><title>${this.tyreName(e.compound)} ${e.start_lap}–${e.end_lap}</title></rect>`)}`)}${[
+      ${e.stints.map((e) => {
+			let n = Math.max(2, r(e.end_lap) - r(e.start_lap - 1) - 2), i = r(e.start_lap - 1) + 1;
+			return T`<rect x=${i} y=${10 + t * 26} width=${n}
+          height=${18} rx="4" style="fill:var(${V[e.compound] ?? V.unknown});stroke:color-mix(in srgb, var(--primary-text-color) 30%, transparent)"
+          opacity=${e.new ? 1 : .7}><title>${this.tyreName(e.compound)} ${e.start_lap}–${e.end_lap}</title></rect>
+          ${n > 34 ? T`<text class="laps-in" x=${i + n / 2} y=${10 + t * 26 + 13} text-anchor="middle">${e.end_lap - e.start_lap + 1}</text>` : D}`;
+		})}`), s = [
 			1,
-			...Array.from({ length: Math.floor(t / 10) }, (e, t) => (t + 1) * 10),
-			t
-		].filter((e, t, n) => n.indexOf(e) === t).map((e) => E`<text x=${n(e)} y=${r - 4} text-anchor="middle">${e}</text>`)}</svg></div>`;
+			...Array.from({ length: Math.floor(n / 10) }, (e, t) => (t + 1) * 10),
+			n
+		].filter((e, t, n) => n.indexOf(e) === t).map((e) => T`<text x=${r(e)} y=${i - 4} text-anchor="middle">${e}</text>`);
+		return w`<div class="legend">${a.map((t) => w`<span class="key">${It(e, t, null, null)}${this.tyreName(t)}</span>`)}
+        <span class="muted">${e("results.usedFaded")}</span></div>
+      <div class="chart"><svg viewBox="0 0 ${960} ${i}">${o}${s}</svg></div>`;
 	}
 	lapTimes(e, t) {
-		if (!t.drivers.length) return T`<div class="state">${e("common.noData")}</div>`;
+		if (!t.drivers.length) return w`<div class="state">${e("common.noData")}</div>`;
 		let n = t.drivers.find((e) => e.number === this.driver) ?? t.drivers[0], r = (e) => e === "overall" ? "ob" : e === "personal" ? "pb" : "";
-		return T`
+		return w`
       <div class="pick">
         <label>${e("results.chooseDriver")}
           <select @change=${(e) => this.driver = e.target.value}>
-            ${t.drivers.map((e) => T`<option .selected=${e === n} value=${e.number}>${e.tla} — ${e.name}</option>`)}
+            ${t.drivers.map((e) => w`<option .selected=${e === n} value=${e.number}>${e.tla} — ${e.name}</option>`)}
           </select>
         </label>
       </div>
-      <div class="scroll"><table class="tbl">
+      <div class="scroll tall"><table class="tbl sticky">
         <tr><th>${e("common.lap")}</th><th>${e("live.last")}</th><th>S1</th><th>S2</th><th>S3</th><th>${e("results.tyre")}</th><th>${e("results.pit")}</th></tr>
-        ${n.laps.map((t) => T`<tr>
+        ${n.laps.map((t) => w`<tr>
             <td class="num">${t.lap}</td>
             <td class="t ${r(t.best)}">${t.time ?? "—"}</td>
             ${[
 			0,
 			1,
 			2
-		].map((e) => T`<td class="t ${r(t.sector_bests?.[e])}">${t.sectors[e] ?? "—"}</td>`)}
-            <td>${t.compound ? ft(e, t.compound, null, t.tyre_age) : ""}</td>
-            <td>${t.pit_in ? T`<span class="badge pit">${e("results.pitIn")}</span>` : O}${t.pit_out ? T`<span class="badge out">${e("results.pitOut")}</span>` : O}</td>
+		].map((e) => w`<td class="t ${r(t.sector_bests?.[e])}">${t.sectors[e] ?? "—"}</td>`)}
+            <td>${t.compound ? It(e, t.compound, null, t.tyre_age) : ""}</td>
+            <td>${t.pit_in ? w`<span class="badge pit">${e("results.pitIn")}</span>` : D}${t.pit_out ? w`<span class="badge out">${e("results.pitOut")}</span>` : D}</td>
           </tr>`)}
       </table></div>`;
 	}
 	pitStops(e, t) {
-		return t.stops.length ? T`<div class="scroll"><table class="tbl">
+		if (!t.stops.length) return w`<div class="state">${e("common.noData")}</div>`;
+		let n = [...t.stops].sort((e, t) => e.lap - t.lap || e.stop - t.stop);
+		return w`<div class="scroll"><table class="tbl fit">
       <tr><th>${e("common.driver")}</th><th class="r">${e("common.lap")}</th><th class="r">${e("results.stop")}</th><th class="r">${e("results.duration")}</th></tr>
-      ${t.stops.map((e) => T`<tr><td>${Y(e.name, e.team_id)}</td><td class="r num">${e.lap}</td><td class="r num">${e.stop}</td><td class="r num">${e.duration ?? ""}</td></tr>`)}
-    </table></div>` : T`<div class="state">${e("common.noData")}</div>`;
+      ${n.map((t) => w`<tr><td>${Y(t.name, t.team_id)}</td><td class="r num">${t.lap}</td><td class="r num">${t.stop}</td>
+          <td class="r num">${t.duration ? e("delay.seconds", { n: t.duration }) : ""}</td></tr>`)}
+    </table></div>`;
 	}
 	raceControl(e, t) {
 		let n = [
@@ -2960,34 +3503,45 @@ var Gt = o`
 			penalties: "penalty",
 			other: "other"
 		}[this.filter] ?? null, i = t.filter((e) => !r || e.kind === r);
-		return T`<div class="filters">${n.map((t) => T`<button class="chip small ${this.filter === t ? "on" : ""}" @click=${() => this.filter = t}>${e(`live.${t}`)}</button>`)}</div>
-      <div class="feed">${i.map((t) => T`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : ""}</span>
-          <span>${t.message}<time>${K(this.hass, t.utc)}</time></span></div>`)}</div>`;
+		return w`<div class="filters">${n.map((t) => w`<button class="chip small ${this.filter === t ? "on" : ""}" aria-pressed=${this.filter === t ? "true" : "false"}
+          @click=${() => this.filter = t}>${e(`live.${t}`)}</button>`)}</div>
+      <div class="feed">${i.map((t) => w`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : q(this.hass, t.utc, !0)}</span>
+          <span>${t.message}${t.lap ? w`<time>${q(this.hass, t.utc)}</time>` : D}</span></div>`)}</div>`;
 	}
 	weather(e, t) {
-		if (!t) return T`<div class="state">${e("common.noData")}</div>`;
-		let n = (e, t) => t ? T`<tr><td>${e}</td>${[
-			t.start,
-			t.end,
-			t.min,
-			t.max
-		].map((e) => T`<td class="r num">${q(this.hass, e)}°</td>`)}</tr>` : O;
-		return T`<div class="scroll"><table class="tbl">
-      <tr><th></th><th class="r">${e("results.start")}</th><th class="r">${e("results.end")}</th><th class="r">${e("results.min")}</th><th class="r">${e("results.max")}</th></tr>
-      ${n(e("results.air"), t.air)}${n(e("results.track"), t.track)}
-      <tr><td>${e("results.rain")}</td><td class="r" colspan="4">${t.rain ? e("results.yes") : e("results.no")}</td></tr>
-    </table></div>`;
+		if (!t) return w`<div class="state">${e("common.noData")}</div>`;
+		let n = (e) => `${J(this.hass, e)}°`, r = (t, r) => r ? w`<div class="tile"><small>${t}</small>
+            <b class="num">${e("results.startEnd", {
+			start: n(r.start),
+			end: n(r.end)
+		})}</b>
+            <span class="muted num">${e("results.range", {
+			min: n(r.min),
+			max: n(r.max)
+		})}</span></div>` : D;
+		return w`<div class="tiles">
+      ${r(e("results.air"), t.air)}${r(e("results.track"), t.track)}
+      <div class="tile"><small>${e("results.rain")}</small><b>${t.rain ? e("results.wet") : e("results.dry")}</b></div>
+    </div>`;
 	}
 	static {
-		this.styles = [B, o`
-      :host { display: block; }
+		this.styles = [
+			B,
+			ot,
+			o`
+      :host { display: block; container-type: inline-size; }
       .back { display: inline-flex; align-items: center; gap: 4px; }
       .subtabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--divider-color); }
       .subtabs .tab { font-size: 13px; padding: 6px 12px; }
       .line { cursor: pointer; }
+      .chart text.end { fill: var(--primary-text-color); font-weight: 600; paint-order: stroke;
+        stroke: var(--card-background-color); stroke-width: 4px; stroke-linejoin: round; }
+      .chart text.laps-in { fill: #1a1a1a; font-size: 10px; font-weight: 600; opacity: 0.75; }
+      .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 16px 0; font-size: 12px; }
+      .legend .key { display: inline-flex; align-items: center; gap: 6px; }
       .pick { padding: 12px 16px; border-bottom: 1px solid var(--divider-color); }
       .pick label { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--secondary-text-color); }
-      .filters { display: flex; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--divider-color); }
+      .filters { display: flex; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--divider-color); flex-wrap: wrap; }
       .feed { max-height: 70vh; overflow: auto; }
       .msg { display: grid; grid-template-columns: 56px 1fr; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--divider-color); font-size: 13px; }
       .msg .lap { color: var(--secondary-text-color); font-size: 12px; }
@@ -2995,18 +3549,38 @@ var Gt = o`
       .msg.penalty { box-shadow: inset 3px 0 var(--error-color, #db4437); }
       .msg time { display: block; color: var(--secondary-text-color); font-size: 11px; margin-top: 2px; }
       .badge + .badge { margin-left: 4px; }
-      @media (max-width: 900px) { .wide { display: none; } }
-      @media (max-width: 640px) { .phone-hide { display: none; } }
-    `];
+      .gp .pill { margin-left: 8px; }
+      .chev { width: 16px; color: var(--secondary-text-color); font-size: 18px; text-align: right; }
+      .tbl.fit { width: auto; min-width: min(100%, 480px); }
+      .scroll.tall { max-height: 70vh; overflow: auto; }
+      .tbl.sticky th { position: sticky; top: 0; z-index: 1; background: var(--card-background-color); }
+      .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding: 16px; }
+      .tile { display: grid; gap: 4px; padding: 12px 14px; border-radius: 10px; background: var(--plb-row-alt);
+        border: 1px solid var(--divider-color); }
+      .tile small { color: var(--secondary-text-color); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+      .tile b { font-size: 20px; font-weight: 500; }
+      .tile span { font-size: 12px; }
+      .phone-only { display: none; }
+      .gp small.phone-only { color: var(--secondary-text-color); font-size: 11px; }
+      @container (max-width: 900px) { .wide { display: none; } }
+      @container (max-width: 640px) {
+        .phone-hide { display: none; }
+        .phone-only { display: table-cell; }
+        .gp small.phone-only { display: block; }
+        .tbl td.wrap { white-space: normal; }
+        .chev { display: none; }
+      }
+    `
+		];
 	}
-}, $t = /* @__PURE__ */ new Set([
+}, On = /* @__PURE__ */ new Set([
 	"token_invalid",
 	"token_expired",
 	"token_no_subscription",
 	"token_missing"
-]), en = class extends N {
+]), kn = class extends j {
 	constructor(...e) {
-		super(...e), this.testResult = "", this.token = "", this.tokenError = "", this.saving = !1, this.confirmRemove = !1, this.busy = !1, this.asked = !1;
+		super(...e), this.testResult = "", this.token = "", this.tokenError = "", this.saving = !1, this.confirmRemove = !1, this.busy = !1, this.clock = 0, this.asked = !1;
 	}
 	static {
 		this.properties = {
@@ -3019,7 +3593,8 @@ var Gt = o`
 			tokenError: { state: !0 },
 			saving: { state: !0 },
 			confirmRemove: { state: !0 },
-			busy: { state: !0 }
+			busy: { state: !0 },
+			clock: { attribute: !1 }
 		};
 	}
 	willUpdate() {
@@ -3072,7 +3647,7 @@ var Gt = o`
 			await F.setToken(this.hass, e), this.token = "";
 		} catch (e) {
 			let t = e?.message ?? "";
-			this.tokenError = $t.has(t) ? t : "token_invalid";
+			this.tokenError = On.has(t) ? t : "token_invalid";
 		} finally {
 			this.saving = !1;
 		}
@@ -3087,6 +3662,9 @@ var Gt = o`
 			this.saving = !1, this.confirmRemove = !1;
 		}
 	}
+	stateText(e, t) {
+		return this.hass.formatEntityState ? this.hass.formatEntityState(e) : (e.attributes.device_class === "timestamp" || t === "event") && !Number.isNaN(Date.parse(e.state)) ? `${Ct(this.hass, e.state)} ${q(this.hass, e.state, !0)}` : e.state;
+	}
 	moreInfo(e) {
 		this.dispatchEvent(new CustomEvent("hass-more-info", {
 			detail: { entityId: e },
@@ -3096,27 +3674,30 @@ var Gt = o`
 	}
 	render() {
 		let e = L(this.hass), t = this.settings;
-		return T`<div class="page">
+		return w`<div class="page">
       ${this.renderLive(e, t)}
       ${this.renderDelay(e, t)}
       ${this.renderClock(e)}
-      ${t.is_admin ? this.renderDrivers(e, t) : O}
-      ${t.is_admin ? this.renderSummary(e, t) : O}
-      ${t.is_admin ? this.renderPanel(e, t) : O}
-      ${t.is_admin ? this.renderF1tv(e, t) : O}
+      ${t.is_admin ? this.renderDrivers(e, t) : D}
+      ${t.is_admin ? this.renderSummary(e, t) : D}
+      ${t.is_admin ? this.renderPanel(e, t) : D}
+      ${t.is_admin ? this.renderF1tv(e, t) : D}
       ${this.renderKiosk(e)}
       ${this.renderEntities(e)}
     </div>`;
 	}
 	renderLive(e, t) {
 		let n = t.live ? t.running ? e("settings.running") : e("settings.waiting") : e("settings.pausedHelp");
-		return T`<section class="card">
+		return w`<section class="card">
       <div class="card-head">${e("settings.live")}</div>
       <div class="live">
-        <button class="big-play ${t.live ? "on" : ""}" ?disabled=${this.busy} @click=${() => this.set({ live: !t.live })}
-          aria-pressed=${t.live ? "true" : "false"} aria-label=${t.live ? e("settings.pause") : e("settings.start")}>
-          ${z(t.live ? R.pause : R.play, 36)}
-        </button>
+        <div class="play-box">
+          <button class="big-play ${t.live ? "on" : ""}" ?disabled=${this.busy} @click=${() => this.set({ live: !t.live })}
+            aria-pressed=${t.live ? "true" : "false"} aria-label=${t.live ? e("settings.pause") : e("settings.start")}>
+            ${z(t.live ? R.pause : R.play, 36)}
+          </button>
+          <small aria-hidden="true">${t.live ? e("settings.pauseShort") : e("settings.startShort")}</small>
+        </div>
         <div class="what">
           <b>${t.live ? e("settings.on") : e("settings.off")}</b>
           <span>${n}</span>
@@ -3144,17 +3725,17 @@ var Gt = o`
 	}
 	renderDrivers(e, t) {
 		let n = t.favourites ?? [], r = n.length >= 5, i = this.drivers;
-		return T`<section class="card">
+		return w`<section class="card">
       <div class="card-head">${e("drivers.title")}<span class="spacer"></span><small>${e("settings.adminOnly")}</small></div>
       <div class="body">
         <p>${e("drivers.help")}</p>
-        ${i ? T`<div class="chips">${i.map((e) => {
+        ${i ? w`<div class="chips">${i.map((e) => {
 			let t = n.includes(e.code);
-			return T`<button class="chip ${t ? "on" : ""}" ?disabled=${this.busy || !t && r}
+			return w`<button class="chip ${t ? "on" : ""}" ?disabled=${this.busy || !t && r}
                 title=${e.name ?? e.code} aria-pressed=${t ? "true" : "false"}
                 @click=${() => this.setHousehold({ favourites: this.toggle(n, e.code, !t) })}>
                 ${t ? "★ " : ""}${e.code}</button>`;
-		})}</div>` : T`<span class="muted">${e("common.loading")}</span>`}
+		})}</div>` : w`<span class="muted">${e("common.loading")}</span>`}
         <small class="muted">${e("drivers.max")}</small>
       </div>
     </section>`;
@@ -3170,15 +3751,15 @@ var Gt = o`
 	}
 	renderSummary(e, t) {
 		let n = Object.keys(this.hass.services?.notify ?? {}).filter((e) => !["send_message"].includes(e)).sort(), r = t.notify_targets ?? [], i = t.summary_kinds ?? [];
-		return T`<section class="card">
+		return w`<section class="card">
       <div class="card-head">${e("summary.title")}<span class="spacer"></span><small>${e("settings.adminOnly")}</small></div>
       <div class="body">
         <p>${e("summary.help")}</p>
         <b class="small">${e("summary.where")}</b>
-        ${n.length ? n.map((e) => T`<label class="line">
+        ${n.length ? n.map((e) => w`<label class="line">
                 <input type="checkbox" .checked=${r.includes(e)} ?disabled=${this.busy}
                   @change=${(t) => this.setHousehold({ notify_targets: this.toggle(r, e, t.target.checked) }, t.target)} />
-                <span>notify.${e}</span></label>`) : T`<span class="muted">${e("summary.noServices")}</span>`}
+                <span>notify.${e}</span></label>`) : w`<span class="muted">${e("summary.noServices")}</span>`}
         <b class="small">${e("summary.which")}</b>
         <div class="chips">${[
 			"race",
@@ -3188,19 +3769,19 @@ var Gt = o`
 			"practice"
 		].map((t) => {
 			let n = i.includes(t);
-			return T`<button class="chip ${n ? "on" : ""}" ?disabled=${this.busy}
+			return w`<button class="chip ${n ? "on" : ""}" ?disabled=${this.busy}
             @click=${() => this.setHousehold({ summary_kinds: this.toggle(i, t, !n) })}>${e(`sessions.${t}`)}</button>`;
 		})}</div>
         <b class="small">${e("summary.format")}</b>
         <div class="chips" role="radiogroup" aria-label=${e("summary.format")}>
-          ${["compact", "full"].map((n) => T`<button class="chip ${(t.summary_format ?? "compact") === n ? "on" : ""}" role="radio"
+          ${["compact", "full"].map((n) => w`<button class="chip ${(t.summary_format ?? "compact") === n ? "on" : ""}" role="radio"
               aria-checked=${(t.summary_format ?? "compact") === n ? "true" : "false"} ?disabled=${this.busy}
               @click=${() => this.setHousehold({ summary_format: n })}>${e(`summary.${n}`)}</button>`)}
         </div>
         <small class="muted">${e(`summary.${t.summary_format === "full" ? "fullHelp" : "compactHelp"}`)}</small>
         <div class="line">
           <button class="btn flat" ?disabled=${!r.length} @click=${() => this.testSummary()}>${e("summary.test")}</button>
-          ${this.testResult ? T`<span class="muted small">${e(this.testResult)}</span>` : O}
+          ${this.testResult ? w`<span class="muted small">${e(this.testResult)}</span>` : D}
         </div>
         <small class="muted">${e("summary.spoiler")}</small>
       </div>
@@ -3217,7 +3798,7 @@ var Gt = o`
 		}
 	}
 	renderPanel(e, t) {
-		return T`<section class="card">
+		return w`<section class="card">
       <div class="card-head">${e("settings.panel")}<span class="spacer"></span><small>${e("settings.adminOnly")}</small></div>
       <label class="row">
         <input type="checkbox" .checked=${t.show_in_sidebar} ?disabled=${this.busy}
@@ -3233,20 +3814,20 @@ var Gt = o`
 	}
 	async setClock(e) {
 		try {
-			await Xe(this.hass, e);
+			await mt(this.hass, e);
 		} catch {}
 		this.requestUpdate();
 	}
 	renderClock(e) {
-		let t = Je(), n = [
-			["home_assistant", e("time.home", { zone: tt(this.hass) })],
-			["device", e("time.device", { zone: et() })],
+		let t = ft(), n = [
+			["home_assistant", e("time.home", { zone: bt(this.hass) })],
+			["device", e("time.device", { zone: yt() })],
 			["circuit", e("time.circuit")]
 		];
-		return T`<section class="card">
+		return w`<section class="card">
       <div class="card-head">${e("time.title")}<span class="spacer"></span><small>${e("time.justYou")}</small></div>
       <div class="radios" role="radiogroup" aria-label=${e("time.title")}>
-        ${n.map(([e, n]) => T`<label class="row">
+        ${n.map(([e, n]) => w`<label class="row">
             <input type="radio" name="clock" .checked=${t.zone === e}
               @change=${() => this.setClock({
 			...t,
@@ -3265,7 +3846,7 @@ var Gt = o`
     </section>`;
 	}
 	renderDelay(e, t) {
-		return T`<section class="card">
+		return w`<section class="card">
       <div class="card-head">${e("delay.title")}</div>
       <div class="body">
         <p>${e("delay.help")}</p>
@@ -3281,13 +3862,13 @@ var Gt = o`
 	}
 	renderF1tv(e, t) {
 		let n = t.f1tv, r = n && n.status !== "not_configured";
-		return T`<section class="card">
+		return w`<section class="card">
       <div class="card-head">F1TV<span class="spacer"></span><small>${e("settings.adminOnly")}</small></div>
       <div class="body">
         <p>${e("settings.f1tvHelp")}</p>
         <div class="status">
           <span class="dot ${n?.status ?? ""}"></span><b>${e(`f1tv.${n?.status ?? "not_configured"}`)}</b>
-          ${n?.expires ? T`<span class="muted">${e("settings.expires", { date: it(this.hass, n.expires) })}</span>` : O}
+          ${n?.expires ? w`<span class="muted">${e("settings.expires", { date: Ct(this.hass, n.expires) })}</span>` : D}
         </div>
         <form class="token" @submit=${(e) => {
 			e.preventDefault(), this.saveToken();
@@ -3300,17 +3881,17 @@ var Gt = o`
 		}} />
           <button class="btn" type="submit" ?disabled=${this.saving || !this.token.trim()}>${e("settings.save")}</button>
         </form>
-        ${this.tokenError ? T`<div class="error-text" role="alert">${e(`settings.errors.${this.tokenError}`)}</div>` : O}
+        ${this.tokenError ? w`<div class="error-text" role="alert">${e(`settings.errors.${this.tokenError}`)}</div>` : D}
         <p class="muted small">${e("settings.tokenSteps")}</p>
-        ${r ? this.confirmRemove ? T`<div class="confirm">${e("settings.removeConfirm")}
+        ${r ? this.confirmRemove ? w`<div class="confirm">${e("settings.removeConfirm")}
                 <button class="btn danger" ?disabled=${this.saving} @click=${() => this.removeToken()}>${e("settings.remove")}</button>
-                <button class="btn flat" @click=${() => this.confirmRemove = !1}>${e("settings.cancel")}</button></div>` : T`<button class="btn flat" @click=${() => this.confirmRemove = !0}>${e("settings.remove")}</button>` : O}
+                <button class="btn flat" @click=${() => this.confirmRemove = !1}>${e("settings.cancel")}</button></div>` : w`<button class="btn flat danger" @click=${() => this.confirmRemove = !0}>${e("settings.remove")}</button>` : D}
       </div>
     </section>`;
 	}
 	renderKiosk(e) {
 		let t = `${location.origin}${location.pathname}?kiosk`;
-		return T`<section class="card">
+		return w`<section class="card">
       <div class="card-head">${e("kiosk.title")}</div>
       <div class="body">
         <p>${e("kiosk.help")}</p>
@@ -3325,21 +3906,21 @@ var Gt = o`
 	}
 	renderEntities(e) {
 		let t = this.entities;
-		return T`<section class="card">
+		return w`<section class="card">
       <div class="card-head">${e("settings.entities")}</div>
-      ${t ? T`<ul class="entities">${t.map((t) => {
+      ${t ? w`<ul class="entities">${t.map((t) => {
 			let n = this.hass.states?.[t.entity_id];
-			return T`<li><button class="entity" @click=${() => this.moreInfo(t.entity_id)}>
-              <span class="name">${n?.attributes.friendly_name ?? t.entity_id}<small>${t.entity_id}</small></span>
-              <span class="value">${t.disabled ? e("settings.disabled") : n ? this.hass.formatEntityState?.(n) ?? n.state : "—"}</span>
+			return w`<li><button class="entity" @click=${() => this.moreInfo(t.entity_id)}>
+              <span class="name">${n?.attributes.friendly_name ?? t.entity_id}<small title=${t.entity_id}>${t.entity_id}</small></span>
+              ${((e) => w`<span class="value" title=${e}>${e}</span>`)(t.disabled ? e("settings.disabled") : n ? this.stateText(n, t.domain) : "—")}
             </button></li>`;
-		})}</ul>` : T`<div class="body muted">${e("common.loading")}</div>`}
+		})}</ul>` : w`<div class="body muted">${e("common.loading")}</div>`}
       <div class="note">${e("settings.entitiesHelp")}</div>
     </section>`;
 	}
 	static {
 		this.styles = [B, o`
-      :host { display: block; }
+      :host { display: block; container-type: inline-size; }
       .page { display: grid; gap: var(--plb-gap); max-width: 760px; margin: 0 auto; }
       .body { padding: 14px 16px; display: grid; gap: 12px; }
       .body p { margin: 0; color: var(--secondary-text-color); font-size: 13px; line-height: 1.5; }
@@ -3349,6 +3930,8 @@ var Gt = o`
       .line input { width: 18px; height: 18px; accent-color: var(--primary-color); }
       .body > .btn { justify-self: start; }
       .live { display: flex; align-items: center; gap: 18px; padding: 18px 16px 8px; }
+      .play-box { display: grid; justify-items: center; gap: 4px; flex: none; }
+      .play-box small { font-size: 11px; color: var(--secondary-text-color); }
       .big-play { width: 72px; height: 72px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; flex: none;
         background: var(--primary-color); color: var(--text-primary-color, #fff); }
       .big-play.on { background: var(--secondary-background-color); color: var(--primary-text-color); box-shadow: inset 0 0 0 2px var(--divider-color); }
@@ -3362,7 +3945,7 @@ var Gt = o`
       .row span { display: grid; gap: 2px; font-size: 14px; }
       .row small { color: var(--secondary-text-color); font-size: 12px; line-height: 1.5; }
       .stepper { display: flex; align-items: center; gap: 10px; }
-      .stepper button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--divider-color);
+      .stepper button { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--divider-color);
         background: none; color: inherit; font-size: 18px; cursor: pointer; }
       .stepper b { font-size: 22px; font-weight: 500; min-width: 110px; text-align: center; }
       input[type="range"] { width: 100%; accent-color: var(--primary-color); }
@@ -3372,12 +3955,11 @@ var Gt = o`
       .dot.expiring { background: var(--warning-color, #ffa600); }
       .dot.expired, .dot.invalid { background: var(--error-color, #db4437); }
       .token { display: flex; gap: 8px; }
-      .token input { flex: 1; min-width: 0; height: 36px; border-radius: 8px; border: 1px solid var(--divider-color);
+      .token input { flex: 1; min-width: 0; height: 40px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--divider-color);
         background: var(--card-background-color); color: var(--primary-text-color); padding: 0 10px; font: inherit; }
       .error-text { color: var(--error-color, #db4437); font-size: 13px; }
       .confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 13px; }
-      .btn.danger { background: var(--error-color, #db4437); }
-      .btn:disabled { opacity: 0.6; cursor: default; }
+      .btn.danger:not(.flat) { background: var(--error-color, #db4437); }
       .entities { list-style: none; margin: 0; padding: 0; }
       .entity { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border: 0; border-bottom: 1px solid var(--divider-color);
         background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
@@ -3385,14 +3967,16 @@ var Gt = o`
       .entity .name { flex: 1; display: grid; gap: 2px; min-width: 0; font-size: 14px; }
       .entity small { color: var(--secondary-text-color); font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
       .entity .value { color: var(--secondary-text-color); font-size: 13px; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      @media (max-width: 640px) {
+      @container (max-width: 640px) {
         .token { flex-direction: column; }
       }
     `];
 	}
-}, tn = class extends N {
+}, An = 6e5, jn = class extends j {
 	constructor(...e) {
-		super(...e), this.seasons = [], this.kind = "drivers", this.round = null, this.failed = !1, this.request = 0, this.spoilers = "";
+		super(...e), this.seasons = [], this.kind = "drivers", this.round = null, this.failed = !1, this.request = 0, this.spoilers = "", this.pages = /* @__PURE__ */ new Map(), this.visibility = () => {
+			document.visibilityState === "visible" && this.refresh();
+		};
 	}
 	static {
 		this.properties = {
@@ -3406,114 +3990,146 @@ var Gt = o`
 			failed: { state: !0 }
 		};
 	}
+	connectedCallback() {
+		super.connectedCallback(), this.timer = window.setInterval(() => this.refresh(), 6e4), document.addEventListener("visibilitychange", this.visibility), this.refresh();
+	}
+	disconnectedCallback() {
+		super.disconnectedCallback(), window.clearInterval(this.timer), document.removeEventListener("visibilitychange", this.visibility);
+	}
+	get key() {
+		return `${this.season}|${this.kind}|${this.round}`;
+	}
+	refresh() {
+		let e = this.pages.get(this.key);
+		this.round === null && e && Date.now() - e.at > An && document.visibilityState !== "hidden" && this.load(!0);
+	}
 	willUpdate(e) {
 		this.season === void 0 && this.settings && (this.season = this.settings.season);
-		let t = dt(this.settings);
-		([
+		let t = Mt(this.settings);
+		t === this.spoilers ? [
 			"season",
 			"kind",
 			"round"
-		].some((t) => e.has(t)) || t !== this.spoilers) && (this.spoilers = t, this.load());
+		].some((t) => e.has(t)) && this.load() : (this.spoilers = t, this.pages.clear(), this.load());
 	}
-	async load() {
+	async load(e = !1) {
 		if (!this.hass || this.season === void 0) return;
-		let e = ++this.request;
-		this.failed = !1;
+		let t = this.key, n = this.pages.get(t);
+		if (n && !e && (this.round !== null || Date.now() - n.at < An)) {
+			this.request++, this.data = n.data, this.failed = !1;
+			return;
+		}
+		let r = ++this.request;
+		n || (this.failed = !1);
 		try {
-			let t = await F.standings(this.hass, this.season, this.round, this.kind);
-			e === this.request && (this.data = t);
+			let e = await F.standings(this.hass, this.season, this.round, this.kind);
+			this.pages.set(t, {
+				data: e,
+				at: Date.now()
+			}), r === this.request && (this.data = e, this.failed = !1);
 		} catch {
-			e === this.request && (this.failed = !0);
+			r === this.request && !n && (this.failed = !0);
 		}
 	}
 	render() {
 		let e = L(this.hass), t = this.seasons.length ? this.seasons : [this.season ?? 0], n = this.data?.rounds ?? 0, r = this.data?.round ?? n;
-		return T`
+		return w`
       <div class="toolbar">
         <h1>${e("standings.title")}</h1>
-        ${["drivers", "constructors"].map((t) => T`<button class="chip ${this.kind === t ? "on" : ""}" @click=${() => this.kind = t}>${e(`standings.${t}`)}</button>`)}
+        ${["drivers", "constructors"].map((t) => w`<button class="chip ${this.kind === t ? "on" : ""}" @click=${() => this.kind = t}>${e(`standings.${t}`)}</button>`)}
         <span class="spacer"></span>
         <select aria-label=${e("common.season")} @change=${(e) => {
 			this.round = null, this.data = void 0, this.season = Number(e.target.value);
 		}}>
-          ${t.map((e) => T`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
+          ${t.map((e) => w`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
         </select>
-        ${n ? T`<select aria-label=${e("common.round")} @change=${(e) => this.round = Number(e.target.value)}>
-              ${Array.from({ length: n }, (e, t) => n - t).map((t) => T`<option .selected=${t === r} value=${t}>${e("standings.after", { n: t })}</option>`)}
-            </select>` : O}
+        ${n ? w`<select aria-label=${e("common.round")} @change=${(e) => this.round = Number(e.target.value)}>
+              ${Array.from({ length: n }, (e, t) => n - t).map((t) => w`<option .selected=${t === r} value=${t}>${e("standings.after", { n: t })}</option>`)}
+            </select>` : D}
       </div>
-      ${this.failed ? X(e, () => this.load()) : this.data ? this.renderTable(this.data) : gt(e)}
+      ${this.failed ? X(e, () => this.load()) : this.data ? this.renderTable(this.data) : Bt(e)}
     `;
 	}
 	renderTable(e) {
 		let t = L(this.hass);
-		if (!e.rows.length) return T`<div class="card state">${e.capped ? t("spoiler.standingsCap") : t("standings.empty")}</div>`;
-		let n = this.kind === "drivers", r = e.rows[0].points || 1;
-		return T`<div class="card">
+		if (!e.rows.length) return w`<div class="card state">${e.capped ? t("spoiler.standingsCap") : t("standings.empty")}</div>`;
+		let n = this.kind === "drivers", r = e.rows[0].points || 1, i = e.rows.some((e) => !!e.change);
+		return w`<div class="card">
       <div class="scroll"><table class="tbl">
         <tr>
-          <th>${t("common.pos")}</th><th>${t("standings.change")}</th>
+          <th>${t("common.pos")}</th>${i ? w`<th>${t("standings.change")}</th>` : D}
           <th>${t(n ? "common.driver" : "common.team")}</th>
-          ${n ? T`<th class="wide">${t("common.team")}</th>` : O}
+          ${n ? w`<th class="wide">${t("common.team")}</th>` : D}
           <th class="barcol"></th>
-          <th class="r">${t("common.points")}</th><th class="r">${t("standings.wins")}</th><th class="r">${t("standings.behind")}</th>
+          <th class="r">${t("common.points")}</th><th class="r">${t("standings.wins")}</th><th class="r col-behind">${t("standings.behind")}</th>
         </tr>
-        ${e.rows.map((e) => T`<tr>
+        ${e.rows.map((e) => w`<tr>
             <td class="num">${e.position_text && e.position_text !== String(e.position) ? e.position_text : e.position}</td>
-            <td>${pt(e.change, !1)}</td>
-            <td>${Y(n ? e.name : e.team, e.team_id)}</td>
-            ${n ? T`<td class="wide muted">${e.team ?? ""}</td>` : O}
-            <td class="barcol"><div class="fill" style="width:${(e.points ?? 0) / r * 100}%;background:${Ge(e.team_id)}"></div></td>
-            <td class="r num"><b>${q(this.hass, e.points)}</b></td>
+            ${i ? w`<td>${Lt(e.change, !1)}</td>` : D}
+            <td class="wrap">${Y(n ? e.name : e.team, e.team_id)}</td>
+            ${n ? w`<td class="wide muted">${e.team ?? ""}</td>` : D}
+            <td class="barcol"><div class="fill" style="width:${(e.points ?? 0) / r * 100}%;background:${lt(e.team_id)}"></div></td>
+            <td class="r num"><b>${J(this.hass, e.points)}</b></td>
             <td class="r num">${e.wins ?? ""}</td>
-            <td class="r num">${e.behind ? `−${q(this.hass, e.behind)}` : ""}</td>
+            <td class="r num col-behind">${e.behind ? `−${J(this.hass, e.behind)}` : ""}</td>
           </tr>`)}
       </table></div>
-      ${e.capped ? T`<div class="note">${t("spoiler.standingsCap")}</div>` : O}
+      ${e.capped ? w`<div class="note">${t("spoiler.standingsCap")}</div>` : D}
     </div>`;
 	}
 	static {
 		this.styles = [B, o`
-      :host { display: block; }
+      :host { display: block; container-type: inline-size; }
       .barcol { width: 30%; min-width: 80px; }
       .fill { height: 6px; border-radius: 3px; min-width: 2px; }
-      @media (max-width: 900px) { .wide { display: none; } }
-      @media (max-width: 640px) { .barcol { display: none; } }
+      @container (max-width: 900px) { .wide { display: none; } }
+      @container (max-width: 640px) { .barcol { display: none; } }
+      @container (max-width: 640px) { .tbl td.wrap { white-space: normal; } }
+      @container (max-width: 420px) { .col-behind { display: none; } }
     `];
 	}
-}, nn = [
+}, Mn = [
 	"live",
 	"calendar",
 	"results",
 	"standings"
-], rn = [...nn, "settings"], an = "pit-lane-live-board-page";
-function on() {
+], Nn = [...Mn, "settings"], Pn = "pit-lane-live-board-page", Fn = 3e4;
+function In() {
 	return new URLSearchParams(location.search);
 }
-function sn() {
-	let e = on();
-	return e.has("kiosk") && e.get("kiosk") !== "0";
+function Ln() {
+	let e = In();
+	return e.has("kiosk") && ![
+		"0",
+		"false",
+		"off",
+		"no"
+	].includes((e.get("kiosk") ?? "").toLowerCase());
 }
-function cn() {
-	return Math.min(2.5, Math.max(.6, Number(on().get("scale")) || 1));
+function Rn() {
+	return Math.min(2.5, Math.max(.6, Number(In().get("scale")) || 1));
 }
-function ln() {
-	let e = on().get("page");
-	if (e && rn.includes(e)) return e;
+function zn() {
+	let e = In().get("page");
+	if (e && Nn.includes(e)) return e;
 	try {
-		let e = localStorage.getItem(an);
-		return e && rn.includes(e) ? e : "live";
+		let e = localStorage.getItem(Pn);
+		return e && Nn.includes(e) ? e : "live";
 	} catch {
 		return "live";
 	}
 }
-var un = class extends N {
+var Bn = class extends j {
 	constructor(...e) {
-		super(...e), this.narrow = !1, this.page = ln(), this.seasons = [], this.delayOpen = !1, this.failed = !1, this.clockVersion = 0, this.kiosk = !1, this.kioskAsked = !1, this.scale = 1, this.moved = () => {
-			this.classList.remove("idle"), window.clearTimeout(this.idleTimer), this.kiosk && (this.idleTimer = window.setTimeout(() => this.classList.add("idle"), 3e3));
+		super(...e), this.narrow = !1, this.page = zn(), this.seasons = [], this.delayOpen = !1, this.failed = !1, this.clockVersion = 0, this.kiosk = !1, this.fullscreen = !1, this.kioskAsked = !1, this.scale = 1, this.moved = () => {
+			this.classList.remove("idle"), window.clearTimeout(this.idleTimer), this.kiosk && (this.idleTimer = window.setTimeout(() => {
+				this.kiosk && this.classList.add("idle");
+			}, 3e3));
 		}, this.fullscreenChanged = () => {
-			!document.fullscreenElement && !this.kioskAsked && (this.kiosk = !1);
-		}, this.clockChanged = () => this.clockVersion++, this.connecting = !1, this.backoff = 5e3, this.pendingDelay = null;
+			this.fullscreen = !!document.fullscreenElement, !this.fullscreen && !this.kioskAsked && this.kiosk && this.endKiosk();
+		}, this.visibilityChanged = () => {
+			document.visibilityState === "visible" && this.kiosk && this.keepAwake();
+		}, this.clockChanged = () => this.clockVersion++, this.connecting = !1, this.backoff = 5e3, this.askingSeasons = !1, this.pendingDelay = null;
 	}
 	static {
 		this.properties = {
@@ -3529,38 +4145,54 @@ var un = class extends N {
 			kiosk: {
 				type: Boolean,
 				reflect: !0
-			}
+			},
+			fullscreen: { state: !0 }
 		};
 	}
 	get t() {
 		return L(this.hass);
 	}
 	connectedCallback() {
-		super.connectedCallback(), window.addEventListener(V, this.clockChanged), window.addEventListener("pointermove", this.moved), document.addEventListener("fullscreenchange", this.fullscreenChanged), this.kioskAsked = sn(), this.kiosk = this.kioskAsked, this.scale = cn();
-		let e = on().get("page");
-		e && rn.includes(e) && (this.page = e), this.kiosk && this.startKiosk();
+		super.connectedCallback(), window.addEventListener(H, this.clockChanged), window.addEventListener("pointermove", this.moved), document.addEventListener("fullscreenchange", this.fullscreenChanged), document.addEventListener("visibilitychange", this.visibilityChanged), this.kioskAsked = Ln(), this.kiosk = this.kioskAsked, this.fullscreen = !!document.fullscreenElement, this.scale = Rn();
+		let e = In().get("page");
+		e && Nn.includes(e) && (this.page = e), this.kiosk && this.startKiosk();
 	}
 	startKiosk() {
-		this.moved(), navigator.wakeLock?.request("screen").then((e) => this.wakeLock = e, () => void 0);
+		this.moved(), this.keepAwake();
 	}
-	async enterFullScreen() {
-		this.kiosk = !0, this.startKiosk();
+	endKiosk() {
+		this.kiosk = !1, window.clearTimeout(this.idleTimer), this.classList.remove("idle"), this.letSleep();
+	}
+	keepAwake() {
+		let e = navigator.wakeLock;
+		if (!e) return;
+		let t = this.wakeLock;
+		this.wakeLock = void 0, t?.release().catch(() => void 0), e.request("screen").then((e) => {
+			this.kiosk && this.isConnected ? this.wakeLock = e : e.release().catch(() => void 0);
+		}, () => void 0);
+	}
+	letSleep() {
+		this.wakeLock?.release().catch(() => void 0), this.wakeLock = void 0;
+	}
+	async toggleFullScreen() {
+		if (document.fullscreenElement) {
+			await document.exitFullscreen().catch(() => void 0);
+			return;
+		}
+		this.kiosk || (this.kiosk = !0, this.startKiosk());
 		try {
 			await document.documentElement.requestFullscreen();
 		} catch {}
 	}
-	async leaveFullScreen() {
-		this.kiosk = this.kioskAsked, this.wakeLock?.release().catch(() => void 0), this.wakeLock = void 0, document.fullscreenElement && await document.exitFullscreen().catch(() => void 0);
-	}
 	disconnectedCallback() {
-		super.disconnectedCallback(), window.removeEventListener(V, this.clockChanged), window.removeEventListener("pointermove", this.moved), document.removeEventListener("fullscreenchange", this.fullscreenChanged), window.clearTimeout(this.idleTimer), this.wakeLock?.release().catch(() => void 0), this.unsubscribe?.(), this.unsubscribe = void 0, window.clearTimeout(this.retry), this.retry = void 0;
+		super.disconnectedCallback(), window.removeEventListener(H, this.clockChanged), window.removeEventListener("pointermove", this.moved), document.removeEventListener("fullscreenchange", this.fullscreenChanged), document.removeEventListener("visibilitychange", this.visibilityChanged), window.clearTimeout(this.idleTimer), this.letSleep(), this.unsubscribe?.(), this.unsubscribe = void 0, window.clearTimeout(this.retry), this.retry = void 0, window.clearTimeout(this.seasonsTimer), this.seasonsTimer = void 0;
 	}
 	updated() {
 		this.hass && !this.unsubscribe && !this.connecting && this.retry === void 0 && this.connect();
 	}
 	async connect() {
 		if (this.hass) {
-			this.connecting = !0, Ye(this.hass);
+			this.connecting = !0, pt(this.hass);
 			try {
 				this.unsubscribe = await F.subscribeSettings(this.hass, (e) => this.receive(e)), this.failed = !1, this.backoff = 5e3;
 			} catch {
@@ -3571,12 +4203,29 @@ var un = class extends N {
 			} finally {
 				this.connecting = !1;
 			}
-			if (!this.seasons.length) try {
+			this.loadSeasons();
+		}
+	}
+	async loadSeasons() {
+		if (!(!this.hass || this.seasons.length || this.askingSeasons)) {
+			this.askingSeasons = !0;
+			try {
 				this.seasons = (await F.seasons(this.hass)).seasons;
 			} catch {
-				this.seasons = this.settings ? [this.settings.season] : [];
+				window.clearTimeout(this.seasonsTimer), this.seasonsTimer = window.setTimeout(() => {
+					this.seasonsTimer = void 0, this.loadSeasons();
+				}, Fn);
+			} finally {
+				this.askingSeasons = !1;
 			}
 		}
+	}
+	get seasonList() {
+		if (this.seasons.length) return this.seasons;
+		let e = this.settings;
+		if (!e) return [];
+		let t = e.first_season || e.season;
+		return Array.from({ length: Math.max(1, e.season - t + 1) }, (t, n) => e.season - n);
 	}
 	receive(e) {
 		this.settings = this.pendingDelay === null ? e : {
@@ -3587,7 +4236,7 @@ var un = class extends N {
 	go(e) {
 		this.page = e.page, this.target = e, this.delayOpen = !1;
 		try {
-			localStorage.setItem(an, e.page);
+			localStorage.setItem(Pn, e.page);
 		} catch {}
 	}
 	setDelay(e) {
@@ -3630,64 +4279,65 @@ var un = class extends N {
 	renderPage() {
 		if (!this.hass || !this.settings) return this.failed ? X(this.t, () => {
 			window.clearTimeout(this.retry), this.retry = void 0, this.connect();
-		}) : T`<div class="card loading">${this.t("common.loading")}</div>`;
+		}) : w`<div class="card loading">${this.t("common.loading")}</div>`;
 		let e = {
 			hass: this.hass,
 			settings: this.settings,
-			seasons: this.seasons
+			seasons: this.seasonList,
+			clock: this.clockVersion
 		};
 		switch (this.page) {
-			case "settings": return T`<plb-settings .hass=${e.hass} .settings=${e.settings}
+			case "settings": return w`<plb-settings .hass=${e.hass} .settings=${e.settings} .clock=${e.clock}
           @plb-delay=${(e) => this.setDelay(e.detail)}></plb-settings>`;
-			case "calendar": return T`<plb-calendar .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons}
+			case "calendar": return w`<plb-calendar .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons} .clock=${e.clock}
           @plb-go=${(e) => this.go(e.detail)}></plb-calendar>`;
-			case "results": return T`<plb-results .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons}
+			case "results": return w`<plb-results .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons} .clock=${e.clock}
           .target=${this.target} @plb-reveal=${this.reveal}></plb-results>`;
-			case "standings": return T`<plb-standings .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons}></plb-standings>`;
-			default: return T`<plb-live .hass=${e.hass} .settings=${e.settings}
+			case "standings": return w`<plb-standings .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons}></plb-standings>`;
+			default: return w`<plb-live .hass=${e.hass} .settings=${e.settings} .clock=${e.clock} ?kiosk=${this.kiosk}
           @plb-spoiler-off=${() => this.setSpoiler(!1)}></plb-live>`;
 		}
 	}
 	render() {
-		let e = this.t, t = this.settings, n = t?.f1tv && t.f1tv.status !== "not_configured" ? t.f1tv.status : null;
-		return T`
-      <header class="appbar">
-        ${this.narrow && !this.kiosk ? T`<button class="icon-btn" @click=${this.toggleMenu} aria-label=${e("common.menu")}>${z(R.menu, 24)}</button>` : O}
+		let e = this.t, t = this.settings, n = t?.f1tv && t.f1tv.status !== "not_configured" ? t.f1tv.status : null, r = this.scale === 1 ? "" : `zoom:${this.scale}`, i = this.fullscreen || this.kiosk && !this.kioskAsked;
+		return w`
+      <div class="barwrap" style=${r}><header class="appbar">
+        ${this.narrow && !this.kiosk ? w`<button class="icon-btn" @click=${this.toggleMenu} aria-label=${e("common.menu")}>${z(R.menu, 24)}</button>` : D}
         <div class="brand"><span class="mark">${z(R.board, 18)}</span><span class="name">${e("common.title")}</span></div>
         <nav class="tabs">
-          ${nn.map((t) => T`<button class="tab ${this.page === t ? "active" : ""}" @click=${() => this.go({ page: t })}>
-              ${e(`tabs.${t}`)}
-            </button>`)}
+          ${Mn.map((t) => w`<button class="tab ${this.page === t ? "active" : ""}" aria-current=${this.page === t ? "page" : "false"}
+              @click=${() => this.go({ page: t })}>${e(`tabs.${t}`)}</button>`)}
         </nav>
         <span class="spacer"></span>
-        ${t && !t.live ? T`<button class="chip paused" @click=${() => this.go({ page: "settings" })} title=${e("settings.pausedHelp")}>
-              ${z(R.pause, 16)}<span class="label">${t.auto_start ? e("live.pausedAuto") : e("live.pausedShort")}</span></button>` : O}
-        ${n ? T`<span class="chip small ${n === "active" ? "" : "warn"}" title=${e(`f1tv.${n}`)}>F1TV</span>` : O}
-        <button class="chip ${t?.tv_delay ? "on" : ""}" @click=${() => this.delayOpen = !this.delayOpen}
+        ${t && !t.live ? w`<button class="chip paused" @click=${() => this.go({ page: "settings" })} title=${e("settings.pausedHelp")}
+              aria-label=${t.auto_start ? e("live.pausedAuto") : e("live.pausedShort")}>
+              ${z(R.pause, 16)}<span class="label">${t.auto_start ? e("live.pausedAuto") : e("live.pausedShort")}</span></button>` : D}
+        ${n ? w`<span class="chip small f1tv ${n === "active" ? "" : "warn"}" title=${e(`f1tv.${n}`)}>F1TV</span>` : D}
+        <button class="chip delay ${t?.tv_delay ? "on" : ""}" @click=${() => this.delayOpen = !this.delayOpen}
           aria-expanded=${this.delayOpen ? "true" : "false"} aria-label=${e("delay.title")}>
           ${z(R.clock, 18)}<span class="num">${e("delay.seconds", { n: t?.tv_delay ? `+${t.tv_delay}` : 0 })}</span>
           <span class="label">${e("delay.title")}</span>
         </button>
-        <button class="chip ${t?.no_spoiler ? "on" : ""}" @click=${() => this.setSpoiler(!t?.no_spoiler)}
+        <button class="chip spoiler ${t?.no_spoiler ? "on" : ""}" @click=${() => this.setSpoiler(!t?.no_spoiler)}
           title=${e("spoiler.help")} aria-pressed=${t?.no_spoiler ? "true" : "false"}
           aria-label=${t?.no_spoiler ? e("spoiler.on") : e("spoiler.off")}>
           ${z(t?.no_spoiler ? R.eyeOff : R.eye, 18)}
           <span class="label">${t?.no_spoiler ? e("spoiler.on") : e("spoiler.off")}</span>
         </button>
-        <button class="icon-btn full" @click=${() => this.kiosk ? this.leaveFullScreen() : this.enterFullScreen()}
-          aria-label=${e(this.kiosk ? "kiosk.leave" : "kiosk.enter")} title=${e(this.kiosk ? "kiosk.leave" : "kiosk.enter")}>
-          ${z(this.kiosk ? R.exitFullscreen : R.fullscreen, 22)}</button>
+        <button class="icon-btn full" @click=${() => i && !this.fullscreen ? this.endKiosk() : this.toggleFullScreen()}
+          aria-label=${e(i ? "kiosk.leave" : "kiosk.enter")} title=${e(i ? "kiosk.leave" : "kiosk.enter")}>
+          ${z(i ? R.exitFullscreen : R.fullscreen, 22)}</button>
         <button class="icon-btn gear ${this.page === "settings" ? "active" : ""}" @click=${() => this.go({ page: "settings" })}
           aria-label=${e("settings.title")} title=${e("settings.title")}>${z(R.cog, 22)}</button>
-      </header>
-      ${this.delayOpen && t ? this.renderPopover(t) : O}
-      <main style=${this.scale === 1 ? "" : `zoom:${this.scale}`}>${Dt(this.clockVersion, this.renderPage())}</main>
-      <footer>${e("common.disclaimer")}</footer>
+      </header></div>
+      ${this.delayOpen && t ? this.renderPopover(t) : D}
+      <main style=${r}>${Ze(this.renderPage())}</main>
+      <footer style=${r}>${e("common.disclaimer")}</footer>
     `;
 	}
 	renderPopover(e) {
 		let t = this.t;
-		return T`<div class="card pop" role="dialog" aria-label=${t("delay.title")}>
+		return w`<div class="card pop" role="dialog" aria-label=${t("delay.title")}>
       <h3>${t("delay.title")}</h3>
       <p>${t("delay.help")}</p>
       <div class="stepper">
@@ -3712,29 +4362,35 @@ var un = class extends N {
         overflow: auto; min-height: 0;
       }
       :host([kiosk]) main { max-width: none; }
-      :host([kiosk]) footer { max-width: none; font-size: 10px; }
+      :host([kiosk]) footer { max-width: none; font-size: 10px; padding-bottom: 8px; }
       :host([kiosk]) .gear, :host([kiosk]) .chip.paused { display: none; }
+      :host([kiosk]) .appbar { min-height: 48px; }
+      :host([kiosk]) main { padding-top: 10px; }
       :host(.idle) { cursor: none; }
+      /* The bar is sized by the panel's own width (Home Assistant's sidebar takes
+         a varying part of the window), and never wider than it. */
+      .barwrap { position: sticky; top: 0; z-index: 5; container-type: inline-size; }
       .appbar {
-        position: sticky; top: 0; z-index: 5;
         display: flex; align-items: center; gap: 12px;
-        min-height: 56px; padding: 0 16px;
+        min-height: 56px; padding: 0 16px; box-sizing: border-box; max-width: 100%;
         background: var(--app-header-background-color, var(--card-background-color));
         color: var(--app-header-text-color, var(--primary-text-color));
         border-bottom: 1px solid var(--divider-color);
       }
-      .icon-btn { border: 0; background: none; color: inherit; cursor: pointer; padding: 4px; display: grid; }
-      .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 500; white-space: nowrap; }
+      .icon-btn { border: 0; background: none; color: inherit; cursor: pointer; padding: 0; display: grid; place-items: center;
+        width: 40px; height: 40px; border-radius: 50%; flex: none; }
+      .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 500; white-space: nowrap; flex: none; }
       .mark {
         width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: #fff;
         background: linear-gradient(135deg, var(--primary-color), #7c4dff);
       }
-      .tabs { display: flex; gap: 4px; margin-left: 8px; }
-      .appbar .chip { color: inherit; }
-      .appbar .chip.on { color: var(--primary-color); }
+      /* Tabs scroll rather than push the actions off the bar. */
+      .tabs { display: flex; gap: 4px; margin-left: 8px; min-width: 0; flex: 0 1 auto; overflow-x: auto; scrollbar-width: none; }
+      .appbar .chip { color: inherit; flex: none; }
+      .appbar .chip.on { color: var(--plb-primary-text); }
       .chip.warn { color: var(--warning-color, #ffa600); }
       .chip.paused { border-style: dashed; color: var(--secondary-text-color); }
-      .gear.active { color: var(--primary-color); }
+      .gear.active { color: var(--plb-primary-text); }
       main { padding: var(--plb-gap); max-width: 1480px; margin: 0 auto; }
       footer {
         max-width: 1480px; margin: 8px auto 0; padding: 0 var(--plb-gap) 24px;
@@ -3745,26 +4401,37 @@ var un = class extends N {
       .pop p { margin: 0; color: var(--secondary-text-color); font-size: 12px; line-height: 1.5; }
       .stepper { display: flex; align-items: center; gap: 10px; }
       .stepper button {
-        width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--divider-color);
+        width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--divider-color);
         background: none; color: inherit; font-size: 18px; cursor: pointer;
       }
       .stepper b { font-size: 22px; font-weight: 500; min-width: 110px; text-align: center; }
       input[type="range"] { width: 100%; accent-color: var(--primary-color); }
-      @media (max-width: 1180px) {
+      @container (max-width: 1180px) {
         .appbar .chip .label { display: none; }
         .appbar { gap: 8px; }
       }
-      @media (max-width: 640px) {
-        .appbar { flex-wrap: wrap; gap: 6px; padding: 8px 8px 0; }
-        .tabs { order: 3; width: 100%; margin: 0; overflow-x: auto; }
+      @container (max-width: 960px) {
+        .brand .name { display: none; }
+      }
+      /* Two rows: the tabs under the brand and the actions. */
+      @container (max-width: 760px) {
+        .appbar { flex-wrap: wrap; gap: 6px; padding: 6px 8px 0; }
+        .tabs { order: 3; width: 100%; flex-basis: 100%; margin: 0; }
         .tab { flex: 1; padding: 8px 6px; }
-        .chip .label { display: none; }
+      }
+      @container (max-width: 480px) {
+        .appbar .f1tv, .appbar .full { display: none; }
+        .appbar .chip { padding: 0 10px; }
+        .tabs { gap: 2px; }
+        .tab { padding: 8px 4px; font-size: 13px; letter-spacing: 0; }
+      }
+      @media (max-width: 640px) {
         main { padding: 10px; }
         .pop { left: 8px; right: 8px; width: auto; top: 112px; }
       }
     `];
 	}
 };
-I("plb-calendar", jt), I("plb-results", Qt), I("plb-standings", tn), I("plb-live", Yt), I("plb-live-map", Xt), I("plb-settings", en), I("plb-countdown", Ot), I("plb-age", kt), I("pit-lane-live-board-panel", un);
+I("plb-calendar", Gt), I("plb-results", Dn), I("plb-standings", jn), I("plb-live", gn), I("plb-live-map", Cn), I("plb-settings", kn), I("plb-countdown", Vt), I("plb-age", Ht), I("pit-lane-live-board-panel", Bn);
 //#endregion
-export { un as PitLaneLiveBoardPanel };
+export { Bn as PitLaneLiveBoardPanel };

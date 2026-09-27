@@ -102,7 +102,50 @@
     "track": "Temperatura della pista",
     "pitIn": "ENTRATA",
     "pitOut": "USCITA",
-    "gridShort": "G"
+    "gridShort": "G",
+    "status": {
+      "finished": "Arrivato",
+      "lapped": "Doppiato",
+      "retired": "Ritirato",
+      "disqualified": "Squalificato",
+      "did_not_start": "Non partito",
+      "did_not_qualify": "Non qualificato",
+      "did_not_prequalify": "Non prequalificato",
+      "withdrew": "Ritirato prima del via",
+      "not_classified": "Non classificato",
+      "excluded": "Escluso",
+      "accident": "Incidente",
+      "collision": "Collisione",
+      "engine": "Motore",
+      "gearbox": "Cambio",
+      "transmission": "Trasmissione",
+      "hydraulics": "Idraulica",
+      "brakes": "Freni",
+      "suspension": "Sospensioni",
+      "electrical": "Impianto elettrico",
+      "power_unit": "Power unit",
+      "spun_off": "Testacoda",
+      "puncture": "Foratura",
+      "overheating": "Surriscaldamento",
+      "fuel_pressure": "Pressione carburante",
+      "oil_leak": "Perdita d'olio",
+      "water_leak": "Perdita d'acqua",
+      "wheel": "Ruota",
+      "tyre": "Pneumatico",
+      "damage": "Danni",
+      "mechanical": "Guasto meccanico",
+      "illness": "Malore"
+    },
+    "lapsDownOne": "+{n} giro",
+    "lapsDown": "+{n} giri",
+    "best": "Migliore",
+    "teammateDashed": "Tratteggiato: il secondo pilota di una squadra.",
+    "startEnd": "{start} → {end}",
+    "range": "min {min} · max {max}",
+    "dry": "Asciutto",
+    "wet": "Pioggia durante la sessione",
+    "open": "Apri la gara",
+    "usedFaded": "Una barra sbiadita è un treno usato."
   },
   "standings": {
     "title": "Classifiche",
@@ -184,7 +227,11 @@
     "autoStart": "Partono da soli alla prossima sessione.",
     "final": "FINALE",
     "ended": "Terminata {time} · dati fermi",
-    "nextShort": "Prossima"
+    "nextShort": "Prossima",
+    "leader": "Leader",
+    "lappedOne": "+{n} giro",
+    "lapped": "+{n} giri",
+    "pausedHelp": "Niente si collega a F1 e niente di live viene scritto su disco."
   },
   "f1tv": {
     "active": "F1TV attivo",
@@ -237,7 +284,9 @@
     "sidebar": "Mostra Live Board nella barra laterale",
     "sidebarHelp": "Spento: il pannello si apre comunque dalla pagina del dispositivo dell'integrazione, e le card continuano a funzionare nelle plance.",
     "adminPanel": "Solo gli amministratori possono aprire il pannello",
-    "adminPanelHelp": "Spento (predefinito): tutti gli utenti di casa vedono Live Board. Acceso: solo gli amministratori. Le card seguono la visibilità della plancia in cui si trovano."
+    "adminPanelHelp": "Spento (predefinito): tutti gli utenti di casa vedono Live Board. Acceso: solo gli amministratori. Le card seguono la visibilità della plancia in cui si trovano.",
+    "pauseShort": "Metti in pausa",
+    "startShort": "Avvia"
   },
   "stewards": {
     "title": "Bandiere e commissari",
@@ -330,8 +379,10 @@
       "count": "Quanti",
       "filter": "Mostra",
       "kind": "Campionato",
-      "show_title": "Mostra il titolo"
-    }
+      "hide_title": "Nascondi il titolo"
+    },
+    "startFailed": "Non è stato possibile avviare i tempi live. Riprova tra poco.",
+    "backWith": "Torna con {session}, {time}"
   },
   "time": {
     "title": "Orari",

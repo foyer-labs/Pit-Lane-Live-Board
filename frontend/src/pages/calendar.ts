@@ -8,6 +8,8 @@ import { failure, loading, person, spoilerKey, alsoTime } from "../parts";
 import { tokens } from "../styles";
 import type { CalendarPage, Hass, Meeting, Settings } from "../types";
 
+const REFRESH = 10 * 60_000;
+
 export class PlbCalendar extends LitElement {
   static override properties = {
     hass: { attribute: false },
@@ -17,6 +19,7 @@ export class PlbCalendar extends LitElement {
     data: { state: true },
     failed: { state: true },
     now: { state: true },
+    clock: { attribute: false },
   };
 
   hass!: Hass;
@@ -26,18 +29,44 @@ export class PlbCalendar extends LitElement {
   data?: CalendarPage;
   failed = false;
   now = Date.now();
+  clock = 0;
   private timer?: number;
   private request = 0;
   private spoilers = "";
+  private loadedAt = 0;
+  private scrolled = false;
+  private readonly visibility = () => {
+    if (document.visibilityState === "visible") this.tick();
+  };
 
   override connectedCallback(): void {
     super.connectedCallback();
-    this.timer = window.setInterval(() => (this.now = Date.now()), 30_000);
+    // Every 30 s: the countdowns, and the meetings' states when they are due
+    // (a page left open on a TV must see a meeting go live, end and get its
+    // podium). Back on the page, or on the tab, the same check at once.
+    this.timer = window.setInterval(() => this.tick(), 30_000);
+    document.addEventListener("visibilitychange", this.visibility);
+    if (this.data) this.tick();
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     window.clearInterval(this.timer);
+    document.removeEventListener("visibilitychange", this.visibility);
+  }
+
+  /** Read again every 10 minutes, and as soon as a session the page shows has
+   *  started since the last reading (states and the "next" meeting move then). */
+  private tick(): void {
+    this.now = Date.now();
+    if (!this.data || document.visibilityState === "hidden") return;
+    const started = this.data.meetings.some((m) =>
+      m.sessions.some((s) => {
+        const at = s.start ? Date.parse(s.start) : NaN;
+        return at > this.loadedAt && at <= this.now;
+      }),
+    );
+    if (started || this.now - this.loadedAt > REFRESH) void this.load();
   }
 
   protected override willUpdate(changed: Map<string, unknown>): void {
@@ -52,13 +81,28 @@ export class PlbCalendar extends LitElement {
   private async load(): Promise<void> {
     if (!this.hass || this.season === undefined) return;
     const request = ++this.request;
-    this.failed = false;
+    const background = !!this.data && this.data.season === this.season;
+    if (!background) this.failed = false;
     try {
       const data = await api.calendar(this.hass, this.season);
-      if (request === this.request) this.data = data;
+      if (request === this.request) {
+        this.data = data;
+        this.failed = false;
+        this.loadedAt = Date.now();
+      }
     } catch {
-      if (request === this.request) this.failed = true;
+      // A refresh that fails keeps the calendar on screen; the next tick tries again.
+      if (request === this.request && !background) this.failed = true;
+      else if (request === this.request) this.loadedAt = Date.now() - REFRESH + 60_000;
     }
+  }
+
+  protected override updated(): void {
+    // On a phone the season is a long column: start at the meeting that matters.
+    if (this.scrolled || !this.data || this.data.season !== this.settings?.season) return;
+    this.scrolled = true;
+    if (this.getBoundingClientRect().width > 640) return;
+    this.renderRoot.querySelector(".meet.live, .meet.next")?.scrollIntoView({ block: "start" });
   }
 
   protected override render() {
@@ -133,8 +177,10 @@ export class PlbCalendar extends LitElement {
     tokens,
     css`
       :host { display: block; }
-      .cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--plb-gap); align-items: start; }
-      .meet { display: grid; }
+      :host { container-type: inline-size; }
+      .cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--plb-gap); align-items: stretch; }
+      .meet { display: flex; flex-direction: column; scroll-margin-top: 120px; }
+      .meet > .more:first-of-type { margin-top: auto; }
       .meet-head { display: flex; align-items: baseline; gap: 10px; padding: 14px 16px 6px; }
       .round { font-size: 12px; font-weight: 600; color: var(--secondary-text-color); letter-spacing: 0.06em; }
       h3 { margin: 0; font-size: 17px; font-weight: 500; }
@@ -154,8 +200,9 @@ export class PlbCalendar extends LitElement {
       .podium { display: grid; gap: 4px; padding: 0 16px 10px; font-size: 13px; }
       .podium div { display: flex; align-items: center; gap: 8px; }
       .podium b { width: 18px; color: var(--secondary-text-color); font-weight: 500; }
-      .more { justify-self: start; margin: 0 16px 14px; font-size: 13px; }
-      @media (max-width: 640px) {
+      .more { align-self: flex-start; margin: 0 16px 14px; font-size: 13px; }
+      .countdown { margin-top: auto; }
+      @container (max-width: 640px) {
         .cal { grid-template-columns: 1fr; }
         li span:first-child { width: 130px; }
       }

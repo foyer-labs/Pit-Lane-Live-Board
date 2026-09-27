@@ -9,12 +9,21 @@ export const tokens = css`
     --plb-yellow: #e0b000;
     --plb-soft: #e8333a;
     --plb-medium: #f2c200;
-    --plb-hard: #eeeeee;
+    /* White on a light page, a softer grey on a dark one (pure white glares). */
+    --plb-hard: color-mix(in srgb, #ffffff 82%, var(--primary-background-color, #fafafa));
     --plb-intermediate: #3aa845;
     --plb-wet: #2f7de1;
     --plb-unknown: #8a8a8a;
+    /* Text in the timing colours: mixed with the theme's text colour, so they
+       darken on a light theme and lighten on a dark one, and read at 4.5:1 or
+       better on both (the plain colours are 3.1:1 and 3.7:1). */
+    --plb-purple-text: color-mix(in srgb, var(--plb-purple) 65%, var(--primary-text-color));
+    --plb-green-text: color-mix(in srgb, var(--plb-green) 65%, var(--primary-text-color));
+    --plb-yellow-text: color-mix(in srgb, var(--plb-yellow) 50%, var(--primary-text-color));
+    /* The theme's accent as text on its own tint (a selected tab or chip). */
+    --plb-primary-text: color-mix(in srgb, var(--primary-color) 55%, var(--primary-text-color));
     --plb-row-alt: color-mix(in srgb, var(--primary-text-color) 3%, transparent);
-    --plb-muted: color-mix(in srgb, var(--primary-text-color) 55%, transparent);
+    --plb-muted: color-mix(in srgb, var(--primary-text-color) 65%, transparent);
     --plb-radius: var(--ha-card-border-radius, 12px);
     --plb-gap: 16px;
     color: var(--primary-text-color);
@@ -50,7 +59,7 @@ export const tokens = css`
   }
   .chip.on {
     background: color-mix(in srgb, var(--primary-color) 16%, transparent);
-    border-color: transparent; color: var(--primary-color);
+    border-color: transparent; color: var(--plb-primary-text);
   }
   .chip.small { height: 26px; font-size: 12px; padding: 0 10px; }
   .tab {
@@ -58,22 +67,26 @@ export const tokens = css`
     font: inherit; font-size: 14px; font-weight: 500; letter-spacing: 0.02em;
     padding: 8px 14px; border-radius: 18px; cursor: pointer; white-space: nowrap;
   }
-  .tab.active { color: var(--primary-color); background: color-mix(in srgb, var(--primary-color) 14%, transparent); }
+  .tab.active { color: var(--plb-primary-text); background: color-mix(in srgb, var(--primary-color) 14%, transparent); }
   .btn {
     height: 36px; padding: 0 16px; border-radius: 18px; border: 0;
     background: var(--primary-color); color: var(--text-primary-color, #fff);
     font: inherit; font-weight: 500; cursor: pointer;
   }
-  .btn.flat { background: none; color: var(--primary-color); border: 1px solid var(--divider-color); }
-  .link { border: 0; background: none; color: var(--primary-color); font: inherit; cursor: pointer; padding: 0; }
+  .btn.flat { background: none; color: var(--plb-primary-text); border: 1px solid var(--divider-color); }
+  .btn.flat.danger { color: var(--error-color, #db4437); border-color: color-mix(in srgb, var(--error-color, #db4437) 50%, transparent); }
+  /* Disabled: a neutral grey, not a faded accent with grey text on it. */
+  .btn:disabled { background: var(--secondary-background-color); color: var(--secondary-text-color); cursor: default; opacity: 1; }
+  .btn.flat:disabled { background: none; }
+  .link { border: 0; background: none; color: var(--plb-primary-text); font: inherit; cursor: pointer; padding: 0; }
   .bar { display: inline-block; width: 4px; height: 20px; border-radius: 2px; flex: none; }
   .drv { display: inline-flex; align-items: center; gap: 8px; }
   .tla { font-weight: 600; letter-spacing: 0.03em; }
   .gained { font-size: 11px; font-weight: 600; }
-  .up { color: var(--plb-green); }
+  .up { color: var(--plb-green-text); }
   .down { color: var(--error-color, #db4437); }
-  .t.pb { color: var(--plb-green); font-weight: 600; }
-  .t.ob { color: var(--plb-purple); font-weight: 600; }
+  .t.pb { color: var(--plb-green-text); font-weight: 600; }
+  .t.ob { color: var(--plb-purple-text); font-weight: 600; }
   .t.prev { color: var(--plb-muted); }
   .tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
   .tbl td, .tbl th { padding: 8px 12px; border-bottom: 1px solid var(--divider-color); text-align: left; white-space: nowrap; }
@@ -82,6 +95,15 @@ export const tokens = css`
   .tbl tr.click { cursor: pointer; }
   .tbl tr.click:hover td { background: var(--plb-row-alt); }
   .scroll { overflow-x: auto; }
+  /* A table wider than its card fades at the edge that has more, so the columns
+     behind the scroll are not a secret (where the browser has scroll timelines). */
+  @supports (animation-timeline: scroll()) {
+    .scroll { animation: plb-more-x linear both; animation-timeline: scroll(self inline); }
+  }
+  @keyframes plb-more-x {
+    0%, 97% { mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
+    100% { mask-image: none; }
+  }
   .muted { color: var(--secondary-text-color); }
   .also { display: block; color: var(--secondary-text-color); font-size: 11px; font-weight: 400; }
   .hidden-cell { color: var(--secondary-text-color); font-style: italic; }
@@ -120,8 +142,29 @@ export const tokens = css`
   .chart svg { display: block; min-width: 640px; width: 100%; height: auto; }
   .chart .axis { stroke: var(--divider-color); }
   .chart text { fill: var(--secondary-text-color); font-size: 11px; }
-  @media (max-width: 640px) {
+  @container (max-width: 640px) {
     .tbl td, .tbl th { padding: 8px 8px; }
+  }
+  /* Fingers: 40 px targets at least. */
+  @media (pointer: coarse) {
+    .chip { height: 40px; }
+    .chip.small { height: 36px; }
+    .tab { min-height: 40px; }
+    .btn { height: 40px; }
+    .link { min-height: 40px; }
+    select { height: 40px; }
+  }
+`;
+
+/** A list that scrolls (race control, radio, pit stops): the last row fades
+ *  while there is more below, instead of a row cut in half that looks broken. */
+export const feedStyles = css`
+  @supports (animation-timeline: scroll()) {
+    .feed { animation: plb-more-y linear both; animation-timeline: scroll(self block); }
+  }
+  @keyframes plb-more-y {
+    0%, 97% { mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent); }
+    100% { mask-image: none; }
   }
 `;
 

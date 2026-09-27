@@ -293,6 +293,9 @@ export interface LiveView {
   header?: LiveHeader | null;
   data_age?: number | null;
   tower?: Row[];
+  /** Partial messages only, instead of `tower`: the display order (racing numbers)
+   *  and the complete rows that changed; the others are the rows already shown. */
+  tower_patch?: { order: (string | number)[]; rows: Record<string, Row> };
   race_control?: Message[];
   weather?: {
     air: number | null;

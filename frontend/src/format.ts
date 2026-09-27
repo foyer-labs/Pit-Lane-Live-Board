@@ -13,11 +13,21 @@ function locale(hass: Hass): string {
 const dateFormats = new Map<string, Intl.DateTimeFormat>();
 const numberFormats = new Map<string, Intl.NumberFormat>();
 
-function dateFormat(hass: Hass, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
-  const key = `${locale(hass)}|${JSON.stringify(options)}`;
+// The shapes of date the panel uses; a formatter is kept per language, shape and zone.
+const SHAPES = {
+  day: { weekday: "short", day: "numeric", month: "short" },
+  weekdayTime: { weekday: "short", hour: "2-digit", minute: "2-digit" },
+  date: { day: "numeric", month: "short", year: "numeric" },
+  dayMonth: { day: "numeric", month: "short" },
+  clock: { hour: "2-digit", minute: "2-digit", second: "2-digit" },
+  clockShort: { hour: "2-digit", minute: "2-digit" },
+} satisfies Record<string, Intl.DateTimeFormatOptions>;
+
+function dateFormat(hass: Hass, shape: keyof typeof SHAPES, timeZone: string): Intl.DateTimeFormat {
+  const key = `${locale(hass)}|${shape}|${timeZone}`;
   let format = dateFormats.get(key);
   if (!format) {
-    format = new Intl.DateTimeFormat(locale(hass), options);
+    format = new Intl.DateTimeFormat(locale(hass), { ...SHAPES[shape], timeZone });
     dateFormats.set(key, format);
   }
   return format;
@@ -53,11 +63,11 @@ export function zone(hass: Hass, trackZone?: string | null): string {
 
 export function sessionTime(hass: Hass, iso: string | null, day: string, trackZone?: string | null): string {
   if (!iso) {
-    return dateFormat(hass, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(
+    return dateFormat(hass, "day", "UTC").format(
       new Date(`${day}T12:00:00Z`),
     );
   }
-  return dateFormat(hass, { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: zone(hass, trackZone) }).format(
+  return dateFormat(hass, "weekdayTime", zone(hass, trackZone)).format(
     new Date(iso),
   );
 }
@@ -77,7 +87,7 @@ export function otherTime(
   const other = shown === trackZone ? homeZone(hass) : trackZone;
   if (other === shown) return null;
   const at = (timeZone: string) =>
-    dateFormat(hass, { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone }).format(new Date(iso));
+    dateFormat(hass, "weekdayTime", timeZone).format(new Date(iso));
   const time = at(other);
   // Two zone names, one clock (Madrid and Rome): nothing to add.
   if (time === at(shown)) return null;
@@ -88,18 +98,13 @@ export function longDate(hass: Hass, iso: string | null): string {
   if (!iso) return "";
   const dateOnly = iso.length === 10;
   const date = dateOnly ? new Date(`${iso}T12:00:00Z`) : new Date(iso);
-  return dateFormat(hass, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: dateOnly ? "UTC" : zone(hass),
-  }).format(date);
+  return dateFormat(hass, "date", dateOnly ? "UTC" : zone(hass)).format(date);
 }
 
 /** A weekend's days. Dates without a time are the circuit's local days, shown as
  *  they are whatever Home Assistant's timezone. */
 export function dayRange(hass: Hass, first: string, last: string): string {
-  const format = dateFormat(hass, { day: "numeric", month: "short", timeZone: "UTC" });
+  const format = dateFormat(hass, "dayMonth", "UTC");
   const a = new Date(`${first}T12:00:00Z`);
   const b = new Date(`${last}T12:00:00Z`);
   if (a.getUTCMonth() === b.getUTCMonth()) {
@@ -112,18 +117,32 @@ function parseUtc(iso: string): Date {
   return new Date(/[zZ]|[+-]\d\d:\d\d$/.test(iso) ? iso : `${iso}Z`);
 }
 
-export function clockTime(hass: Hass, iso: string | null): string {
+// Race control and radio repeat the same few hundred times on every render: each
+// string is kept, until the language or the zone changes.
+const clockTimes = new Map<string, string>();
+let clockTimesFor = "";
+
+/** "15:55:49", or "15:55" when `short`. */
+export function clockTime(hass: Hass, iso: string | null, short = false): string {
   if (!iso) return "";
-  return dateFormat(hass, { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: zone(hass) }).format(
-    parseUtc(iso),
-  );
+  const timeZone = zone(hass);
+  const scope = `${locale(hass)}|${timeZone}`;
+  if (scope !== clockTimesFor || clockTimes.size > 2000) {
+    clockTimes.clear();
+    clockTimesFor = scope;
+  }
+  const key = short ? `s${iso}` : iso;
+  let text = clockTimes.get(key);
+  if (text === undefined) {
+    text = dateFormat(hass, short ? "clockShort" : "clock", timeZone).format(parseUtc(iso));
+    clockTimes.set(key, text);
+  }
+  return text;
 }
 
 export function shortTime(hass: Hass, iso: string | null): string {
   if (!iso) return "";
-  return dateFormat(hass, { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: zone(hass) }).format(
-    parseUtc(iso),
-  );
+  return dateFormat(hass, "weekdayTime", zone(hass)).format(parseUtc(iso));
 }
 
 /** "2 d 14 h 06 m", "14 h 06 m", "06 m 12 s". */

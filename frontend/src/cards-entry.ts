@@ -18,15 +18,21 @@ interface PickerEntry {
   documentationURL: string;
 }
 
-const t = pageTranslator();
+// The names are translated when the card picker reads them, not when this module
+// loads: it can run before Home Assistant has set the page's language from the
+// user's profile.
 const picker = ((window as unknown as { customCards?: PickerEntry[] }).customCards ??= []);
 for (const card of CARDS) {
   define(card.tag, card.element);
   if (!picker.some((entry) => entry.type === card.tag)) {
     picker.push({
       type: card.tag,
-      name: `Pit Lane · ${t(`cards.${card.key}.name`)}`,
-      description: t(`cards.${card.key}.description`),
+      get name() {
+        return `Pit Lane · ${pageTranslator()(`cards.${card.key}.name`)}`;
+      },
+      get description() {
+        return pageTranslator()(`cards.${card.key}.description`);
+      },
       preview: true,
       documentationURL: DOCS,
     });
