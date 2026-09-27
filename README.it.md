@@ -70,6 +70,9 @@ Un'installazione, tre modi di usarla:
   partire da soli a ogni sessione.
 - **Decidi tu chi lo vede.** Il pannello è per tutta la casa o solo per gli
   amministratori; ogni plancia mantiene la sua visibilità.
+- **Su qualsiasi schermo.** Una modalità kiosk per una TV o un monitor con un Raspberry
+  Pi, e un sensore pensato per gli schermi piccoli: un ESP32 con ESPHome può mostrare
+  giro, bandiere e primi dieci.
 - **Italiano e inglese**, tema chiaro e scuro, sul telefono o su un tablet a parete.
 
 <p align="center">

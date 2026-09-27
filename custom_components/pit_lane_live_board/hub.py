@@ -54,7 +54,12 @@ from .const import (
     ENV_DEV_LIVE_URL,
     LIVE_BASE,
 )
-from .core import favourites as fav, live_view, summary as session_summary
+from .core import (
+    display as screen,
+    favourites as fav,
+    live_view,
+    summary as session_summary,
+)
 from .core.delay import DelayBuffer
 from .core.events import derive
 from .core.f1tv_token import TokenStatus, evaluate
@@ -86,6 +91,7 @@ SIGNAL_EVENT = f"{DOMAIN}_event"  # the race-control event entity: (event type)
 SIGNAL_STEWARDS = f"{DOMAIN}_stewards"  # the stewards event entity: (decision)
 SIGNAL_FAVOURITE = f"{DOMAIN}_favourite"  # the drivers event entity: (type, data)
 SIGNAL_SUMMARY = f"{DOMAIN}_summary"  # the summary event entity: (summary)
+SIGNAL_DISPLAY = f"{DOMAIN}_display"  # the small-screen sensor
 SIGNAL_SETTINGS = f"{DOMAIN}_settings"
 SIGNAL_CALENDAR = f"{DOMAIN}_calendar"
 
@@ -97,6 +103,9 @@ LOOP_EVERY = 0.25
 PUBLISH_EVERY = 0.5
 MAP_EVERY = 0.25
 STALE_REPUBLISH = 1.0
+# The small-screen sensor follows gaps at most every 5 s: a screen needs no more,
+# and the recorder is spared. Flags and the page's state change it at once.
+DISPLAY_EVERY = 5.0
 RELEASE_CHUNK = 2000  # a lowered delay's backlog is applied over a few steps
 CLOSE_AFTER_FINAL = timedelta(minutes=5)
 SETTLED_AFTER = timedelta(hours=48)
@@ -216,6 +225,10 @@ class Hub:
         self._sent: dict[str, Any] = {}
         self._map_rev_sent = -1
         self.entity_state: dict[str, Any] = self._entity_snapshot()
+        self.display: dict[str, Any] = {"state": "idle", "attributes": {}}
+        self._display_at = 0.0
+        # Set by the sensor when it is added: a disabled one costs nothing.
+        self.display_enabled = False
 
     # Lifecycle.
 
@@ -672,6 +685,23 @@ class Hub:
         if snapshot != self.entity_state:
             self.entity_state = snapshot
             async_dispatcher_send(self.hass, SIGNAL_LIVE)
+        self._update_display()
+
+    def _update_display(self) -> None:
+        """The small-screen sensor (decision 54): only while it is enabled."""
+        if not self.display_enabled:
+            return
+        display = screen.build(self.live_view(), self.settings.favourites)
+        if display == self.display:
+            return
+        urgent = display["state"] != self.display["state"] or display["attributes"].get(
+            "track"
+        ) != self.display["attributes"].get("track")
+        now = time.monotonic()
+        if not urgent and now - self._display_at < DISPLAY_EVERY:
+            return
+        self.display, self._display_at = display, now
+        async_dispatcher_send(self.hass, SIGNAL_DISPLAY)
 
     def _entity_snapshot(self) -> dict[str, Any]:
         live = self.live

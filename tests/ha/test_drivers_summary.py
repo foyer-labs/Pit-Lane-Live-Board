@@ -151,3 +151,27 @@ async def test_household_settings_are_for_administrators(
     await ws.send_json_auto_id({"type": f"{P}settings/set", "notify_targets": ["x"]})
     reply = await ws.receive_json()
     assert not reply["success"] and reply["error"]["code"] == "unauthorized"
+
+
+async def test_the_small_screen_sensor(hass: HomeAssistant, entry):
+    """Off by default; once enabled it follows the Live page (decision 54)."""
+    registry = er.async_get(hass)
+    entity_id = registry.async_get_entity_id(
+        "sensor", DOMAIN, f"{entry.entry_id}_display"
+    )
+    assert registry.async_get(entity_id).disabled
+    registry.async_update_entity(entity_id, disabled_by=None)
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    hub = entry.runtime_data.hub
+    await hub.first_tick
+    await hub._async_start_live(None, None)
+    FakeClient.instances[-1].keyframes(
+        race(**{"4": {"Position": "1"}, "16": {"Position": "2", "GapToLeader": "+1.2"}})
+    )
+    await settle()
+    await hass.async_block_till_done()
+    state = hass.states.get(entity_id)
+    assert state.state == "live"
+    assert state.attributes["p2"].split() == ["2", "LEC", "+1.2"]
+    assert state.attributes["flag_colour"] == "#1fa855"

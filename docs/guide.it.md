@@ -17,6 +17,7 @@ leggi le prime due sezioni e sei a posto; torna sulle altre quando ti servono.
 - [I miei piloti](#i-miei-piloti)
 - [Riepilogo della sessione](#riepilogo-della-sessione)
 - [Card per le plance](#card-per-le-plance)
+- [Schermi dedicati](#schermi-dedicati)
 - [Entità e automazioni](#entità-e-automazioni)
 - [Risoluzione dei problemi](#risoluzione-dei-problemi)
 - [Domande frequenti](#domande-frequenti)
@@ -361,6 +362,72 @@ che scegli. *Invia una prova* manda il riepilogo di ciò che mostra la pagina Li
 o da far leggere e i dati da cui nascono, per le tue automazioni. Con la modalità senza
 spoiler attiva aspetta che tu scopra la sessione o spenga la modalità.
 
+## Schermi dedicati
+
+**Una TV, un monitor con un Raspberry Pi, un tablet a parete.** Aggiungi `?kiosk`
+all'indirizzo del pannello (le Impostazioni lo mostrano, pronto da copiare): il pannello
+riempie tutto lo schermo, sopra la barra laterale e l'intestazione di Home Assistant, e
+il puntatore sparisce quando è fermo. Su un Raspberry Pi aprilo con
+`chromium --kiosk "http://homeassistant.local:8123/pit-lane-live-board?kiosk"`.
+`&page=calendar` apre un'altra pagina, `&scale=1.3` ingrandisce tutto per una TV vista dal
+divano. Il pulsante ⛶ in alto fa lo stesso al momento, fino a Esc.
+
+**Uno schermo piccolo: un ESP32 con ESPHome, una cornice e-paper, un anello di LED.**
+Attiva il sensore **Schermo piccolo** (è spento di serie: durante una sessione cambia
+ogni pochi secondi, cosa che serve solo a uno schermo; se lo attivi puoi anche
+escluderlo dal registro). Il suo stato è quello della pagina Live (`live`, `final`,
+`paused`…) e gli attributi sono brevi e piatti, pronti da stampare:
+
+| Attributo | Esempio |
+|---|---|
+| `meeting`, `session`, `kind` | Spanish Grand Prix, Race, race |
+| `lap`, `total_laps`, `part`, `remaining` | 31, 57 (oppure Q2 e i secondi rimasti) |
+| `track`, `flag_colour` | `safety_car`, `#ff8c00` — per un anello di LED |
+| `safety_car`, `red_flag` | true / false |
+| `p1` … `p10` | `" 2 ANT   +3.561 M16"`: posizione, sigla, distacco, gomma e giri |
+| `mine` | le righe dei tuoi piloti, su una riga |
+| `next_meeting`, `next_session`, `next_start` | la prossima sessione, per un conto alla rovescia |
+
+Lo schermo non parla mai con la F1: il ritardo TV e la modalità senza spoiler sono già
+applicati.
+
+```yaml
+# ESPHome: legge da Home Assistant quello che serve allo schermo.
+text_sensor:
+  - platform: homeassistant
+    id: f1_state        # live, final, paused, idle…
+    entity_id: sensor.pit_lane_live_board_small_screen
+  - platform: homeassistant
+    id: f1_track        # clear, yellow, safety_car, red_flag…
+    entity_id: sensor.pit_lane_live_board_small_screen
+    attribute: track
+  - platform: homeassistant
+    id: f1_p1           # " 1 LEC          H30"
+    entity_id: sensor.pit_lane_live_board_small_screen
+    attribute: p1
+  - platform: homeassistant
+    id: f1_p2
+    entity_id: sensor.pit_lane_live_board_small_screen
+    attribute: p2
+  - platform: homeassistant
+    id: f1_mine         # i tuoi piloti, una riga
+    entity_id: sensor.pit_lane_live_board_small_screen
+    attribute: mine
+sensor:
+  - platform: homeassistant
+    id: f1_lap
+    entity_id: sensor.pit_lane_live_board_small_screen
+    attribute: lap
+
+display:
+  - platform: ...       # il tuo schermo
+    lambda: |-
+      it.printf(0, 0, id(font_big), "LAP %.0f", id(f1_lap).state);
+      it.print(0, 40, id(font_mono), id(f1_p1).state.c_str());
+      it.print(0, 60, id(font_mono), id(f1_p2).state.c_str());
+      it.print(0, 90, id(font_small), id(f1_mine).state.c_str());
+```
+
 ## Entità e automazioni
 
 L'integrazione aggiunge un dispositivo, **Pit Lane Live Board**, con queste entità (i
@@ -387,6 +454,7 @@ nella pagina del dispositivo):
 | Pilota LEC (uno per pilota seguito) | La posizione del pilota; il resto negli attributi. Vedi [I miei piloti](#i-miei-piloti). |
 | I miei piloti (evento) | Gli eventi dei piloti seguiti. |
 | Riepilogo della sessione (evento) | Il riepilogo a fine sessione. |
+| Schermo piccolo (spento di serie) | Per gli schermi piccoli: vedi [Schermi dedicati](#schermi-dedicati). |
 | Tempi live | Tempi live attivi (play) o in pausa. |
 | Modalità senza spoiler | Interruttore. |
 | Ritardo TV | Secondi di ritardo. |

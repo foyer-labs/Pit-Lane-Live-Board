@@ -39,6 +39,9 @@
       },
       "driver": {
         "default": "mdi:racing-helmet"
+      },
+      "display": {
+        "default": "mdi:monitor-small"
       }
     },
     "binary_sensor": {
