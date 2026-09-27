@@ -351,3 +351,41 @@ async def test_the_cards_module_is_on_every_page(hass: HomeAssistant, setup):
 
     urls = list(hass.data[DATA_EXTRA_MODULE_URL].urls)
     assert any("pit-lane-live-board-cards.js?v=" in url for url in urls)
+
+
+async def test_seasons_and_rounds_are_bounded(hass, setup, hass_ws_client):
+    """A season far ahead or round 999 would each cost a request from the budget
+    the calendar relies on (INV-4)."""
+    next_year = datetime.now(UTC).year + 1
+    ws = await hass_ws_client(hass)
+    for command in (
+        {"type": f"{P}calendar/get", "season": next_year + 1},
+        {"type": f"{P}results/season", "season": 9999},
+        {"type": f"{P}results/detail", "season": 2020, "round": 31, "tab": "race"},
+        {"type": f"{P}standings/get", "season": 2020, "round": 99, "kind": "drivers"},
+    ):
+        await ws.send_json_auto_id(command)
+        reply = await ws.receive_json()
+        assert reply["success"] is False, command
+        assert reply["error"]["code"] == "invalid_format"
+
+
+async def test_reveal_takes_only_sessions_of_the_calendar(hass, setup, hass_ws_client):
+    hub = setup.runtime_data.hub
+    started = datetime.now(UTC) - timedelta(hours=1)
+    hub.meetings = parse_schedule(schedule_payload(started))
+    race = f"{started.year}-1-race"
+    ws = await hass_ws_client(hass)
+    # No-spoiler off: nothing is hidden, nothing is written.
+    await ws.send_json_auto_id({"type": f"{P}spoiler/reveal", "session": race})
+    assert (await ws.receive_json())["success"] is True
+    assert hub.settings.revealed == frozenset()
+    await ws.send_json_auto_id({"type": f"{P}settings/set", "no_spoiler": True})
+    await ws.receive_json()
+    await ws.send_json_auto_id({"type": f"{P}spoiler/reveal", "session": "junk"})
+    reply = await ws.receive_json()
+    assert reply["success"] is False
+    assert reply["error"]["code"] == "invalid_session"
+    await ws.send_json_auto_id({"type": f"{P}spoiler/reveal", "session": race})
+    assert (await ws.receive_json())["result"]["revealed"] == [race]
+    assert hub.settings.revealed == frozenset({race})

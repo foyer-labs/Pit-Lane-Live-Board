@@ -35,10 +35,14 @@ from .core.jolpica_parse import (
     parse_sprint,
     parse_standings,
 )
+from .core.schedule import spoiler_scope
 from .core.spoiler import hidden_sessions, standings_round_cap
 from .hub import SIGNAL_SETTINGS, Hub, listen_live, listen_map
 
 FIRST_SEASON = 1950
+# No season has had more than 24 rounds; 30 leaves room without letting a script
+# walk round 999 through the request budget.
+MAX_ROUND = 30
 
 
 def _hub(hass: HomeAssistant) -> Hub | None:
@@ -48,6 +52,18 @@ def _hub(hass: HomeAssistant) -> Hub | None:
 
 def _now() -> datetime:
     return datetime.now(UTC)
+
+
+def _season_in_range(value: int) -> int:
+    """From 1950 to next year: a season further ahead has no data, and each one
+    asked for would cost a request from the budget the calendar relies on."""
+    if not FIRST_SEASON <= value <= _now().year + 1:
+        raise vol.Invalid(f"season must be between {FIRST_SEASON} and next year")
+    return value
+
+
+SEASON = vol.All(vol.Coerce(int), _season_in_range)
+ROUND = vol.All(vol.Coerce(int), vol.Range(min=1, max=MAX_ROUND))
 
 
 class _Season(frozenset):
@@ -183,9 +199,23 @@ def ws_settings_subscribe(hass, connection, msg):
 )
 @websocket_api.async_response
 async def ws_spoiler_reveal(hass, connection, msg):
+    """Reveal one hidden session. Only a session of the current calendar is
+    accepted, and reveals outside the spoiler scope (which hide nothing) are
+    forgotten, so the stored list stays a handful of keys. With no-spoiler mode
+    off nothing is hidden, and nothing is written."""
     if (hub := _ready(hass, connection, msg)) is None:
         return
-    await hub.async_update_settings(hub.settings.with_revealed(msg["session"]))
+    key = msg["session"]
+    if hub.settings.no_spoiler:
+        known = {s.key for m in hub.meetings for s in m.sessions}
+        if key not in known:
+            connection.send_error(
+                msg["id"], "invalid_session", "Not a session of the current calendar"
+            )
+            return
+        scope = spoiler_scope(hub.meetings, _now())
+        keep = frozenset(s.key for s in scope.sessions) if scope else frozenset()
+        await hub.async_update_settings(hub.settings.with_revealed(key, keep))
     connection.send_result(msg["id"], _settings_payload(hub, connection.user.is_admin))
 
 
@@ -296,7 +326,7 @@ async def _podiums(hub: Hub, season: int) -> dict[int, list[dict[str, Any]]]:
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/calendar/get",
-        vol.Optional("season"): vol.All(vol.Coerce(int), vol.Range(min=FIRST_SEASON)),
+        vol.Optional("season"): SEASON,
     }
 )
 @websocket_api.async_response
@@ -337,7 +367,7 @@ async def ws_seasons(hass, connection, msg):
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/results/season",
-        vol.Required("season"): vol.All(vol.Coerce(int), vol.Range(min=FIRST_SEASON)),
+        vol.Required("season"): SEASON,
     }
 )
 @websocket_api.async_response
@@ -413,8 +443,8 @@ async def _tab(hub: Hub, season: int, rnd: int, tab: str) -> dict[str, Any] | No
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/results/detail",
-        vol.Required("season"): vol.All(vol.Coerce(int), vol.Range(min=FIRST_SEASON)),
-        vol.Required("round"): vol.All(vol.Coerce(int), vol.Range(min=1)),
+        vol.Required("season"): SEASON,
+        vol.Required("round"): ROUND,
         vol.Required("tab"): vol.In(pages.TABS),
     }
 )
@@ -448,10 +478,8 @@ async def _same(value: Any) -> Any:
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/standings/get",
-        vol.Required("season"): vol.All(vol.Coerce(int), vol.Range(min=FIRST_SEASON)),
-        vol.Optional("round"): vol.Any(
-            None, vol.All(vol.Coerce(int), vol.Range(min=1))
-        ),
+        vol.Required("season"): SEASON,
+        vol.Optional("round"): vol.Any(None, ROUND),
         vol.Required("kind"): vol.In(("drivers", "constructors")),
     }
 )
