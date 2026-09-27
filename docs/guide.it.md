@@ -14,6 +14,8 @@ leggi le prime due sezioni e sei a posto; torna sulle altre quando ti servono.
 - [Ritardo TV](#ritardo-tv)
 - [Modalità senza spoiler](#modalità-senza-spoiler)
 - [F1TV e la mappa live](#f1tv-e-la-mappa-live)
+- [I miei piloti](#i-miei-piloti)
+- [Riepilogo della sessione](#riepilogo-della-sessione)
 - [Card per le plance](#card-per-le-plance)
 - [Entità e automazioni](#entità-e-automazioni)
 - [Risoluzione dei problemi](#risoluzione-dei-problemi)
@@ -70,6 +72,10 @@ L'ingranaggio in alto a destra nel pannello apre le **Impostazioni**:
   uno nuovo e *Rimuovi* (vedi [F1TV](#f1tv-e-la-mappa-live)).
 - **Entità**: tutte le entità dell'integrazione con il loro stato; cliccane una per la
   sua cronologia e le sue impostazioni.
+- **I miei piloti** (amministratori): fino a cinque piloti seguiti dalla casa, scelti tra
+  quelli della stagione. Vedi [I miei piloti](#i-miei-piloti).
+- **Riepilogo a fine sessione** (amministratori): i servizi di notifica a cui inviarlo e
+  dopo quali sessioni. Vedi [Riepilogo della sessione](#riepilogo-della-sessione).
 - **Pannello** (solo amministratori): *Mostra Live Board nella barra laterale* e *Solo
   gli amministratori possono aprire il pannello* — spento di serie, così lo vedono tutti
   gli utenti di casa. Vedi [chi vede cosa](#chi-vede-cosa).
@@ -156,7 +162,23 @@ mentre ne esce, `RIT` ritirato, `FERMO` fermo in pista, `FUORI` eliminato in qua
 Un `+5s` rosso dopo il numero di un pilota è una penalità in tempo non ancora scontata.
 
 Clicca una riga per seguire un pilota: la riga, il suo punto sulla mappa e i suoi team
-radio vengono evidenziati. La direzione gara si filtra per bandiere o per penalità.
+radio vengono evidenziati, e la riga si apre:
+
+![Gli stint di un pilota e dove rientrerebbe dopo una sosta](screenshots/driver.it.png)
+
+
+- **Stint:** ogni treno di gomme finora, con la mescola, i giri percorsi e il giro
+  migliore — giri 1–24 con le medie, migliore 1:33.1 al giro 18, poi le soft dal giro 25.
+- **Se si fermasse ora** (gare e sprint): la posizione in cui rientrerebbe e le auto
+  subito davanti e dietro. È una stima: il tempo che una sosta costa di solito su quel
+  circuito (22 s dove non è noto), meno con safety car o VSC, confrontato con i distacchi
+  delle auto sullo stesso giro.
+
+Sotto ogni tempo di settore una striscia sottile mostra i **mini-settori** del giro in
+corso nei colori della F1: viola per il più veloce della sessione, verde per il miglior
+personale, giallo altrimenti.
+
+La direzione gara si filtra per bandiere o per penalità.
 
 Quando il flusso tace, un avviso lo dice dopo 30 secondi e la pagina diventa grigia
 dopo 60: niente che non sia live viene mai mostrato come live.
@@ -300,6 +322,45 @@ cards:
 risultati e tempi sono informazioni pubbliche della F1, e qualsiasi utente collegato
 può comunque leggerli da una card o dalle entità.
 
+## I miei piloti
+
+Segui fino a cinque piloti dalle Impostazioni. Per ognuno:
+
+- un sensore, **Pilota LEC**, con la posizione come stato e, negli attributi, miglior
+  giro, gomma e giri della gomma, stint, soste, penalità, stato e posizioni guadagnate
+  (distacchi e tempi sul giro cambiano ogni pochi secondi: restano nella pagina e nelle
+  card, così il registro non viene scritto due volte al secondo);
+- una ★ accanto alla sigla nella classifica, e la riga evidenziata nella card della
+  classifica se non ha un pilota suo;
+- l'evento **I miei piloti**: `position_gained`, `position_lost`, `took_lead`, `pit_in`,
+  `pit_out`, `fastest_lap`, `retired`, `penalty`, con `driver` (la sigla), `position`,
+  `previous_position` e `lap`. Le posizioni contano solo in gara e sprint.
+
+```yaml
+alias: Leclerc in testa
+triggers:
+  - trigger: state
+    entity_id: event.pit_lane_live_board_my_drivers
+conditions:
+  - "{{ trigger.to_state.attributes.event_type == 'took_lead' }}"
+  - "{{ trigger.to_state.attributes.driver == 'LEC' }}"
+actions:
+  - action: light.turn_on
+    target: { entity_id: light.soggiorno }
+    data: { color_name: red, flash: long }
+```
+
+## Riepilogo della sessione
+
+A fine sessione l'integrazione scrive un breve riepilogo — podio, giro veloce, ritiri,
+penalità, i tuoi piloti — e lo invia ai servizi di notifica scelti nelle Impostazioni
+(uno per telefono con l'app, oppure `persistent_notification`), dopo i tipi di sessione
+che scegli. *Invia una prova* manda il riepilogo di ciò che mostra la pagina Live.
+
+È anche l'evento **Riepilogo della sessione**, con `title` e `message` pronti da inviare
+o da far leggere e i dati da cui nascono, per le tue automazioni. Con la modalità senza
+spoiler attiva aspetta che tu scopra la sessione o spenga la modalità.
+
 ## Entità e automazioni
 
 L'integrazione aggiunge un dispositivo, **Pit Lane Live Board**, con queste entità (i
@@ -323,6 +384,9 @@ nella pagina del dispositivo):
 | Messaggio della direzione gara | L'ultimo messaggio della direzione gara, in inglese come lo scrive la F1. |
 | Direzione gara (evento) | `green_flag`, `yellow_flag`, `safety_car`, `virtual_safety_car`, `vsc_ending`, `red_flag`, `chequered_flag`, `session_started`, `session_ended`. |
 | Commissari (evento) | Un evento per ogni decisione dei commissari: `time_penalty`, `drive_through`, `stop_go`, `grid_penalty`, `penalty_served`, `disqualified`, `noted`, `investigation`, `investigation_after_race`, `no_further_action`, `warning`, `black_and_white_flag`, `lap_deleted`; attributi `drivers`, `numbers`, `seconds`, `places`, `reason`, `turn`, `lap`, `message`. |
+| Pilota LEC (uno per pilota seguito) | La posizione del pilota; il resto negli attributi. Vedi [I miei piloti](#i-miei-piloti). |
+| I miei piloti (evento) | Gli eventi dei piloti seguiti. |
+| Riepilogo della sessione (evento) | Il riepilogo a fine sessione. |
 | Tempi live | Tempi live attivi (play) o in pausa. |
 | Modalità senza spoiler | Interruttore. |
 | Ritardo TV | Secondi di ritardo. |

@@ -36,6 +36,22 @@
       "options": {
         "round": "Round {round}"
       }
+    },
+    "summary": {
+      "options": {
+        "title": "🏁 {meeting} — {session}",
+        "place": "{position}. {driver}",
+        "fastest": "Fastest lap: {driver} {time}",
+        "retired": "Retired: {drivers}",
+        "penalties": "Penalties: {list}",
+        "yours": "Your drivers: {list}",
+        "yours_one": "{driver} P{position}",
+        "kind_drive_through": "drive-through",
+        "kind_stop_go": "stop and go",
+        "kind_grid_penalty": "grid penalty",
+        "kind_disqualified": "disqualified",
+        "kind_time_penalty": "time penalty"
+      }
     }
   },
   "options": {
@@ -153,6 +169,62 @@
             "name": "Time"
           }
         }
+      },
+      "driver": {
+        "name": "Driver {driver}",
+        "state_attributes": {
+          "name": {
+            "name": "Name"
+          },
+          "team": {
+            "name": "Team"
+          },
+          "number": {
+            "name": "Number"
+          },
+          "gap": {
+            "name": "Gap"
+          },
+          "interval": {
+            "name": "Interval"
+          },
+          "last_lap": {
+            "name": "Last lap"
+          },
+          "best_lap": {
+            "name": "Best lap"
+          },
+          "tyre": {
+            "name": "Tyre"
+          },
+          "tyre_age": {
+            "name": "Tyre age"
+          },
+          "stint": {
+            "name": "Stint"
+          },
+          "pit_stops": {
+            "name": "Pit stops"
+          },
+          "in_pit": {
+            "name": "In the pits"
+          },
+          "laps": {
+            "name": "Laps"
+          },
+          "status": {
+            "name": "Status"
+          },
+          "penalty": {
+            "name": "Penalty (s)"
+          },
+          "gained": {
+            "name": "Places gained"
+          },
+          "pit_rejoin": {
+            "name": "Rejoin after a stop"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -227,6 +299,33 @@
               "warning": "Warning",
               "black_and_white_flag": "Black and white flag",
               "lap_deleted": "Lap time deleted"
+            }
+          }
+        }
+      },
+      "drivers": {
+        "name": "My drivers",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "position_gained": "Position gained",
+              "position_lost": "Position lost",
+              "took_lead": "Took the lead",
+              "pit_in": "Into the pits",
+              "pit_out": "Out of the pits",
+              "fastest_lap": "Fastest lap",
+              "retired": "Retired",
+              "penalty": "Penalty"
+            }
+          }
+        }
+      },
+      "summary": {
+        "name": "Session summary",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "summary": "Summary"
             }
           }
         }
