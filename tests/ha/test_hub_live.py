@@ -11,19 +11,17 @@ from unittest.mock import patch
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.pit_lane_live_board.const import DOMAIN, JOLPICA_BASE
+from custom_components.pit_lane_live_board.const import DOMAIN
 from custom_components.pit_lane_live_board.hub import (
     FAILED_WINDOWS_FOR_REPAIR,
     ISSUE_LIVE,
     SIGNAL_EVENT,
 )
 
-from .conftest import FakeClient, schedule_payload
+from .conftest import HUB, FakeClient, schedule_payload
 
-HUB = "custom_components.pit_lane_live_board.hub.LiveTimingClient"
+__all__ = ["HUB", "keyframes", "settle"]
 
 
 def keyframes(track: str = "1") -> dict:
@@ -45,24 +43,6 @@ def keyframes(track: str = "1") -> dict:
 
 async def settle(seconds: float = 0.8) -> None:
     await asyncio.sleep(seconds)
-
-
-@pytest.fixture
-async def hub(hass: HomeAssistant, aioclient_mock, race_start, fake_client):
-    aioclient_mock.get(
-        f"{JOLPICA_BASE}{race_start.year}.json", json=schedule_payload(race_start)
-    )
-    with patch(HUB, FakeClient):
-        entry = MockConfigEntry(domain=DOMAIN, data={})
-        entry.add_to_hass(hass)
-        assert await hass.config_entries.async_setup(entry.entry_id)
-        await hass.async_block_till_done()
-        # The first tick runs in the background: let it finish, so it never
-        # closes a session a test opens by hand.
-        await entry.runtime_data.hub.first_tick
-        yield entry.runtime_data.hub
-        await hass.config_entries.async_unload(entry.entry_id)
-        await hass.async_block_till_done()
 
 
 async def test_paused_by_default_then_idle_outside_windows(hub):

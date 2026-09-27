@@ -45,6 +45,17 @@ def session_key(season: int, rnd: int, kind: str) -> str:
     return f"{season}-{rnd}-{kind}"
 
 
+ARCHIVE_TABS = frozenset({"strategy", "lap_times", "race_control", "weather"})
+
+
+def without_archive_tabs(page: dict[str, Any]) -> dict[str, Any]:
+    """For a season F1's archive does not serve (2022 today): no tab that would
+    only ever say "not available"."""
+    for row in page.get("rounds", []):
+        row["tabs"] = [t for t in row["tabs"] if t not in ARCHIVE_TABS]
+    return page
+
+
 def tabs_for(season: int, sprint: bool) -> list[str]:
     tabs = ["race"]
     if season >= FIRST_QUALIFYING_SEASON:

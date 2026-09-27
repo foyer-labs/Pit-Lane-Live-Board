@@ -23,10 +23,20 @@ function lookup(tree: Tree, key: string): string | undefined {
   return typeof node === "string" ? node : undefined;
 }
 
+// Resolved strings, per language: the Live page looks up the same few keys for
+// every row of every render.
+const resolved: Record<string, Map<string, string>> = { en: new Map(), it: new Map() };
+
 export function translator(hass: Hass | undefined): Translate {
-  const tree = LANGUAGES[language(hass)];
+  const lang = language(hass);
+  const tree = LANGUAGES[lang];
+  const cache = resolved[lang];
   return (key, vars) => {
-    let text = lookup(tree, key) ?? lookup(en, key) ?? key;
+    let text = cache.get(key);
+    if (text === undefined) {
+      text = lookup(tree, key) ?? lookup(en, key) ?? key;
+      cache.set(key, text);
+    }
     for (const [name, value] of Object.entries(vars ?? {})) {
       text = text.replaceAll(`{${name}}`, String(value));
     }

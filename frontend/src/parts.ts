@@ -12,6 +12,27 @@ export function spoilerKey(settings: Settings | undefined): string {
   return settings ? `${settings.no_spoiler}|${settings.revealed.join(",")}` : "";
 }
 
+/**
+ * A gap or interval from F1's timing, in the page's language. F1 writes the
+ * leader's as "LAP 31" (the lap it is on, already in the strip): the gap says
+ * "Leader" and the interval nothing. Lapped cars are "1 L" or "2L".
+ */
+export function gapText(t: Translate, value: string | null | undefined, interval = false): string {
+  if (!value) return "";
+  if (/^LAP\s*\d+$/i.test(value)) return interval ? "" : t("live.leader");
+  const lapped = /^\+?(\d+)\s*L(?:APS?)?$/i.exec(value);
+  if (lapped) return t(lapped[1] === "1" ? "live.lappedOne" : "live.lapped", { n: lapped[1] });
+  return value;
+}
+
+/** The session's name in the page's language: F1 names it in English. */
+export function sessionName(t: Translate, kind: string | null | undefined, name: string | null | undefined): string {
+  const number = /(\d)\s*$/.exec(name ?? "")?.[1];
+  const key = kind === "practice" && number ? `sessions.practice_${number}` : kind ? `sessions.${kind}` : "";
+  const translated = key ? t(key) : key;
+  return translated && translated !== key ? translated : (name ?? "");
+}
+
 /** Keyboard support for things that are clicked: Enter and Space act. */
 export function onKey(action: () => void) {
   return (event: KeyboardEvent) => {

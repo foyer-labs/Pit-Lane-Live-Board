@@ -45,3 +45,16 @@ def test_damaged_data_reads_as_defaults(damaged):
     assert settings.tv_delay == 0
     assert settings.no_spoiler is False
     assert settings.revealed == frozenset()
+
+
+def test_reveals_keep_to_the_scope_and_are_capped():
+    from custom_components.pit_lane_live_board.core.settings import MAX_REVEALED
+
+    settings = Settings(no_spoiler=True).with_revealed("2026-1-race")
+    moved = settings.with_revealed("2026-2-race", keep=frozenset({"2026-2-race"}))
+    assert moved.revealed == frozenset({"2026-2-race"})
+    for index in range(MAX_REVEALED + 5):
+        settings = settings.with_revealed(f"x-{index}")
+    assert len(settings.revealed) == MAX_REVEALED
+    stored = {"revealed": [f"k{i}" for i in range(500)]}
+    assert len(Settings.from_dict(stored).revealed) == MAX_REVEALED

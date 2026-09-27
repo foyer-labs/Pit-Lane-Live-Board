@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .archive_parse import decode_z
-from .merge import merge
+from .merge import DELETED, merge
 
 # Topics anyone can receive (verified live on 2026-09-26) and that something reads.
 # TopThree, TimingStats and SessionData were dropped: nothing used them, and they
@@ -40,6 +40,57 @@ POSITION_TOPIC = "Position.z"
 PITS = "pits"  # the version key of the pit log
 
 type Sample = tuple[str, float, float, bool]
+
+# F1 appends to a list at its next index. An index this far past the end is a
+# broken or hostile feed, and filling the gap with None would allocate without
+# bound (`{"Lines": {"20000000": ...}}` is 160 MB): it is dropped instead.
+MAX_LIST_GAP = 1000
+_DROP = object()
+
+
+def _list_index(key: Any) -> int | None:
+    """The index a delta key addresses in a list: None for a named key, -1 for
+    one that is no usable index (a Unicode digit `int()` refuses, or absurdly
+    long)."""
+    if isinstance(key, int) and not isinstance(key, bool):
+        return key if key >= 0 else -1
+    if isinstance(key, str) and key.isdigit():
+        return int(key) if key.isascii() and len(key) <= 9 else -1
+    return None
+
+
+def bounded(target: Any, delta: Any) -> Any:
+    """`delta` without the list indexes that would grow a list of `target` past
+    `MAX_LIST_GAP`, or that no list can take. The delta is copied only where
+    something is dropped; F1's own deltas pass through untouched."""
+    if not isinstance(delta, dict) or not isinstance(target, (list, dict)):
+        return delta
+    out = delta
+    for key, value in delta.items():
+        new: Any = value
+        if isinstance(target, list):
+            if key == DELETED:
+                if isinstance(value, list):
+                    kept = [k for k in value if _list_index(k) != -1]
+                    new = kept if len(kept) != len(value) else value
+            else:
+                index = _list_index(key)
+                if index is None:
+                    return delta  # merge turns the list into a dict: no growth
+                if index < 0 or index >= len(target) + MAX_LIST_GAP:
+                    new = _DROP
+                elif index < len(target):
+                    new = bounded(target[index], value)
+        elif key != DELETED:
+            new = bounded(target.get(key), value)
+        if new is not value:
+            if out is delta:
+                out = dict(delta)
+            if new is _DROP:
+                del out[key]
+            else:
+                out[key] = new
+    return out
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,7 +142,8 @@ class LiveState:
         if topic == POSITION_TOPIC:
             samples = self._apply_positions(delta)
         else:
-            self.topics[topic] = merge(self.topics.get(topic), delta)
+            current = self.topics.get(topic)
+            self.topics[topic] = merge(current, bounded(current, delta))
             self._log_pits(topic, delta)
         self._bump(topic)
         if utc:

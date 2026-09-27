@@ -14,6 +14,8 @@ from typing import Any
 from .session import QUALIFYING_LIKE, RACE_LIKE
 from .stewards import PENALTIES
 
+_OUT = ("retired", "stopped")
+
 
 def _seconds(lap_time: str | None) -> float | None:
     """`1:35.587` → 95.587."""
@@ -69,9 +71,8 @@ def build(
         "qualifying": qualifying,
         "podium": [result(r) for r in ranked[:3]],
         "fastest_lap": fastest,
-        "retired": [r["tla"] for r in rows if r.get("status") == "retired"]
-        if race
-        else [],
+        # A car stopped on track at the end did not finish either.
+        "retired": [r["tla"] for r in rows if r.get("status") in _OUT] if race else [],
         "penalties": list(reversed(penalties)),
         "yours": [result(r) for r in ranked if r["tla"] in wanted],
         "classification": [
@@ -109,7 +110,7 @@ def _row(item: dict[str, Any], qualifying: bool, fill: Any) -> str:
     head = f"{item['position']}. {item['driver']}"
     if qualifying:
         return " ".join(part for part in (head, time, gap) if part)
-    if item.get("status") == "retired":
+    if item.get("status") in _OUT:
         return f"{head} {fill('out')}"
     return " · ".join(
         part for part in (" ".join(p for p in (head, gap) if p), time) if part

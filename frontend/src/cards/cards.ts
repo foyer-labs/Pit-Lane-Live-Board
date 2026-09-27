@@ -6,11 +6,11 @@ import { api } from "../api";
 import { clockTime, number, sessionClock, sessionTime, shortTime } from "../format";
 import type { Translate } from "../i18n";
 import { ICON, icon } from "../icons";
-import { alsoTime, gained, segmentStrip, tyre } from "../parts";
+import { alsoTime, gained, gapText, segmentStrip, sessionName, spoilerKey, tyre } from "../parts";
 import { teamColour } from "../teams";
 import { stewardsCard, stewardsStyles, trackClass } from "../pages/stewards";
-import type { LiveView, Row, StandingsPage, Timed } from "../types";
-import { LiveCard, form, pageTranslator, type CardConfig } from "./base";
+import type { LiveView, Row, Settings, StandingsPage, Timed } from "../types";
+import { LiveCard, form, pageTranslator, whole, type CardConfig } from "./base";
 
 export const TOWER_COLUMNS = ["gap", "interval", "last", "best", "sectors", "tyre", "pits"] as const;
 const COLUMN_LABEL: Record<string, string> = {
@@ -62,6 +62,18 @@ export class PitLaneTowerCard extends LiveCard {
     return { rows: 10, columns: ["gap", "last", "tyre"], highlight: "" };
   }
 
+  protected override validate(config: CardConfig): CardConfig {
+    // `columns: gap` written in YAML is a string, not a list.
+    const asked = ([] as unknown[]).concat(config.columns ?? []).map((c) => String(c).trim().toLowerCase());
+    const unknown = asked.filter((c) => !(TOWER_COLUMNS as readonly string[]).includes(c));
+    if (unknown.length) throw new Error(`Unknown columns: ${unknown.join(", ")} (use ${TOWER_COLUMNS.join(", ")})`);
+    return { ...config, columns: asked, rows: whole(config.rows, 1, 22, 10) };
+  }
+
+  protected override get usesSettings(): boolean {
+    return true; // the household's drivers are highlighted
+  }
+
   override getCardSize(): number {
     return 1 + Math.ceil(Number(this.config?.rows ?? 10) / 2);
   }
@@ -71,8 +83,8 @@ export class PitLaneTowerCard extends LiveCard {
   }
 
   protected renderBody(t: Translate, v: LiveView) {
-    const rows = (v.tower ?? []).slice(0, Math.max(1, Number(this.config.rows) || 10));
-    const columns = new Set((this.config.columns as string[] | undefined) ?? []);
+    const rows = (v.tower ?? []).slice(0, Number(this.config.rows) || 10);
+    const columns = new Set(this.config.columns as string[]);
     const highlight = String(this.config.highlight ?? "").trim().toUpperCase();
     const followed = new Set(this.followed);
     if (!rows.length) return html`<div class="empty">${t("common.noData")}</div>`;
@@ -97,8 +109,8 @@ export class PitLaneTowerCard extends LiveCard {
             ${r.penalty ? html`<span class="badge pen">+${r.penalty}s</span>` : nothing}
             ${r.in_pit ? html`<span class="badge pit">${t("live.pit")}</span>` : nothing}
             ${gained(r.gained, false)}</span></td>
-          ${columns.has("gap") ? html`<td class="t">${r.qualifying?.gap ?? r.gap ?? ""}</td>` : nothing}
-          ${columns.has("interval") ? html`<td class="t">${r.interval ?? ""}</td>` : nothing}
+          ${columns.has("gap") ? html`<td class="t">${r.qualifying?.gap ?? gapText(t, r.gap)}</td>` : nothing}
+          ${columns.has("interval") ? html`<td class="t">${gapText(t, r.interval, true)}</td>` : nothing}
           ${columns.has("last") ? html`<td>${timed(r.last_lap)}</td>` : nothing}
           ${columns.has("best") ? html`<td class="t">${r.qualifying?.best ?? r.best_lap?.time ?? ""}</td>` : nothing}
           ${columns.has("sectors") ? r.sectors.map((s, i) => html`<td>${timed(s)}${segmentStrip(r.segments?.[i])}</td>`) : nothing}
@@ -176,12 +188,12 @@ export class PitLaneStewardsCard extends LiveCard {
     return {};
   }
 
-  protected defaultTitle() {
-    return "";
+  protected defaultTitle(t: Translate) {
+    return t("stewards.title");
   }
 
   protected renderBody(t: Translate, v: LiveView) {
-    return stewardsCard(t, v.stewards, v.header?.track_status, this.open, () => (this.open = !this.open));
+    return stewardsCard(t, v.stewards, v.header?.track_status, this.open, () => (this.open = !this.open), v.state === "final");
   }
 
   static override styles = [
@@ -190,6 +202,8 @@ export class PitLaneStewardsCard extends LiveCard {
     css`
       .body { padding: 0; }
       .stewards { margin: 0; box-shadow: none; border-radius: 0; background: none; }
+      /* The card's own header already says "Flags & stewards". */
+      .stewards .card-head { display: none; }
     `,
   ];
 }
@@ -214,6 +228,10 @@ export class PitLaneRadioCard extends LiveCard {
 
   protected override defaults() {
     return { count: 5 };
+  }
+
+  protected override validate(config: CardConfig): CardConfig {
+    return { ...config, count: whole(config.count, 1, 30, 5) };
   }
 
   override disconnectedCallback(): void {
@@ -277,6 +295,7 @@ export class PitLaneRadioCard extends LiveCard {
     css`
       .play { width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--primary-color); color: #fff;
         cursor: pointer; display: grid; place-items: center; flex: none; }
+      @media (pointer: coarse) { .play { width: 40px; height: 40px; } }
     `,
   ];
 }
@@ -304,6 +323,12 @@ export class PitLaneRaceControlCard extends LiveCard {
     return { count: 6, filter: "all" };
   }
 
+  protected override validate(config: CardConfig): CardConfig {
+    const filter = String(config.filter ?? "all").trim().toLowerCase();
+    if (!(FILTERS as readonly string[]).includes(filter)) throw new Error(`filter must be one of ${FILTERS.join(", ")}`);
+    return { ...config, filter, count: whole(config.count, 1, 50, 6) };
+  }
+
   protected defaultTitle(t: Translate) {
     return t("live.raceControl");
   }
@@ -312,11 +337,12 @@ export class PitLaneRaceControlCard extends LiveCard {
     const want = FILTER_KIND[String(this.config.filter)] ?? null;
     const messages = (v.race_control ?? []).filter((m) => !want || m.kind === want).slice(0, Number(this.config.count) || 6);
     if (!messages.length) return html`<div class="empty">${t("common.noData")}</div>`;
+    // Practice and qualifying messages have no lap: the time takes its place.
     return html`${repeat(
       messages,
       (m) => `${m.utc}|${m.message}`,
-      (m) => html`<div class="row msg ${m.kind}"><small class="lap">${m.lap ? `${t("common.lap")} ${m.lap}` : ""}</small>
-        <span class="text">${m.message}<small>${clockTime(this.hass!, m.utc)}</small></span></div>`,
+      (m) => html`<div class="row msg ${m.kind}"><small class="lap num">${m.lap ? `${t("common.lap")} ${m.lap}` : clockTime(this.hass!, m.utc, true)}</small>
+        <span class="text">${m.message}${m.lap ? html`<small>${clockTime(this.hass!, m.utc)}</small>` : nothing}</span></div>`,
     )}`;
   }
 
@@ -351,6 +377,14 @@ export class PitLaneSessionCard extends LiveCard {
     return "";
   }
 
+  protected override get showsCountdown(): boolean {
+    return true;
+  }
+
+  protected override get flagInBody(): boolean {
+    return true;
+  }
+
   protected renderBody(t: Translate, v: LiveView) {
     const h = v.header;
     const final = v.state === "final";
@@ -365,7 +399,8 @@ export class PitLaneSessionCard extends LiveCard {
             : nothing;
     const next = v.next_session;
     return html`<div class="session">
-      <div class="name"><b>${h?.meeting ?? ""}</b><small>${h?.session ?? ""}${h?.circuit ? ` · ${h.circuit}` : ""}</small></div>
+      <div class="top"><div class="name"><b>${h?.meeting ?? ""}</b><small>${sessionName(t, h?.kind, h?.session)}${h?.circuit ? ` · ${h.circuit}` : ""}</small></div>
+        <span class="spacer"></span>${this.flag(t, v)}</div>
       <div class="progress num">${progress}</div>
       ${final
         ? html`<div class="muted small">${t("live.ended", { time: shortTime(this.hass!, v.ended) })}</div>`
@@ -375,7 +410,7 @@ export class PitLaneSessionCard extends LiveCard {
       ${final && next
         ? html`<div class="next small">${t("live.next", { meeting: next.meeting, session: t(`sessions.${next.kind}`) })}
             ${next.start ? html`· <b class="num"><plb-countdown .to=${next.start}></plb-countdown></b>` : nothing}
-            ${next.start ? html`<span class="muted">(${sessionTime(this.hass!, next.start, next.date, next.timezone)})</span>` : nothing}
+            ${next.start ? html`<span class="muted nowrap">(${sessionTime(this.hass!, next.start, next.date, next.timezone)})</span>` : nothing}
             ${alsoTime(t, this.hass!, next.start, next.timezone)}</div>`
         : nothing}
     </div>`;
@@ -385,6 +420,9 @@ export class PitLaneSessionCard extends LiveCard {
     ...LiveCard.styles,
     css`
       .session { display: grid; gap: 8px; justify-items: start; padding: 8px 16px 12px; }
+      .top { display: flex; align-items: flex-start; gap: 8px; width: 100%; }
+      .top .tag { margin-top: 4px; }
+      .nowrap { white-space: nowrap; }
       .name { display: grid; }
       .name b { font-size: 18px; font-weight: 500; }
       .name small, .small { color: var(--secondary-text-color); font-size: 13px; }
@@ -479,6 +517,31 @@ export class PitLaneStandingsCard extends LiveCard {
     return false;
   }
 
+  protected override get usesSettings(): boolean {
+    return true; // the season, and no-spoiler mode, which caps the table
+  }
+
+  protected override validate(config: CardConfig): CardConfig {
+    const asked = String(config.kind ?? "drivers").trim().toLowerCase();
+    const kind = { driver: "drivers", drivers: "drivers", constructor: "constructors", constructors: "constructors", teams: "constructors", team: "constructors" }[asked];
+    if (!kind) throw new Error("kind must be drivers or constructors");
+    return { ...config, kind, rows: whole(config.rows, 1, 30, 10) };
+  }
+
+  /** No-spoiler mode switched on (or off, or a reveal) changes the table the
+   *  backend gives: the one on screen goes at once and the new one is read. */
+  protected override settingsChanged(settings: Settings): void {
+    const before = this.settings;
+    super.settingsChanged(settings);
+    if (before && (spoilerKey(before) !== spoilerKey(settings) || before.season !== settings.season)) {
+      this.page = undefined;
+      this.failed = false;
+      this.loading = false; // a load under the old settings is discarded when it lands
+      this.request++;
+      void this.load();
+    }
+  }
+
   override setConfig(config: CardConfig): void {
     const kind = this.config?.kind;
     super.setConfig(config);
@@ -501,18 +564,17 @@ export class PitLaneStandingsCard extends LiveCard {
   }
 
   protected override updated(): void {
-    if (this.hass && !this.page && !this.loading && !this.failed) void this.load();
+    if (this.hass && this.settings && !this.page && !this.loading && !this.failed) void this.load();
   }
 
   private async load(): Promise<void> {
-    if (!this.hass || this.loading) return;
+    if (!this.hass || !this.settings || this.loading) return;
     this.loading = true;
     const request = ++this.request;
     const kind = String(this.config.kind);
     try {
-      const settings = await api.settings(this.hass);
-      const page = await api.standings(this.hass, settings.season, null, kind);
-      if (request !== this.request) return; // the kind changed meanwhile
+      const page = await api.standings(this.hass, this.settings.season, null, kind);
+      if (request !== this.request) return; // the kind or the settings changed meanwhile
       this.page = page;
       this.failed = false;
     } catch {
@@ -551,7 +613,7 @@ export class PitLaneStandingsCard extends LiveCard {
       ? html`<div class="state">${this.failed ? t("common.unavailable") : t("common.loading")}</div>`
       : !rows.length
         ? html`<div class="empty">${t("standings.empty")}</div>`
-        : html`${page.round ? html`<div class="empty">${t("standings.after", { n: page.round })}${page.capped ? ` · ${t("spoiler.standingsCap")}` : ""}</div>` : nothing}
+        : html`${page.round ? html`<div class="sub">${t("standings.after", { n: page.round })}${page.capped ? ` · ${t("spoiler.standingsCap")}` : ""}</div>` : nothing}
             ${rows.map(
               (r) => html`<div class="row"><b class="pos num">${r.position_text ?? r.position ?? ""}</b>
                 <span class="bar" style="background:${teamColour(r.team_id, null)}"></span>
@@ -570,6 +632,7 @@ export class PitLaneStandingsCard extends LiveCard {
     css`
       .pos { width: 22px; text-align: right; }
       .name { font-weight: 500; }
+      .sub { padding: 0 16px 4px; color: var(--secondary-text-color); font-size: 12px; }
     `,
   ];
 }

@@ -5,7 +5,9 @@ event marks, so a restart never fires an event twice (SPEC §10.3), and the coun
 session windows that never connected (the "unreachable" repair survives restarts).
 
 Writes are rare on purpose (decision 42): settings save when changed, marks only
-while live timing runs and at most every 30 s, and everything is flushed on unload.
+while live timing runs and at most every 30 s (the first change arms one delayed
+write, which carries whatever the marks are when it happens: a crash loses at most
+30 s of them), and marks still waiting are flushed on unload.
 """
 
 from __future__ import annotations
@@ -44,6 +46,7 @@ class SettingsStore:
         # Session summaries already sent, and one held back by no-spoiler mode.
         self.summaries_sent: list[str] = []
         self.pending_summaries: list[dict[str, Any]] = []
+        self._marks_pending = False  # a delayed write of the marks is armed
 
     async def async_load(self) -> Settings:
         data = await self._store.async_load()
@@ -77,13 +80,35 @@ class SettingsStore:
     async def async_save(self, settings: Settings | None = None) -> None:
         if settings is not None:
             self.settings = settings
+        # This write carries the marks too, and replaces a pending delayed one.
+        self._marks_pending = False
         await self._store.async_save(self._data())
 
     def save_marks(self, marks: dict[str, Any]) -> None:
+        """At most one write every 30 s. Home Assistant's delayed save moves its
+        timer on at every call, so during a race (a message every few seconds)
+        nothing would be written for minutes: it is armed only when none is
+        pending, and reads the marks when it writes."""
         self.marks = dict(marks)
-        self._store.async_delay_save(self._data, MARKS_SAVE_DELAY)
+        if not self._marks_pending:
+            self._marks_pending = True
+            self._store.async_delay_save(self._delayed_data, MARKS_SAVE_DELAY)
+
+    def _delayed_data(self) -> dict[str, Any]:
+        self._marks_pending = False
+        return self._data()
 
     async def async_flush(self) -> None:
-        """Write now (also replaces a pending delayed write): on unload, so a
-        reload never reads marks older than the ones in memory."""
-        await self._store.async_save(self._data())
+        """On unload: marks still waiting for their delayed write are written now,
+        so a reload never reads marks older than the ones in memory. Everything
+        else was saved when it changed."""
+        if self._marks_pending:
+            await self.async_save()
+
+
+async def async_remove(hass: HomeAssistant) -> None:
+    """The integration was deleted: a new one starts from a clean slate, without
+    the old reveals, notify services, held summaries or failed windows."""
+    await _VersionedStore(
+        hass, STORE_VERSION, STORE_KEY, minor_version=STORE_MINOR_VERSION
+    ).async_remove()

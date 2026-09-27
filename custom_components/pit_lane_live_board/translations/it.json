@@ -185,23 +185,11 @@
           "number": {
             "name": "Numero"
           },
-          "gap": {
-            "name": "Distacco"
-          },
-          "interval": {
-            "name": "Intervallo"
-          },
-          "last_lap": {
-            "name": "Ultimo giro"
-          },
           "best_lap": {
             "name": "Giro migliore"
           },
           "tyre": {
             "name": "Gomma"
-          },
-          "tyre_age": {
-            "name": "Giri della gomma"
           },
           "stint": {
             "name": "Stint"
@@ -212,9 +200,6 @@
           "in_pit": {
             "name": "Ai box"
           },
-          "laps": {
-            "name": "Giri"
-          },
           "status": {
             "name": "Stato"
           },
@@ -223,9 +208,6 @@
           },
           "gained": {
             "name": "Posizioni guadagnate"
-          },
-          "pit_rejoin": {
-            "name": "Rientro dopo una sosta"
           }
         }
       },

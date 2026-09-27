@@ -40,6 +40,9 @@ def _targets(value: Any) -> tuple[str, ...]:
 
 MIN_DELAY = 0
 MAX_DELAY = 120
+# Reveals only matter inside the spoiler scope (one meeting, a handful of
+# sessions): the cap keeps a looping script from growing the store without end.
+MAX_REVEALED = 30
 
 
 def clamp_delay(value: Any) -> int:
@@ -76,8 +79,17 @@ class Settings:
         # is switched on, it starts from a clean slate.
         return replace(self, no_spoiler=bool(on), revealed=frozenset())
 
-    def with_revealed(self, session_key: str) -> Settings:
-        return replace(self, revealed=self.revealed | {str(session_key)})
+    def with_revealed(
+        self, session_key: str, keep: frozenset[str] | None = None
+    ) -> Settings:
+        """One more session revealed. `keep`, when given, are the reveals still
+        worth keeping (those of the spoiler scope): the others are forgotten.
+        Past the cap nothing is added."""
+        kept = self.revealed if keep is None else self.revealed & keep
+        revealed = kept | {str(session_key)}
+        if len(revealed) > MAX_REVEALED:
+            return self
+        return replace(self, revealed=revealed)
 
     def with_live(self, on: bool) -> Settings:
         return replace(self, live=bool(on))
@@ -122,7 +134,11 @@ class Settings:
         return cls(
             tv_delay=clamp_delay(data.get("tv_delay", 0)),
             no_spoiler=data.get("no_spoiler") is True,
-            revealed=frozenset(str(k) for k in revealed if isinstance(k, (str, int)))
+            revealed=frozenset(
+                sorted(str(k) for k in revealed if isinstance(k, (str, int)))[
+                    :MAX_REVEALED
+                ]
+            )
             if isinstance(revealed, list)
             else frozenset(),
             live=data.get("live") is True,

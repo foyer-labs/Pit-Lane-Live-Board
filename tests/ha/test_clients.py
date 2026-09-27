@@ -12,7 +12,11 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import pytest
 
 from custom_components.pit_lane_live_board.cache import DiskCache
-from custom_components.pit_lane_live_board.clients.archive import ArchiveClient
+from custom_components.pit_lane_live_board.clients.archive import (
+    DETAIL_KEYFRAMES,
+    DETAIL_STREAMS,
+    ArchiveClient,
+)
 from custom_components.pit_lane_live_board.clients.f1tv import (
     RETRIEVE_SUBSCRIBER,
     RenewalOutcome,
@@ -318,7 +322,9 @@ async def test_an_incomplete_archive_is_not_cached(hass, aioclient_mock, cache):
         async_get_clientsession(hass), cache, hass.async_add_executor_job
     )
     assert (await client.detail(meetings, meetings[0].race))["laps"] == {}
-    assert not list(cache.root.glob("detail*"))
+    # Kept for a while (no rebuild on every open), but not for good.
+    assert not list(cache.root.glob("detail_*"))
+    assert list(cache.root.glob("detail-partial_*"))
 
 
 async def test_the_archive_not_published_yet(hass, aioclient_mock, cache):
@@ -344,10 +350,17 @@ async def test_the_archive_not_published_yet(hass, aioclient_mock, cache):
         },
     )
     aioclient_mock.get(f"{ARCHIVE_BASE}{path}Index.json", status=403)
+    # A past session without an index is asked for by fixed file names.
+    for name in (*DETAIL_STREAMS, *DETAIL_KEYFRAMES):
+        for suffix in (".json", ".jsonStream"):
+            aioclient_mock.get(f"{ARCHIVE_BASE}{path}{name}{suffix}", status=403)
     client = ArchiveClient(
         async_get_clientsession(hass), cache, hass.async_add_executor_job
     )
     assert await client.detail(meetings, meetings[0].race) is None
+    calls = aioclient_mock.call_count
+    assert await client.detail(meetings, meetings[0].race) is None
+    assert aioclient_mock.call_count == calls  # remembered, not asked again
 
 
 def test_pings_are_not_data():

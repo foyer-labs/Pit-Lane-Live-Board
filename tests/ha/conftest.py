@@ -12,6 +12,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, ClassVar
 from unittest.mock import patch
 
+from homeassistant.core import HomeAssistant
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -135,3 +136,25 @@ async def loaded_entry(
     yield entry
     await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
+
+
+HUB = "custom_components.pit_lane_live_board.hub.LiveTimingClient"
+
+
+@pytest.fixture
+async def hub(hass: HomeAssistant, aioclient_mock, race_start, fake_client):
+    """A loaded entry's hub, with the fake live client."""
+    aioclient_mock.get(
+        f"{JOLPICA_BASE}{race_start.year}.json", json=schedule_payload(race_start)
+    )
+    with patch(HUB, FakeClient):
+        entry = MockConfigEntry(domain=DOMAIN, data={})
+        entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+        # The first tick runs in the background: let it finish, so it never
+        # closes a session a test opens by hand.
+        await entry.runtime_data.hub.first_tick
+        yield entry.runtime_data.hub
+        await hass.config_entries.async_unload(entry.entry_id)
+        await hass.async_block_till_done()

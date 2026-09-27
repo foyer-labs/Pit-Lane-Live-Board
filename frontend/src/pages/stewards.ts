@@ -34,6 +34,11 @@ function calm(s: Stewards, track: string | null | undefined): boolean {
   );
 }
 
+/** After the session: calm when no decision is listed (flags no longer count). */
+function calmAfter(s: Stewards): boolean {
+  return !s.penalties.length && !s.investigations.length && !s.track_limits.length;
+}
+
 /** "+5s", "DT", "SG 10s", "3 grid", "DSQ". */
 export function penaltyLabel(t: Translate, d: Decision): string {
   switch (d.kind) {
@@ -56,6 +61,11 @@ function cars(d: Decision): string {
   return d.cars.map((c) => c.tla).join(" · ");
 }
 
+/** The whole line, for the tooltip of a line cut short. */
+function full(d: Decision): string {
+  return d.reason ? `${cars(d)} ${d.reason}` : cars(d);
+}
+
 function more<T>(items: T[], row: (item: T) => unknown, t: Translate) {
   if (items.length <= SHOWN) return items.map(row);
   return html`${items.slice(0, SHOWN).map(row)}
@@ -65,7 +75,7 @@ function more<T>(items: T[], row: (item: T) => unknown, t: Translate) {
 function penalty(t: Translate, d: Decision) {
   return html`<li class=${d.served ? "served" : ""}>
     <span class="pen">${penaltyLabel(t, d)}</span>
-    <span class="what"><b>${cars(d)}</b>${d.reason ? html` <span class="why">${d.reason}</span>` : nothing}</span>
+    <span class="what" title=${full(d)}><b>${cars(d)}</b>${d.reason ? html` <span class="why">${d.reason}</span>` : nothing}</span>
     <span class="when">${d.served ? html`✓ ${t("stewards.served")}` : d.lap ? `${t("common.lap")} ${d.lap}` : ""}</span>
   </li>`;
 }
@@ -73,20 +83,20 @@ function penalty(t: Translate, d: Decision) {
 function incident(t: Translate, d: Decision) {
   return html`<li>
     <span class="tag">${t(`stewards.kind.${d.status ?? d.kind}`)}</span>
-    <span class="what"><b>${cars(d)}</b>${d.reason ? html` <span class="why">${d.reason}</span>` : nothing}</span>
+    <span class="what two" title=${full(d)}><b>${cars(d)}</b>${d.reason ? html` <span class="why">${d.reason}</span>` : nothing}</span>
     <span class="when">${d.turn ? t("stewards.turn", { n: d.turn }) : d.lap ? `${t("common.lap")} ${d.lap}` : ""}</span>
   </li>`;
 }
 
-function trackColumn(t: Translate, s: Stewards, track: string | null | undefined) {
+function trackColumn(t: Translate, s: Stewards, track: string | null | undefined, yellows: Stewards["yellow_sectors"]) {
   const phase = s.safety_car ?? s.virtual_safety_car;
   const which = s.safety_car ? "sc" : "vsc";
   return html`<div class="col">
     <h4>${t("stewards.track")}</h4>
     ${track ? html`<span class="status-pill ${trackClass(track)}">${t(`live.status.${track}`)}</span>` : html`<span class="muted">—</span>`}
     ${phase ? html`<div class="phase">${t(`stewards.${which}.${phase}`)}</div>` : nothing}
-    ${s.yellow_sectors.length
-      ? html`<div class="sectors">${s.yellow_sectors.map(
+    ${yellows.length
+      ? html`<div class="sectors">${yellows.map(
           (y) => html`<span class="sector-chip ${y.flag}" title=${t(`stewards.${y.flag}`)}
             >S${y.sector}${y.flag === "double_yellow" ? html`<small>×2</small>` : nothing}</span>`,
         )}</div>`
@@ -95,11 +105,18 @@ function trackColumn(t: Translate, s: Stewards, track: string | null | undefined
 }
 
 /** On a phone: one row of chips; a tap opens the columns. */
-function compact(t: Translate, s: Stewards, track: string | null | undefined, open: boolean, toggle: () => void) {
+function compact(
+  t: Translate,
+  s: Stewards,
+  track: string | null | undefined,
+  open: boolean,
+  toggle: () => void,
+  yellows: Stewards["yellow_sectors"],
+) {
   const unserved = s.penalties.filter((p) => !p.served).length;
   return html`<button class="compact" @click=${toggle} aria-expanded=${open ? "true" : "false"}>
     ${track ? html`<span class="status-pill ${trackClass(track)}">${t(`live.status.${track}`)}</span>` : nothing}
-    ${s.yellow_sectors.map((y) => html`<span class="sector-chip ${y.flag}">S${y.sector}</span>`)}
+    ${yellows.map((y) => html`<span class="sector-chip ${y.flag}">S${y.sector}</span>`)}
     ${s.penalties.length ? html`<span class="count ${unserved ? "hot" : ""}">${t("stewards.penalties")} ${s.penalties.length}</span>` : nothing}
     ${s.investigations.length ? html`<span class="count">${t("stewards.investigations")} ${s.investigations.length}</span>` : nothing}
     ${s.track_limits.length ? html`<span class="count">${t("stewards.trackLimits")} ${s.track_limits.length}</span>` : nothing}
@@ -113,9 +130,14 @@ export function stewardsCard(
   track: string | null | undefined,
   open = false,
   toggle: () => void = () => undefined,
+  final = false,
 ) {
   if (!s) return nothing;
-  if (calm(s, track)) {
+  // After the chequered flag the last yellow sectors are history, not flags: a
+  // yellow chip next to "chequered" contradicts it.
+  const over = final || track === "chequered";
+  const yellows = over ? [] : s.yellow_sectors;
+  if (calm(s, track) || (over && calmAfter(s))) {
     return html`<div class="card stewards calm">
       <span class="status-pill ${trackClass(track ?? "clear")}">${t(`live.status.${track ?? "clear"}`)}</span>
       <span class="muted">${t("stewards.calm")}</span>
@@ -124,9 +146,9 @@ export function stewardsCard(
   const accent = s.red_flag ? "accent-red" : s.safety_car || s.virtual_safety_car ? "accent-sc" : "";
   return html`<section class="card stewards ${accent} ${open ? "open" : ""}" aria-label=${t("stewards.title")}>
     <div class="card-head">${t("stewards.title")}</div>
-    ${compact(t, s, track, open, toggle)}
+    ${compact(t, s, track, open, toggle, yellows)}
     <div class="cols">
-      ${trackColumn(t, s, track)}
+      ${trackColumn(t, s, track, yellows)}
       <div class="col">
         <h4>${t("stewards.penalties")} <small>${s.penalties.length || ""}</small></h4>
         ${s.penalties.length
@@ -169,13 +191,16 @@ export const stewardsStyles = css`
   .stewards li { display: flex; align-items: baseline; gap: 8px; font-size: 13px; min-width: 0; }
   .stewards li.served { color: var(--plb-muted); }
   .stewards .what { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stewards .what.two { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
   .stewards .why { color: var(--secondary-text-color); font-size: 12px; }
   .stewards .when { color: var(--secondary-text-color); font-size: 11px; white-space: nowrap; }
   .stewards .pen { flex: none; min-width: 36px; text-align: center; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 700;
     background: var(--error-color, #db4437); color: #fff; font-variant-numeric: tabular-nums; }
-  .stewards li.served .pen { background: var(--secondary-background-color); color: var(--plb-muted); }
+  .stewards li.served .pen { background: none; color: var(--secondary-text-color);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-text-color) 30%, transparent); }
   .stewards .tag { flex: none; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.03em;
-    background: color-mix(in srgb, var(--warning-color, #ffa600) 20%, transparent); }
+    color: var(--primary-text-color); background: color-mix(in srgb, var(--warning-color, #ffa600) 22%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warning-color, #ffa600) 60%, transparent); }
   .stewards .col > .status-pill { justify-self: start; }
   .stewards .compact { display: none; width: 100%; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 12px; border: 0;
     background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
@@ -190,7 +215,7 @@ export const stewardsStyles = css`
   .sector-chip.double_yellow { outline: 2px solid #f2c200; outline-offset: 1px; }
   .sector-chip small { font-size: 10px; }
   .stewards .bw { font-size: 14px; }
-  .stewards details summary { cursor: pointer; font-size: 12px; color: var(--primary-color); list-style: none; }
+  .stewards details summary { cursor: pointer; font-size: 12px; color: var(--plb-primary-text); list-style: none; }
   .stewards details[open] summary { display: none; }
   .stewards details { display: grid; gap: 6px; }
   @container (max-width: 1000px) {
@@ -211,8 +236,8 @@ export const stewardsStyles = css`
 export const pillStyles = css`
   .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; letter-spacing: 0.04em; }
   .status-pill::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
-  .st-clear { background: color-mix(in srgb, var(--plb-green) 16%, transparent); color: var(--plb-green); }
-  .st-yellow { background: color-mix(in srgb, var(--plb-yellow) 22%, transparent); color: #a07d00; }
+  .st-clear { background: color-mix(in srgb, var(--plb-green) 16%, transparent); color: var(--plb-green-text); }
+  .st-yellow { background: color-mix(in srgb, var(--plb-yellow) 22%, transparent); color: var(--plb-yellow-text); }
   .st-sc { background: #f2c200; color: #1a1a1a; }
   .st-red { background: var(--error-color, #db4437); color: #fff; }
   .st-chequered { background: var(--secondary-background-color); color: var(--primary-text-color); }

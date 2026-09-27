@@ -266,3 +266,25 @@ def test_pitstops_seasons_and_pages():
     assert parse_seasons(seasons) == [1950, 1951]
     assert page_info(seasons) == (2, 100, 0)
     assert page_info(None) == (0, 0, 0)
+
+
+def test_a_lapped_car_shows_the_laps_down_not_a_time():
+    """2026 round 14: Jolpica sends LIN, one lap down, with `Time` `+10.408` and
+    the status "Lapped"; the table read it as a gap on the lead lap."""
+    lapped = {
+        "number": "41",
+        "position": "9",
+        "positionText": "9",
+        "points": "2",
+        "Driver": driver("arvid_lindblad", "Arvid", "Lindblad", "LIN", "41"),
+        "Constructor": team("rb", "RB F1 Team"),
+        "grid": "10",
+        "laps": "56",
+        "status": "Lapped",
+        "Time": {"millis": "5674162", "time": "+10.408"},
+    }
+    two_down = {**lapped, "position": "10", "laps": "55"}
+    rows = parse_results(races(Results=[RESULTS[0], lapped, two_down]))["rows"]
+    assert rows[0]["time"] == "1:34:23.754"
+    assert (rows[1]["time"], rows[1]["status"]) == (None, "+1 Lap")
+    assert (rows[2]["time"], rows[2]["status"]) == (None, "+2 Laps")

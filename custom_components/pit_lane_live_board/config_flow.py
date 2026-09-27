@@ -23,6 +23,7 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
+from homeassistant.helpers.translation import async_get_translations
 from homeassistant.util import dt as dt_util
 import voluptuous as vol
 
@@ -114,9 +115,18 @@ class LiveBoardOptionsFlow(OptionsFlow):
             errors=errors,
             description_placeholders={
                 "site": F1TV_SITE,
-                "status": status.status,
+                "status": await self._status_text(status.status),
                 "expires": status.expires.strftime("%Y-%m-%d %H:%M UTC")
                 if status.expires
                 else "—",
             },
+        )
+
+    async def _status_text(self, status: str) -> str:
+        """The status in the user's words, as the F1TV sensor shows it (INV-7)."""
+        texts = await async_get_translations(
+            self.hass, self.hass.config.language, "entity", {DOMAIN}
+        )
+        return texts.get(
+            f"component.{DOMAIN}.entity.sensor.f1tv.state.{status}", status
         )

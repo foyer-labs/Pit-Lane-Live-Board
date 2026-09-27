@@ -9,7 +9,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from .session import QUALIFYING_LIKE, RACE_LIKE, SessionKind, session_kind
+from .session import (
+    QUALIFYING_LIKE,
+    RACE_LIKE,
+    SessionKind,
+    session_kind,
+    session_status,
+)
 from .values import colour, text, to_bool, to_int
 
 COMPOUNDS = ("soft", "medium", "hard", "intermediate", "wet")
@@ -146,9 +152,26 @@ def _name(driver: dict[str, Any]) -> str | None:
     return text(driver.get("FullName")) or text(driver.get("BroadcastName"))
 
 
-def _status(line: dict[str, Any], kind: SessionKind) -> str:
+def _status(
+    line: dict[str, Any], kind: SessionKind, classified_from: int | None
+) -> str:
+    """`retired`, `stopped`, `knocked_out` or `running`.
+
+    In races and sprints F1's `Retired` is not the whole story: a car stopped for
+    good may keep `Retired: false` with its position hidden (`ShowPosition:
+    false`), and F1 can even turn `Retired` back off when the car is recovered to
+    the pits. So a stopped car with a hidden position is out, and once the session
+    is over so is every car short of the laps needed to be classified
+    (`classified_from`).
+    """
     if to_bool(line.get("Retired")):
         return "retired"
+    if kind in RACE_LIKE:
+        laps = to_int(line.get("NumberOfLaps")) or 0
+        if classified_from is not None and laps < classified_from:
+            return "retired"
+        if to_bool(line.get("Stopped")) and line.get("ShowPosition") is False:
+            return "retired"
     if to_bool(line.get("Stopped")):
         return "stopped"
     if kind in QUALIFYING_LIKE and to_bool(line.get("KnockedOut")):
@@ -156,7 +179,40 @@ def _status(line: dict[str, Any], kind: SessionKind) -> str:
     return "running"
 
 
-def _qualifying(line: dict[str, Any], part: int) -> dict[str, Any]:
+def _classified_from(lines: dict[str, Any], status: str | None) -> int | None:
+    """After a race or sprint, the laps a car needs to be classified: 90% of the
+    winner's, rounded down (F1's rule). None while the session runs."""
+    if status not in ("finished", "finalised"):
+        return None
+    leader = max(
+        (
+            to_int(line.get("NumberOfLaps")) or 0
+            for line in lines.values()
+            if isinstance(line, dict)
+        ),
+        default=0,
+    )
+    return int(leader * 0.9) if leader else None
+
+
+def _drop_zone(position: int | None, part: int, entries: Any) -> bool:
+    """Whether a position is in the knockout zone of this part: below the number
+    of cars that go through to the next one (`NoEntries`, e.g. `[22, 16, 10]`).
+
+    Not F1's `Cutoff`: that marks the cars with no time yet in this part, so at
+    the end of Q1 it sits under P20 instead of P16.
+    """
+    if isinstance(entries, dict):
+        entries = [entries[k] for k in sorted(entries, key=lambda k: to_int(k) or 0)]
+    if position is None or not isinstance(entries, list) or part >= len(entries):
+        return False
+    going_through = to_int(entries[part])
+    return going_through is not None and position > going_through
+
+
+def _qualifying(
+    line: dict[str, Any], part: int, position: int | None, entries: Any
+) -> dict[str, Any]:
     bests = line.get("BestLapTimes")
     if isinstance(bests, dict):
         bests = [bests.get(str(i)) for i in range(3)]
@@ -186,7 +242,7 @@ def _qualifying(line: dict[str, Any], part: int) -> dict[str, Any]:
         "part_bests": part_bests,
         "best": part_bests[counting - 1],
         "gap": gap,
-        "cutoff": to_bool(line.get("Cutoff")),
+        "cutoff": _drop_zone(position, part, entries),
     }
 
 
@@ -203,6 +259,11 @@ def build_tower(topics: dict[str, Any]) -> list[dict[str, Any]]:
     app_lines = app_lines if isinstance(app_lines, dict) else {}
     kind = session_kind(topics.get("SessionInfo"))
     part = to_int(timing.get("SessionPart")) or 1
+    classified_from = (
+        _classified_from(lines, session_status(topics.get("SessionStatus")))
+        if kind in RACE_LIKE
+        else None
+    )
 
     rows = []
     for number, line in lines.items():
@@ -249,10 +310,12 @@ def build_tower(topics: dict[str, Any]) -> list[dict[str, Any]]:
             "gained": (
                 grid - position if kind in RACE_LIKE and grid and position else None
             ),
-            "status": _status(line, kind),
+            "status": _status(line, kind, classified_from),
         }
         if kind in QUALIFYING_LIKE:
-            row["qualifying"] = _qualifying(line, part)
+            row["qualifying"] = _qualifying(
+                line, part, position, timing.get("NoEntries")
+            )
         rows.append(row)
 
     rows.sort(key=lambda r: (r["position"] is None, r["position"] or 0, r["number"]))

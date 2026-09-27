@@ -129,3 +129,13 @@ def test_standings_page():
         {"kind": "drivers", "round": 13, "rows": [1]}, 14, False
     )
     assert page["round"] == 13 and page["rounds"] == 14
+
+
+def test_a_season_without_archive_has_no_archive_tabs():
+    page = {"rounds": [{"round": 1, "tabs": pages.tabs_for(2022, False)}]}
+    assert pages.without_archive_tabs(page)["rounds"][0]["tabs"] == [
+        "race",
+        "qualifying",
+        "lap_chart",
+        "pit_stops",
+    ]

@@ -85,6 +85,37 @@ def test_pit_loss_is_the_circuits_typical_and_cheaper_under_a_safety_car():
     assert strategy.pit_loss("monza", "safety_car") == (13.2, True)  # 24 x 0.55
 
 
+def test_every_2026_circuit_has_its_pit_loss():
+    """The 2026 calendar's Jolpica circuit ids; Madring and Sepang were missing and
+    fell back to the generic 22 s marked unknown."""
+    circuits = [
+        "albert_park",
+        "americas",
+        "baku",
+        "catalunya",
+        "hungaroring",
+        "interlagos",
+        "losail",
+        "madring",
+        "marina_bay",
+        "miami",
+        "monaco",
+        "monza",
+        "red_bull_ring",
+        "rodriguez",
+        "sepang",
+        "shanghai",
+        "silverstone",
+        "spa",
+        "suzuka",
+        "vegas",
+        "villeneuve",
+        "yas_marina",
+        "zandvoort",
+    ]
+    assert [c for c in circuits if not strategy.pit_loss(c, "clear")[1]] == []
+
+
 def test_rejoin_position_and_neighbours():
     rows = [
         {
@@ -189,6 +220,46 @@ def test_favourite_events_between_snapshots():
     assert [e for e, _ in favourites.derive(second, third, False)] == ["fastest_lap"]
 
 
+def test_pit_out_names_the_new_tyre():
+    """Spain 2026: `PitOut` arrives before F1 opens the new stint, whose compound
+    is "UNKNOWN" for a moment more; the event waits for the real one."""
+
+    def at(in_pit, stint, compound, laps=13):
+        tyre = {"compound": compound, "age": 0, "stint": stint}
+        return favourites.snapshot(
+            [row("LEC", 4, in_pit=in_pit, laps=laps, tyre=tyre)], ("LEC",)
+        )
+
+    running = at(False, 1, "hard")
+    boxed = at(True, 1, "hard")
+    assert [e for e, _ in favourites.derive(running, boxed, True)] == ["pit_in"]
+    out = at(False, 1, "hard", laps=14)
+    assert favourites.derive(boxed, out, True) == []
+    opened = at(False, 2, "unknown", laps=14)
+    assert favourites.derive(out, opened, True) == []
+    named = at(False, 2, "medium", laps=14)
+    ((event, data),) = favourites.derive(opened, named, True)
+    assert (event, data["tyre"], data["lap"]) == ("pit_out", "medium", 14)
+    assert favourites.derive(named, at(False, 2, "medium", laps=14), True) == []
+
+
+def test_a_stop_with_no_new_tyre_goes_out_with_the_lap():
+    boxed = favourites.snapshot([row("LEC", 4, in_pit=True, laps=13)], ("LEC",))
+    out = favourites.snapshot([row("LEC", 4, laps=13)], ("LEC",))
+    assert favourites.derive(boxed, out, True) == []
+    lap = favourites.snapshot([row("LEC", 4, laps=14)], ("LEC",))
+    assert [e for e, _ in favourites.derive(out, lap, True)] == ["pit_out"]
+
+
+def test_no_pit_events_on_the_way_to_the_grid():
+    """Before the start the cars drive out to the grid and back, with no lap."""
+    garage = favourites.snapshot([row("LEC", 4, in_pit=True, laps=None)], ("LEC",))
+    out = favourites.snapshot([row("LEC", 4, laps=None)], ("LEC",))
+    back = favourites.snapshot([row("LEC", 4, in_pit=True, laps=None)], ("LEC",))
+    assert favourites.derive(garage, out, True) == []
+    assert favourites.derive(out, back, True) == []
+
+
 def test_the_summary_of_a_race():
     rows = [
         {
@@ -228,6 +299,8 @@ def test_the_summary_of_a_race():
             "status": "running",
         },
         {"number": "23", "tla": "ALB", "position": None, "status": "retired"},
+        # Stopped on track with F1's position still shown: out all the same.
+        {"number": "18", "tla": "STR", "position": 21, "status": "stopped"},
     ]
     stewards = {
         "penalties": [{"kind": "time_penalty", "seconds": 5, "cars": [{"tla": "GAS"}]}]
@@ -239,7 +312,7 @@ def test_the_summary_of_a_race():
         ("LEC",),
     )
     assert facts["fastest_lap"] == {"driver": "VER", "time": "1:35.100"}
-    assert facts["retired"] == ["ALB"]
+    assert facts["retired"] == ["ALB", "STR"]
     texts = {
         "title": "{meeting} — {session}",
         "place": "{position}. {driver}",
@@ -254,7 +327,7 @@ def test_the_summary_of_a_race():
     assert message.splitlines() == [
         "1. ANT · 2. VER +4.351 · 3. NOR +5.089",
         "Fastest lap: VER 1:35.100",
-        "Retired: ALB",
+        "Retired: ALB, STR",
         "Penalties: GAS +5s",
         "Your drivers: LEC P4 (+1)",
     ]

@@ -23,6 +23,10 @@ const RETRY_AFTER = 10_000;
  * off, and on each "ready" of the connection the subscription is opened again,
  * retried every 10 s until the integration answers. The first open is awaited:
  * its failure reaches the caller, as before.
+ *
+ * Opens can overlap (two "ready" events close together, or the retry timer firing
+ * while one is in flight): a generation counter keeps only the newest, and any
+ * other subscription that lands is closed at once, so none is left behind.
  */
 async function resilient<T>(
   hass: Hass,
@@ -33,30 +37,50 @@ async function resilient<T>(
   let current: (() => void) | undefined;
   let closed = false;
   let retry: number | undefined;
+  let generation = 0;
+  const release = (unsubscribe: (() => void) | undefined) => {
+    try {
+      // The library's unsubscribe is async: a refusal (the socket went) is fine.
+      void Promise.resolve(unsubscribe?.() as unknown).catch(() => undefined);
+    } catch {
+      /* the connection is already closed */
+    }
+  };
   const open = async (): Promise<void> => {
-    const unsubscribe = await connection.subscribeMessage<T>(callback, msg, { resubscribe: false });
-    if (closed) unsubscribe();
-    else current = unsubscribe;
+    const mine = ++generation;
+    const unsubscribe = await connection.subscribeMessage<T>(
+      // A superseded subscription may still deliver before it is closed: ignore it.
+      (message) => {
+        if (mine === generation && !closed) callback(message);
+      },
+      msg,
+      { resubscribe: false },
+    );
+    if (closed || mine !== generation) {
+      release(unsubscribe);
+      return;
+    }
+    current = unsubscribe;
   };
   const reopen = () => {
     window.clearTimeout(retry);
+    retry = undefined;
     if (closed) return;
     current = undefined; // the old socket's subscription is gone with it
+    const mine = generation + 1;
     open().catch(() => {
-      if (!closed) retry = window.setTimeout(reopen, RETRY_AFTER);
+      // Only the newest open schedules a retry.
+      if (!closed && mine === generation) retry = window.setTimeout(reopen, RETRY_AFTER);
     });
   };
   await open();
   connection.addEventListener?.("ready", reopen);
   return () => {
     closed = true;
+    generation++;
     window.clearTimeout(retry);
     connection.removeEventListener?.("ready", reopen);
-    try {
-      current?.();
-    } catch {
-      /* the connection is already closed */
-    }
+    release(current);
     current = undefined;
   };
 }

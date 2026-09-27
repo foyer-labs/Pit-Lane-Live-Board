@@ -3,7 +3,7 @@
 // the backend, which checks it (INV-3: the token is sent once and never shown back).
 import { LitElement, css, html, nothing } from "lit";
 import { api } from "../api";
-import { deviceZone, homeZone, longDate } from "../format";
+import { clockTime, deviceZone, homeZone, longDate } from "../format";
 import { saveTimePrefs, timePrefs, type TimePrefs, type ZoneMode } from "../timeprefs";
 import { translator, type Translate } from "../i18n";
 import { ICON, icon } from "../icons";
@@ -25,6 +25,7 @@ export class PlbSettings extends LitElement {
     saving: { state: true },
     confirmRemove: { state: true },
     busy: { state: true },
+    clock: { attribute: false },
   };
 
   hass!: Hass;
@@ -37,6 +38,8 @@ export class PlbSettings extends LitElement {
   saving = false;
   confirmRemove = false;
   busy = false;
+  /** Bumped by the panel when the clock of the times changes: drawn again. */
+  clock = 0;
   private asked = false;
 
   protected override willUpdate(): void {
@@ -116,6 +119,17 @@ export class PlbSettings extends LitElement {
     }
   }
 
+  /** Home Assistant's own formatting; before it existed, a timestamp is still
+   *  written as a date and time rather than an ISO string. */
+  private stateText(state: { state: string; attributes: Record<string, unknown> }, domain: string): string {
+    if (this.hass.formatEntityState) return this.hass.formatEntityState(state);
+    const timestamp = state.attributes.device_class === "timestamp" || domain === "event";
+    if (timestamp && !Number.isNaN(Date.parse(state.state))) {
+      return `${longDate(this.hass, state.state)} ${clockTime(this.hass, state.state, true)}`;
+    }
+    return state.state;
+  }
+
   private moreInfo(entityId: string): void {
     this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId }, bubbles: true, composed: true }));
   }
@@ -141,10 +155,13 @@ export class PlbSettings extends LitElement {
     return html`<section class="card">
       <div class="card-head">${t("settings.live")}</div>
       <div class="live">
-        <button class="big-play ${s.live ? "on" : ""}" ?disabled=${this.busy} @click=${() => this.set({ live: !s.live })}
-          aria-pressed=${s.live ? "true" : "false"} aria-label=${s.live ? t("settings.pause") : t("settings.start")}>
-          ${icon(s.live ? ICON.pause : ICON.play, 36)}
-        </button>
+        <div class="play-box">
+          <button class="big-play ${s.live ? "on" : ""}" ?disabled=${this.busy} @click=${() => this.set({ live: !s.live })}
+            aria-pressed=${s.live ? "true" : "false"} aria-label=${s.live ? t("settings.pause") : t("settings.start")}>
+            ${icon(s.live ? ICON.pause : ICON.play, 36)}
+          </button>
+          <small aria-hidden="true">${s.live ? t("settings.pauseShort") : t("settings.startShort")}</small>
+        </div>
         <div class="what">
           <b>${s.live ? t("settings.on") : t("settings.off")}</b>
           <span>${status}</span>
@@ -366,7 +383,7 @@ export class PlbSettings extends LitElement {
             ? html`<div class="confirm">${t("settings.removeConfirm")}
                 <button class="btn danger" ?disabled=${this.saving} @click=${() => this.removeToken()}>${t("settings.remove")}</button>
                 <button class="btn flat" @click=${() => (this.confirmRemove = false)}>${t("settings.cancel")}</button></div>`
-            : html`<button class="btn flat" @click=${() => (this.confirmRemove = true)}>${t("settings.remove")}</button>`
+            : html`<button class="btn flat danger" @click=${() => (this.confirmRemove = true)}>${t("settings.remove")}</button>`
           : nothing}
       </div>
     </section>`;
@@ -399,12 +416,10 @@ export class PlbSettings extends LitElement {
             const state = this.hass.states?.[e.entity_id];
             const name = (state?.attributes.friendly_name as string | undefined) ?? e.entity_id;
             return html`<li><button class="entity" @click=${() => this.moreInfo(e.entity_id)}>
-              <span class="name">${name}<small>${e.entity_id}</small></span>
-              <span class="value">${e.disabled
-                ? t("settings.disabled")
-                : state
-                  ? (this.hass.formatEntityState?.(state) ?? state.state)
-                  : "—"}</span>
+              <span class="name">${name}<small title=${e.entity_id}>${e.entity_id}</small></span>
+              ${((value) => html`<span class="value" title=${value}>${value}</span>`)(
+                e.disabled ? t("settings.disabled") : state ? this.stateText(state, e.domain) : "—",
+              )}
             </button></li>`;
           })}</ul>`}
       <div class="note">${t("settings.entitiesHelp")}</div>
@@ -414,7 +429,7 @@ export class PlbSettings extends LitElement {
   static override styles = [
     tokens,
     css`
-      :host { display: block; }
+      :host { display: block; container-type: inline-size; }
       .page { display: grid; gap: var(--plb-gap); max-width: 760px; margin: 0 auto; }
       .body { padding: 14px 16px; display: grid; gap: 12px; }
       .body p { margin: 0; color: var(--secondary-text-color); font-size: 13px; line-height: 1.5; }
@@ -424,6 +439,8 @@ export class PlbSettings extends LitElement {
       .line input { width: 18px; height: 18px; accent-color: var(--primary-color); }
       .body > .btn { justify-self: start; }
       .live { display: flex; align-items: center; gap: 18px; padding: 18px 16px 8px; }
+      .play-box { display: grid; justify-items: center; gap: 4px; flex: none; }
+      .play-box small { font-size: 11px; color: var(--secondary-text-color); }
       .big-play { width: 72px; height: 72px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; flex: none;
         background: var(--primary-color); color: var(--text-primary-color, #fff); }
       .big-play.on { background: var(--secondary-background-color); color: var(--primary-text-color); box-shadow: inset 0 0 0 2px var(--divider-color); }
@@ -437,7 +454,7 @@ export class PlbSettings extends LitElement {
       .row span { display: grid; gap: 2px; font-size: 14px; }
       .row small { color: var(--secondary-text-color); font-size: 12px; line-height: 1.5; }
       .stepper { display: flex; align-items: center; gap: 10px; }
-      .stepper button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--divider-color);
+      .stepper button { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--divider-color);
         background: none; color: inherit; font-size: 18px; cursor: pointer; }
       .stepper b { font-size: 22px; font-weight: 500; min-width: 110px; text-align: center; }
       input[type="range"] { width: 100%; accent-color: var(--primary-color); }
@@ -447,12 +464,11 @@ export class PlbSettings extends LitElement {
       .dot.expiring { background: var(--warning-color, #ffa600); }
       .dot.expired, .dot.invalid { background: var(--error-color, #db4437); }
       .token { display: flex; gap: 8px; }
-      .token input { flex: 1; min-width: 0; height: 36px; border-radius: 8px; border: 1px solid var(--divider-color);
+      .token input { flex: 1; min-width: 0; height: 40px; box-sizing: border-box; border-radius: 8px; border: 1px solid var(--divider-color);
         background: var(--card-background-color); color: var(--primary-text-color); padding: 0 10px; font: inherit; }
       .error-text { color: var(--error-color, #db4437); font-size: 13px; }
       .confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 13px; }
-      .btn.danger { background: var(--error-color, #db4437); }
-      .btn:disabled { opacity: 0.6; cursor: default; }
+      .btn.danger:not(.flat) { background: var(--error-color, #db4437); }
       .entities { list-style: none; margin: 0; padding: 0; }
       .entity { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border: 0; border-bottom: 1px solid var(--divider-color);
         background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
@@ -460,7 +476,7 @@ export class PlbSettings extends LitElement {
       .entity .name { flex: 1; display: grid; gap: 2px; min-width: 0; font-size: 14px; }
       .entity small { color: var(--secondary-text-color); font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
       .entity .value { color: var(--secondary-text-color); font-size: 13px; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      @media (max-width: 640px) {
+      @container (max-width: 640px) {
         .token { flex-direction: column; }
       }
     `,
