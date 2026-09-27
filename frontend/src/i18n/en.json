@@ -429,7 +429,12 @@
     "compact": "Compact",
     "full": "Full",
     "compactHelp": "Podium, fastest lap, retirements, penalties and your drivers.",
-    "fullHelp": "The same, then the whole classification with every driver's time: gap and best lap in a race, best lap and gap in qualifying and practice."
+    "fullHelp": "The same, then the whole classification with every driver's time: gap and best lap in a race, best lap and gap in qualifying and practice.",
+    "add": "Add",
+    "remove": "Remove",
+    "placeholder": "Type a notify service…",
+    "none": "No service chosen yet.",
+    "missing": "not found"
   },
   "kiosk": {
     "enter": "Full screen",

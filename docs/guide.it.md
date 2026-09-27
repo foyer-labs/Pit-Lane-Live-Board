@@ -378,7 +378,8 @@ actions:
 A fine sessione l'integrazione scrive un breve riepilogo — podio, giro veloce, ritiri,
 penalità, i tuoi piloti — e lo invia ai servizi di notifica scelti nelle Impostazioni
 (uno per telefono con l'app, oppure `persistent_notification`), dopo i tipi di sessione
-che scegli. *Invia una prova* manda il riepilogo di ciò che mostra la pagina Live.
+che scegli. Scrivi il nome di un servizio per vederlo suggerito, poi *Aggiungi*; ogni
+servizio scelto ha il suo pulsante *Rimuovi*. *Invia una prova* manda il riepilogo di ciò che mostra la pagina Live.
 
 *Contenuto* sceglie quanto: **Compatto** (podio, giro veloce, ritirati, penalità, i tuoi
 piloti) oppure **Esteso**, che aggiunge la classifica completa con il tempo di ogni
