@@ -361,7 +361,8 @@ actions:
 When a session ends, the integration writes a short summary — podium, fastest lap,
 retirements, penalties, your drivers — and sends it to the notify services chosen in
 Settings (one per phone with the mobile app, or `persistent_notification`), after the
-kinds of session you pick. *Send a test* sends the summary of what the Live page shows.
+kinds of session you pick. Type a service's name to have it suggested, then *Add*; each
+chosen service has its *Remove* button. *Send a test* sends the summary of what the Live page shows.
 
 *Content* chooses how much: **Compact** (podium, fastest lap, retirements, penalties,
 your drivers) or **Full**, which then lists the whole classification with every driver's
