@@ -61,6 +61,8 @@ def test_rounds_hide_the_winner():
     first, second = page["rounds"]
     assert first["hidden"] is True and first["winner"] is None
     assert second["sprint"] is True and "sprint" in second["tabs"]
+    # The circuit history link needs the circuit (from the calendar here).
+    assert first["circuit_id"] == "c1" and second["circuit_id"] == "c2"
 
 
 def test_hidden_tabs_map_to_their_session():

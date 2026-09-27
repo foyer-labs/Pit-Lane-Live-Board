@@ -166,3 +166,52 @@ async def test_standings_past_one_page_are_joined(hass, aioclient_mock, cache):
     joined = await jolpica(hass, cache).standings(1952, None, "driver")
     rows = joined["MRData"]["StandingsTable"]["StandingsLists"][0]["DriverStandings"]
     assert [r["position"] for r in rows] == [str(i) for i in range(1, 104)]
+
+
+def circuit_page(rows: int, offset: int) -> dict:
+    return {
+        "MRData": {
+            "total": "250",
+            "limit": "100",
+            "offset": str(offset),
+            "RaceTable": {
+                "Races": [{"season": "2020", "round": "1", "Results": [{}] * rows}]
+            },
+        }
+    }
+
+
+async def test_a_circuits_past_pages_are_kept_and_a_stale_last_page_is_not(
+    hass, aioclient_mock, cache
+):
+    """Only the first page (the total) and the last (this season's race) age in
+    a day; a middle page cached while it was the last, partial one is refetched."""
+    import os
+
+    client = jolpica(hass, cache)
+    url = f"{JOLPICA_BASE}circuits/baku/results.json"
+    for offset, rows in ((0, 100), (100, 100), (200, 50)):
+        aioclient_mock.get(
+            url,
+            params={"limit": "100", "offset": str(offset)},
+            json=circuit_page(rows, offset),
+        )
+    key = "jolpica/circuits/baku/results?offset=100"
+    await hass.async_add_executor_job(cache.write_json, key, circuit_page(30, 100))
+    old = time.time() - 2 * 24 * 3600
+    os.utime(cache.path(key, ".json"), (old, old))
+    pages = await client.circuit("baku", "results")
+    assert [len(p["MRData"]["RaceTable"]["Races"][0]["Results"]) for p in pages] == [
+        100,
+        100,
+        50,
+    ]
+    assert aioclient_mock.call_count == 3
+    # Two days on: the first and the last page are asked again, not the middle.
+    for offset in (0, 100, 200):
+        os.utime(
+            cache.path(f"jolpica/circuits/baku/results?offset={offset}", ".json"),
+            (old, old),
+        )
+    await client.circuit("baku", "results")
+    assert aioclient_mock.call_count == 5

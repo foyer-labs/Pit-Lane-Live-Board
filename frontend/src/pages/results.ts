@@ -48,7 +48,7 @@ const STATUS_KEY: Record<string, string> = {
   illness: "illness",
 };
 
-function statusText(t: Translate, status: string | null | undefined): string {
+export function statusText(t: Translate, status: string | null | undefined): string {
   if (!status) return "";
   const lapped = /^\+(\d+) Laps?$/i.exec(status);
   if (lapped) return t(lapped[1] === "1" ? "results.lapsDownOne" : "results.lapsDown", { n: lapped[1] });
@@ -219,6 +219,13 @@ export class PlbResults extends LitElement {
       <div class="toolbar">
         <button class="link back" @click=${() => (this.selected = undefined)}>${icon(ICON.back, 18)} ${t("common.back")}</button>
         <h1>${round.name} ${this.season}</h1>
+        ${round.circuit_id
+          ? html`<button class="link history" @click=${() => this.dispatchEvent(new CustomEvent("plb-go", {
+              detail: { page: "circuit", circuit_id: round.circuit_id, circuit: round.circuit ?? round.name ?? "", from: "results" },
+              bubbles: true,
+              composed: true,
+            }))}>${icon(ICON.history, 16)} ${t("circuit.link")}</button>`
+          : nothing}
       </div>
       <div class="card">
         <div class="subtabs">
@@ -463,6 +470,7 @@ export class PlbResults extends LitElement {
     css`
       :host { display: block; container-type: inline-size; }
       .back { display: inline-flex; align-items: center; gap: 4px; }
+      .history { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; margin-left: auto; }
       .subtabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--divider-color); }
       .subtabs .tab { font-size: 13px; padding: 6px 12px; }
       .line { cursor: pointer; }

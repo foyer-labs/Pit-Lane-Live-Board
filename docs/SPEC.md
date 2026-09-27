@@ -493,6 +493,23 @@ mode hides it like the live session.
 - The first opening of a 2018+ race downloads its archive files once (a few MB), shows
   progress, and caches the derived detail. Later openings are instant.
 
+### 7.3.1 Circuit history (decision 58)
+
+- A page of its own (like Settings, not a tab), opened from a meeting in the Calendar
+  or a round's header in Results, with a Back button to where it came from.
+- For one circuit (Jolpica circuit id): the current season's drivers, each with the
+  **affinity index**, races there (counted / run), wins, podiums, poles, best finish,
+  average finish and average qualifying; sorted by index, drivers who never raced
+  there last.
+- A driver opens their years there, newest first: team, qualifying, grid (marked when
+  worse than qualifying), finish, points, the index's reading of the year (expected
+  place, places gained or lost in the race and in qualifying), outcome, fastest lap and
+  its rank, and the stewards' penalties from F1's archive (2018+).
+- Sources: `/circuits/{id}/results` and `/qualifying` (every page), the constructors'
+  table of every season needed, the current drivers' table; penalties only when a
+  driver is opened, from the cached race detail. No-spoiler mode leaves hidden races
+  out, as if not run.
+
 ### 7.4 Standings
 
 - Drivers and constructors, any season, **after any round** (default: latest).
@@ -671,6 +688,7 @@ Every command requires an authenticated Home Assistant user.
     the final view (§7.1.2);
   - `map/subscribe`: the outline once, then the cars; the panel subscribes only while
     the map is on screen and the tab visible;
+  - `circuit/history` (circuit_id), `circuit/driver` (circuit_id, driver_id): §7.3.1;
   - `settings/get`, `settings/subscribe`;
   - `entities`: the integration's entities, for Settings.
 - **Settings** (any user; they are household TV settings, §18 C):
@@ -1043,6 +1061,20 @@ Decisions taken in chat with the owner.
   rounds have their own cache key; the panel follows its own width, not the window's.
   Session events: `session_started` on the first start only, `session_ended` at the
   end of the last part; a red-flag stoppage stays red while the session is aborted.
+
+58. **Circuit history and the affinity index** (asked by the owner): how a circuit suits
+  a driver, net of the car. For every year the driver raced there: `expected = 2 *
+  constructor_position - 0.5` (two cars per team; constructors' P1 → 1.5); `delta_race =
+  expected - finish` and `delta_quali = expected - qualifying`; `year_score = 0.6 *
+  delta_race + 0.4 * delta_quali` (race only before 1994). A mechanical retirement does
+  not count; a driver's own (accident, collision, disqualification…) counts with the
+  classified position. Weight `0.85 ** (current season - season)`. `index = clamp(50 +
+  5 * weighted mean * n / (n + 2), 0, 100)`, n the counted years: 50 is "as the car",
+  5 points per place better, and a thin record is pulled towards 50 (one race keeps a
+  third of its distance, eight keep 80%), so a single good afternoon cannot top the
+  list. Seasons without a constructors' table (before 1958) do not count. It reads a
+  circuit, not a driver's worth: team orders and upgrades within a season are out of
+  reach of these data.
 
 ---
 

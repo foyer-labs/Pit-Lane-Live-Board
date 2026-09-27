@@ -967,6 +967,51 @@ var Ie = {
 		copy: "Copy",
 		options: "Add &page=calendar to open another page, &scale=1.3 to make everything bigger on a TV.",
 		small: "For a small screen (an ESP32 with ESPHome, e-paper): enable the “Small screen” sensor. It carries the state of the Live page and short fields ready to print: lap, track status and its colour, the top ten as rows, your drivers, the next session. The guide has an ESPHome example."
+	},
+	circuit: {
+		link: "Circuit history",
+		title: "Circuit history",
+		back: "Back",
+		seasons: "Seasons {first}–{last}",
+		seasonOne: "Season {n}",
+		explain: "Affinity index: 50 = as the car that year; higher = the circuit suits the driver, lower = it does not.",
+		how: "How it is computed",
+		howText: "For every year a driver raced here, the car's level is the team's place in that season's constructors' championship, two cars per team: first place expects P1.5, fifth P9.5. The race counts for 60% and qualifying for 40%: places gained or lost on that level. A retirement counts only when it is the driver's doing (an accident, a collision, a spin, a disqualification); mechanical failures are left out. Recent years weigh more: each year back counts 15% less. The index is 50 plus 5 points for every place better than the car, from 0 to 100; with few races it is pulled towards 50 (one race keeps a third of the distance, eight keep 80%), so one good afternoon does not top the list. Years with no constructors' championship (before 1958) do not count.",
+		index: "Index",
+		races: "Races",
+		racesHelp: "Races counted in the index / races here",
+		wins: "Wins",
+		podiums: "Podiums",
+		poles: "Poles",
+		best: "Best",
+		avgFinish: "Avg finish",
+		avgQuali: "Avg quali",
+		never: "Never raced here",
+		noIndex: "No race counted",
+		empty: "No history for this circuit.",
+		noYears: "No race here.",
+		open: "Show {driver}'s years here",
+		season: "Season",
+		quali: "Quali",
+		grid: "Grid",
+		finish: "Finish",
+		fastest: "Fastest lap",
+		outcome: "Outcome",
+		expected: "vs car",
+		penalties: "Penalties",
+		dnfDriver: "DNF · driver",
+		dnfMechanical: "DNF · mechanical",
+		notCounted: "not counted",
+		gridPenalty: "Grid worse than qualifying: a penalty or a pit-lane start",
+		penaltiesNone: "none",
+		penaltiesUnknown: "Not available: before 2018, or no detail in F1's archive",
+		onLap: "lap {n}",
+		expectedHelp: "The car's level that year and the places gained (▲) or lost (▼) on it in the race; Q is qualifying.",
+		weight: "Weight {n}",
+		legend: "▼ next to the grid: worse than qualifying (a penalty or a pit-lane start). vs car: the car's expected place and the places gained (▲) or lost (▼) on it; Q is qualifying. Penalties from 2018; — when F1's archive has no detail.",
+		fastestRank: "#{n}",
+		q: "Q",
+		pitLane: "Pit lane"
 	}
 }, Le = {
 	en: Ie,
@@ -1411,6 +1456,51 @@ var Ie = {
 			copy: "Copia",
 			options: "Aggiungi &page=calendar per aprire un'altra pagina, &scale=1.3 per ingrandire tutto su una TV.",
 			small: "Per uno schermo piccolo (un ESP32 con ESPHome, un e-paper): attiva il sensore «Schermo piccolo». Contiene lo stato della pagina Live e campi brevi pronti da stampare: giro, stato della pista e il suo colore, i primi dieci come righe, i tuoi piloti, la prossima sessione. La guida ha un esempio ESPHome."
+		},
+		circuit: {
+			link: "Storico del circuito",
+			title: "Storico del circuito",
+			back: "Indietro",
+			seasons: "Stagioni {first}–{last}",
+			seasonOne: "Stagione {n}",
+			explain: "Indice di affinità: 50 = come la macchina di quell'anno; più alto = il circuito si addice al pilota, più basso = no.",
+			how: "Come si calcola",
+			howText: "Per ogni anno in cui il pilota ha corso qui, il livello della macchina è il posto della squadra nel campionato costruttori di quella stagione, con due macchine per squadra: la prima si aspetta P1,5, la quinta P9,5. La gara conta per il 60% e la qualifica per il 40%: le posizioni guadagnate o perse rispetto a quel livello. Un ritiro conta solo quando è colpa del pilota (incidente, collisione, testacoda, squalifica); i guasti meccanici restano fuori. Gli anni recenti pesano di più: ogni anno indietro conta il 15% in meno. L'indice è 50 più 5 punti per ogni posizione meglio della macchina, da 0 a 100; con poche gare viene avvicinato a 50 (una gara ne tiene un terzo, otto l'80%), così un pomeriggio fortunato non finisce in cima. Gli anni senza campionato costruttori (prima del 1958) non contano.",
+			index: "Indice",
+			races: "Gare",
+			racesHelp: "Gare contate nell'indice / gare corse qui",
+			wins: "Vittorie",
+			podiums: "Podi",
+			poles: "Pole",
+			best: "Migliore",
+			avgFinish: "Arrivo medio",
+			avgQuali: "Qualifica media",
+			never: "Mai corso qui",
+			noIndex: "Nessuna gara contata",
+			empty: "Nessuno storico per questo circuito.",
+			noYears: "Nessuna gara qui.",
+			open: "Mostra gli anni di {driver} qui",
+			season: "Stagione",
+			quali: "Qualifica",
+			grid: "Griglia",
+			finish: "Arrivo",
+			fastest: "Giro veloce",
+			outcome: "Esito",
+			expected: "vs macchina",
+			penalties: "Penalità",
+			dnfDriver: "Ritiro · pilota",
+			dnfMechanical: "Ritiro · guasto",
+			notCounted: "non contata",
+			gridPenalty: "Griglia peggiore della qualifica: una penalità o la partenza dalla pit lane",
+			penaltiesNone: "nessuna",
+			penaltiesUnknown: "Non disponibili: prima del 2018, o nessun dettaglio nell'archivio della F1",
+			onLap: "giro {n}",
+			expectedHelp: "Il livello della macchina quell'anno e le posizioni guadagnate (▲) o perse (▼) in gara; Q è la qualifica.",
+			weight: "Peso {n}",
+			legend: "▼ accanto alla griglia: peggiore della qualifica (una penalità o la partenza dalla pit lane). vs macchina: il posto atteso della macchina e le posizioni guadagnate (▲) o perse (▼) rispetto a quello; Q è la qualifica. Penalità dal 2018; — quando l'archivio della F1 non ha il dettaglio.",
+			fastestRank: "#{n}",
+			q: "Q",
+			pitLane: "Pit lane"
 		}
 	}
 };
@@ -1505,9 +1595,12 @@ function F(e, t, n) {
 		timeZone: n
 	}), qe.set(r, i)), i;
 }
-function Xe(e, t) {
-	let n = `${P(e)}|${t}`, r = Je.get(n);
-	return r || (r = new Intl.NumberFormat(P(e), { maximumFractionDigits: t }), Je.set(n, r)), r;
+function Xe(e, t, n = !1) {
+	let r = `${P(e)}|${t}|${n}`, i = Je.get(r);
+	return i || (i = new Intl.NumberFormat(P(e), {
+		maximumFractionDigits: t,
+		...n ? { minimumFractionDigits: t } : {}
+	}), Je.set(r, i)), i;
 }
 function Ze() {
 	return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -1802,6 +1895,15 @@ var G = {
 		round: n,
 		kind: r
 	}),
+	circuitHistory: (e, t) => e.callWS({
+		type: `${W}/circuit/history`,
+		circuit_id: t
+	}),
+	circuitDriver: (e, t, n) => e.callWS({
+		type: `${W}/circuit/driver`,
+		circuit_id: t,
+		driver_id: n
+	}),
 	subscribeSettings: (e, t) => St(e, { type: `${W}/settings/subscribe` }, t),
 	subscribeLive: (e, t) => St(e, { type: `${W}/live/subscribe` }, t),
 	subscribeMap: (e, t) => St(e, { type: `${W}/map/subscribe` }, t)
@@ -2010,6 +2112,7 @@ var G = {
 	timer: "M12 20a7 7 0 1 1 0-14 7 7 0 0 1 0 14m7.03-12.61 1.42-1.42c-.45-.51-.9-.97-1.41-1.41L17.62 6c-1.55-1.26-3.5-2-5.62-2a9 9 0 1 0 9 9c0-2.12-.74-4.07-1.97-5.61M11 14h2V8h-2m4-7H9v2h6z",
 	board: "M3 5h2v14H3zM7 5h14v2H7zm0 4h10v2H7zm0 4h14v2H7zm0 4h8v2H7z",
 	menu: "M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z",
+	history: "M13.5 8H12v5l4.28 2.54.72-1.21-3.5-2.08zM13 3a9 9 0 0 0-9 9H1l3.96 4.03L9 12H6a7 7 0 0 1 7-7 7 7 0 0 1 7 7 7 7 0 0 1-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.9 8.9 0 0 0 13 21a9 9 0 0 0 9-9 9 9 0 0 0-9-9",
 	back: "M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z",
 	fullscreen: "M5 5h5v2H7v3H5zm9 0h5v5h-2V7h-3zm3 9h2v5h-5v-2h3zm-7 3v2H5v-5h2v3z",
 	exitFullscreen: "M14 14h5v2h-3v3h-2zm-9 0h5v5H8v-3H5zm3-9h2v5H5V8h3zm6 0h2v3h3v2h-5z",

@@ -27,7 +27,11 @@ from custom_components.pit_lane_live_board.const import (  # noqa: E402
     JOLPICA_BASE,
     USER_AGENT,
 )
-from custom_components.pit_lane_live_board.core import live_view, pages  # noqa: E402
+from custom_components.pit_lane_live_board.core import (  # noqa: E402
+    circuit_history,
+    live_view,
+    pages,
+)
 from custom_components.pit_lane_live_board.core.archive_parse import (  # noqa: E402
     decode_z,
     iter_stream,
@@ -52,6 +56,9 @@ from custom_components.pit_lane_live_board.core.live_state import (  # noqa: E40
 from custom_components.pit_lane_live_board.core.outline import (  # noqa: E402
     build_outline,
     position_samples,
+)
+from custom_components.pit_lane_live_board.core.panels import (  # noqa: E402
+    race_control,
 )
 from custom_components.pit_lane_live_board.core.schedule import (  # noqa: E402
     next_session,
@@ -125,6 +132,95 @@ def write(name: str, value) -> None:
         json.dumps(value, ensure_ascii=False), encoding="utf-8"
     )
     print(f"  {name}")
+
+
+def circuit(circuit_id: str = "baku", place: str = "Baku") -> None:
+    """The circuit page for one circuit, as it stood at the bench's moment."""
+    ch = circuit_history
+    meta, results = ch.parse_circuit_results(
+        jolpica_all(f"circuits/{circuit_id}/results")
+    )
+    quali = ch.parse_circuit_qualifying(
+        jolpica_all(f"circuits/{circuit_id}/qualifying")
+    )
+
+    # Only what had been run at the bench's moment.
+    results = [r for r in results if (r["season"], r["round"]) <= (SEASON, ROUND)]
+    quali = {k: v for k, v in quali.items() if k[:2] <= (SEASON, ROUND)}
+    entrants = ch.entrants(
+        parse_standings(jolpica(f"{SEASON}/{ROUND}/driverstandings"))
+    )
+    constructors = {
+        s: ch.constructor_positions(
+            parse_standings(
+                jolpica(
+                    f"{s}/{ROUND}/constructorstandings"
+                    if s == SEASON
+                    else f"{s}/constructorstandings"
+                )
+            )
+        )
+        for s in ch.standings_seasons(results, {e["driver_id"] for e in entrants})
+    }
+    write(
+        "circuit_history",
+        ch.history_payload(
+            circuit_id,
+            meta,
+            results,
+            quali,
+            drivers=entrants,
+            constructors=constructors,
+            current_season=SEASON,
+        ),
+    )
+    details: dict = {}
+
+    def detail(row):
+        key = (row["season"], row["round"])
+        if key not in details:
+            index = archive_json(f"{row['season']}/", "Index") or {}
+            path = next(
+                (
+                    s["Path"]
+                    for m in index.get("Meetings", [])
+                    if place in json.dumps(m.get("Location", "")) + m.get("Name", "")
+                    for s in m.get("Sessions", [])
+                    if s.get("Name") == "Race" and s.get("Path")
+                ),
+                None,
+            )
+            rcm = archive_json(path, "RaceControlMessages") if path else None
+            details[key] = (
+                path,
+                {"race_control": race_control({"RaceControlMessages": rcm})}
+                if rcm
+                else None,
+            )
+        return details[key]
+
+    drivers = {}
+    for entrant in entrants:
+        own = [r for r in results if r["driver_id"] == entrant["driver_id"]]
+        penalties = {}
+        for row in ch.archive_races(own):
+            path, found = detail(row)
+            penalties[(row["season"], row["round"])] = (
+                None
+                if path is None
+                else ch.penalties_for(found, row["code"], row["number"])
+            )
+        drivers[entrant["driver_id"]] = ch.driver_payload(
+            circuit_id,
+            entrant["driver_id"],
+            results,
+            quali,
+            constructors=constructors,
+            current_season=SEASON,
+            penalties=penalties,
+            entrant=entrant,
+        )
+    write("circuit_driver", drivers)
 
 
 def replay(path: str, until_ms: int, positions: bool = False):
@@ -362,6 +458,7 @@ def main() -> None:
             "state": state,
             "attributes": {"friendly_name": f"Pit Lane Live Board {name}"},
         }
+    circuit()
     write("entities", {"entities": listed})
     write("states", states)
     print(f"Done: {OUT}")
