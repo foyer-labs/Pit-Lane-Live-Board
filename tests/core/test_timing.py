@@ -106,9 +106,10 @@ def test_qualifying_uses_the_current_part():
                 {},
             ],
             "KnockedOut": False,
-            "Cutoff": True,
+            "Cutoff": False,
         }
     )
+    topics["TimingData"]["NoEntries"] = [20, 1, 1]
     topics["TimingData"]["Lines"]["16"].update(
         {
             "BestLapTimes": {"0": {"Value": "1:30.5"}, "1": {"Value": ""}},
@@ -121,6 +122,7 @@ def test_qualifying_uses_the_current_part():
         "part_bests": ["1:30.1", "1:29.8", None],
         "best": "1:29.8",
         "gap": "+0.25",
+        # P2 of Q2 with one car going through: in the drop zone.
         "cutoff": True,
     }
     # Knocked out in Q1: their Q1 time and gap count, not an empty Q2.
@@ -144,3 +146,38 @@ def test_practice_gap_comes_from_time_diff():
 def test_nothing_to_show():
     assert build_tower({}) == []
     assert build_tower({"TimingData": {"Lines": "x"}}) == []
+
+
+def test_out_of_the_race_even_when_f1_does_not_say_retired():
+    """Spain 2026: STR stopped with `Retired: false` and a hidden position. Dutch
+    sprint 2026: F1 turned HUL's `Retired` back off when the car was recovered, and
+    he ended 17 laps down with the position hidden."""
+    topics = race_topics()
+    lines = topics["TimingData"]["Lines"]
+    lines["16"].update({"NumberOfLaps": 57})
+    lines["4"].update({"Stopped": True, "ShowPosition": False, "NumberOfLaps": 45})
+    assert build_tower(topics)[1]["status"] == "retired"
+    lines["4"].update({"Stopped": False, "NumberOfLaps": 50})
+    assert build_tower(topics)[1]["status"] == "running"
+    # After the flag, short of 90% of the winner's laps (50 of 57, 51 needed):
+    # not classified.
+    topics["SessionStatus"] = {"Status": "Finished"}
+    assert build_tower(topics)[1]["status"] == "retired"
+    lines["4"].update({"NumberOfLaps": 51})
+    assert build_tower(topics)[1]["status"] == "running"
+
+
+def test_the_drop_zone_comes_from_the_number_of_entries():
+    """F1's `Cutoff` marks the cars with no time yet: the knockout line is below
+    the cars that go through to the next part."""
+    topics = race_topics()
+    topics["SessionInfo"] = session_info("Qualifying", "Qualifying")
+    topics["TimingData"]["NoEntries"] = [22, 1, 1]
+    topics["TimingData"]["SessionPart"] = 1
+    for line in topics["TimingData"]["Lines"].values():
+        line["Cutoff"] = True
+    rows = build_tower(topics)
+    assert [r["qualifying"]["cutoff"] for r in rows] == [False, True]
+    # The last part has no drop zone.
+    topics["TimingData"]["SessionPart"] = 3
+    assert [r["qualifying"]["cutoff"] for r in build_tower(topics)] == [False, False]

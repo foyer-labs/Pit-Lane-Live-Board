@@ -228,6 +228,8 @@ def test_the_summary_of_a_race():
             "status": "running",
         },
         {"number": "23", "tla": "ALB", "position": None, "status": "retired"},
+        # Stopped on track with F1's position still shown: out all the same.
+        {"number": "18", "tla": "STR", "position": 21, "status": "stopped"},
     ]
     stewards = {
         "penalties": [{"kind": "time_penalty", "seconds": 5, "cars": [{"tla": "GAS"}]}]
@@ -239,7 +241,7 @@ def test_the_summary_of_a_race():
         ("LEC",),
     )
     assert facts["fastest_lap"] == {"driver": "VER", "time": "1:35.100"}
-    assert facts["retired"] == ["ALB"]
+    assert facts["retired"] == ["ALB", "STR"]
     texts = {
         "title": "{meeting} — {session}",
         "place": "{position}. {driver}",
@@ -254,7 +256,7 @@ def test_the_summary_of_a_race():
     assert message.splitlines() == [
         "1. ANT · 2. VER +4.351 · 3. NOR +5.089",
         "Fastest lap: VER 1:35.100",
-        "Retired: ALB",
+        "Retired: ALB, STR",
         "Penalties: GAS +5s",
         "Your drivers: LEC P4 (+1)",
     ]
