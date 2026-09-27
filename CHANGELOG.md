@@ -19,6 +19,10 @@ under **Changed — read before updating**.
   panel's Settings and under *Configure*.
 - *Show Live Board in the sidebar* can now also be changed from the panel's Settings.
 
+### Fixed
+- An open panel no longer freezes on its last view when Home Assistant restarts:
+  it reconnects by itself as soon as the integration is back.
+
 ## [0.2.0] - 2026-09-26
 
 ### Changed — read before updating
