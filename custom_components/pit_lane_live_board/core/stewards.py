@@ -10,11 +10,13 @@ and the entities can use. The forms were collected from the 2024-2026 archives:
     FIA STEWARDS: PENALTY SERVED - 10 SECOND TIME PENALTY FOR CAR 22 (TSU) - ...
     TURN 2 INCIDENT INVOLVING CARS 10 (GAS) AND 11 (PER) NOTED - CAUSING A COLLISION
     FIA STEWARDS: ... UNDER INVESTIGATION - ...
-    FIA STEWARDS: ... WILL BE INVESTIGATED AFTER THE RACE - ...
+    FIA STEWARDS: ... WILL BE INVESTIGATED AFTER THE RACE - ...   (or SESSION, SPRINT)
     FIA STEWARDS: ... REVIEWED NO FURTHER INVESTIGATION - ...  /  ... NO FURTHER ACTION
     FIA STEWARDS: WARNING FOR CAR 5 (BOR) - MOVING UNDER BRAKING
     BLACK AND WHITE FLAG FOR CAR 44 (HAM) - TRACK LIMITS
     CAR 63 (RUS) TIME 1:36.556 DELETED - TRACK LIMITS AT TURN 14 LAP 2 14:06:24
+    CAR 77 (BOT) LAP DELETED - DOUBLE YELLOW AT TURN 16
+    CAR LEC TIME 1:36.518 DELETED - TRACK LIMITS AT TURN 14 (NEXT LAP) (Q1)
 
 `StewardsBook` is fed one message at a time, in order, so a live session costs one
 parse per new message rather than a pass over the whole list at every update.
@@ -54,6 +56,13 @@ _SECONDS = re.compile(r"\b(\d+) SECOND\b")
 _PLACES = re.compile(r"\b(\d+) PLACE GRID PENALTY\b")
 _TURN = re.compile(r"\bTURN (\d+)\b")
 _TRAILING_TIME = re.compile(r"\s*\(\d{1,2}:\d{2}:+\d{2}\)\s*$")
+# F1's own incident reference: the time of the incident, in brackets at the end.
+_INCIDENT_TIME = re.compile(r"\((\d{1,2}:\d{2}:+\d{2})\)\s*$")
+# A deletion can name the car by its code alone: "CAR LEC TIME 1:36.518 DELETED".
+_BARE_CAR = re.compile(r"^CAR ([A-Z]{3})\b")
+# Every spelling of a stop and go seen so far: STOP/GO, STOP-GO, STOP AND GO,
+# STOP-AND-GO.
+_STOP_GO = re.compile(r"\bSTOP[ /-]?(?:AND[ -])?GO\b")
 _SECTOR = re.compile(r"\bSECTOR (\d+)\b")
 
 
@@ -72,6 +81,13 @@ def _reason(body: str) -> str | None:
     for dash in ("\ufffd", "\u2013", "\u2014"):
         reason = reason.replace(dash, "-")
     return reason or None
+
+
+def _deleted_reason(body: str) -> str | None:
+    """`... DELETED - DOUBLE YELLOW AT TURN 16 LAP 9 16:28:33` → `DOUBLE YELLOW`."""
+    if " - " not in body:
+        return None
+    return body.split(" - ", 1)[1].split(" AT ", 1)[0].strip() or None
 
 
 def _cars(body: str) -> list[tuple[str, str]]:
@@ -95,13 +111,15 @@ def classify(message: str) -> str | None:
         return "time_penalty"
     if "DRIVE THROUGH" in body or "DRIVE-THROUGH" in body:
         return "drive_through"
-    if "STOP/GO" in body or "STOP AND GO" in body or "STOP-GO" in body:
+    if _STOP_GO.search(body):
         return "stop_go"
     if _PLACES.search(body):
         return "grid_penalty"
     if "NO FURTHER ACTION" in body or "NO FURTHER INVESTIGATION" in body:
         return "no_further_action"
-    if "INVESTIGATED AFTER THE RACE" in body:
+    # "After the race" in a race, "after the session" in qualifying, "after the
+    # sprint" in a sprint: the same decision, kept under one kind.
+    if "INVESTIGATED AFTER THE" in body:
         return "investigation_after_race"
     if "UNDER INVESTIGATION" in body:
         return "investigation"
@@ -109,7 +127,9 @@ def classify(message: str) -> str | None:
         return "warning"
     if "BLACK AND WHITE FLAG" in body:
         return "black_and_white_flag"
-    if "DELETED" in body and "TRACK LIMITS" in body:
+    # A lap or a time deleted, for track limits or for not slowing under a
+    # double yellow: the reason is kept on the record.
+    if "DELETED" in body and (" TIME " in body or "LAP DELETED" in body):
         return "lap_deleted"
     if "INCIDENT" in body and "NOTED" in body:
         return "noted"
@@ -125,7 +145,10 @@ def decision(message: dict[str, Any]) -> dict[str, Any] | None:
     kind = classify(upper)
     if kind is None:
         return None
-    cars = _cars(upper)
+    cars: list[tuple[str | None, str]] = list(_cars(upper))
+    if not cars and kind == "lap_deleted" and (bare := _BARE_CAR.search(upper)):
+        # The number is resolved by the book, from the other messages.
+        cars = [(None, bare.group(1))]
     seconds = _SECONDS.search(upper)
     places = _PLACES.search(upper)
     turn = _TURN.search(upper.split(" - ")[0])
@@ -137,20 +160,31 @@ def decision(message: dict[str, Any]) -> dict[str, Any] | None:
         else None,
         "places": to_int(places.group(1)) if places else None,
         "turn": to_int(turn.group(1)) if turn else None,
-        "reason": _reason(upper) if kind != "lap_deleted" else "TRACK LIMITS",
+        "reason": _reason(upper) if kind != "lap_deleted" else _deleted_reason(upper),
         "lap": to_int(message.get("Lap")),
         "utc": text(message.get("Utc")),
         "message": body,
     }
 
 
+def _incident_time(record: dict[str, Any]) -> str | None:
+    """F1's reference of an incident: the `(HH:MM:SS)` its messages end with."""
+    found = _INCIDENT_TIME.search(str(record.get("message") or "").upper())
+    return found.group(1) if found else None
+
+
+def _car_numbers(record: dict[str, Any]) -> set[str]:
+    return {c["number"] for c in record["cars"] if c["number"]}
+
+
 def _incident_key(record: dict[str, Any]) -> tuple[Any, ...]:
-    """The same incident across "noted", "under investigation" and its outcome."""
-    return (
-        tuple(sorted(c["number"] for c in record["cars"])),
-        record["turn"],
-        record["reason"],
-    )
+    """The same incident across "noted", "under investigation" and its outcome.
+
+    Not the incident's time alone: F1 leaves it out of some messages of the same
+    incident and corrects it in an "UPDATE:", so it only helps to find the incident
+    an update changed the cars of (`StewardsBook._same_incident`).
+    """
+    return (tuple(sorted(_car_numbers(record))), record["turn"], record["reason"])
 
 
 @dataclass
@@ -158,6 +192,9 @@ class StewardsBook:
     """Everything decided in one session so far, updated one message at a time."""
 
     penalties: list[dict[str, Any]] = field(default_factory=list)
+    # Racing number per code, learnt from the messages that give both, for the
+    # deletions that name a car by its code alone.
+    numbers: dict[str, str] = field(default_factory=dict)
     incidents: dict[tuple[Any, ...], dict[str, Any]] = field(default_factory=dict)
     track_limits: dict[str, dict[str, Any]] = field(default_factory=dict)
     sectors: dict[int, str] = field(default_factory=dict)
@@ -171,9 +208,16 @@ class StewardsBook:
         self.seen += 1
         self.last_message = message
         self._flags(message)
+        body = text(message.get("Message"))
+        if body is not None:
+            for number, tla in _CAR.findall(body.upper()):
+                self.numbers.setdefault(tla, number)
         record = decision(message)
         if record is None:
             return
+        for car in record["cars"]:
+            if car["number"] is None:
+                car["number"] = self.numbers.get(car["tla"])
         # The message's position in the session: automation events fire only for
         # messages past the persisted mark, so a restart never repeats one.
         record["index"] = self.seen - 1
@@ -185,25 +229,57 @@ class StewardsBook:
         elif kind == "penalty_served":
             self._serve(record)
         elif kind in ("noted", "investigation", "investigation_after_race"):
-            key = _incident_key(record)
-            known = self.incidents.get(key)
+            key, known = self._same_incident(record)
             if known is None or known["status"] == "noted" or kind != "noted":
-                self.incidents[key] = {**record, "status": kind}
+                # "UPDATE:" may change the cars, and with them the key: the
+                # record replaces the one it updates rather than sitting beside it.
+                self.incidents.pop(key, None)
+                self.incidents[_incident_key(record)] = {**record, "status": kind}
         elif kind in ("no_further_action", "warning"):
             self._close_incident(record, kind)
-        elif kind in ("lap_deleted", "black_and_white_flag"):
+        elif kind in ("lap_deleted", "black_and_white_flag") and record["reason"] in (
+            None,
+            "TRACK LIMITS",
+        ):
+            # Track limits only: a lap deleted for a double yellow, or a black and
+            # white flag for another offence, is a decision but not track limits.
             for car in record["cars"]:
                 entry = self.track_limits.setdefault(
-                    car["number"], {**car, "deleted": 0, "black_and_white": False}
+                    car["number"] or car["tla"],
+                    {**car, "deleted": 0, "black_and_white": False},
                 )
                 if kind == "lap_deleted":
                     entry["deleted"] += 1
                 else:
                     entry["black_and_white"] = True
 
-    def _close_incident(self, record: dict[str, Any], outcome: str) -> None:
+    def _same_incident(
+        self, record: dict[str, Any]
+    ) -> tuple[tuple[Any, ...], dict[str, Any] | None]:
+        """The incident a message is about: the one with its key, else the one with
+        its incident time and at least one of its cars (an "UPDATE:" that adds or
+        drops a car, or a penalty that names only the penalised car). Two cars
+        reported for the same moment with no car in common stay two incidents."""
         key = _incident_key(record)
-        match = self.incidents.get(key)
+        if key in self.incidents:
+            return key, self.incidents[key]
+        at = _incident_time(record)
+        if at is not None:
+            cars = _car_numbers(record)
+            for other_key, incident in self.incidents.items():
+                if (
+                    _incident_time(incident) == at
+                    and cars & _car_numbers(incident)
+                    and (
+                        record["turn"] is None
+                        or incident["turn"] in (None, record["turn"])
+                    )
+                ):
+                    return other_key, incident
+        return key, None
+
+    def _close_incident(self, record: dict[str, Any], outcome: str) -> None:
+        key, match = self._same_incident(record)
         if match is None:
             # Penalties name only the penalised car: find the incident by it.
             number = record["cars"][0]["number"] if record["cars"] else None
@@ -262,7 +338,13 @@ class StewardsBook:
         elif category == "SafetyCar":
             mode = str(message.get("Mode") or "").upper()
             status = str(message.get("Status") or "").upper()
-            virtual = mode.startswith("VIRTUAL") or "VIRTUAL" in body
+            # F1 writes the VSC's mode as "VSC" and its messages as "VSC DEPLOYED"
+            # and "VSC ENDING"; "VIRTUAL SAFETY CAR" elsewhere.
+            virtual = (
+                mode.startswith(("VIRTUAL", "VSC"))
+                or body.startswith("VSC")
+                or "VIRTUAL" in body
+            )
             if status == "DEPLOYED":
                 state = "deployed"
             elif status in ("ENDING", "IN THIS LAP"):
@@ -291,11 +373,11 @@ class StewardsBook:
             virtual = "deployed"
         elif track == "vsc_ending":
             virtual = "ending"
-        sectors = (
-            {}
-            if track in ("clear", "red_flag", "chequered") and not self.sectors
-            else dict(self.sectors)
-        )
+        # After the chequered flag race control waves yellows for the cars
+        # stopping on the in-lap and never clears them; under a red flag the whole
+        # track is stopped. Neither is a yellow worth a light. The book keeps the
+        # sectors: the next part's green light clears them.
+        sectors = {} if track in ("red_flag", "chequered") else dict(self.sectors)
         open_incidents = [
             i
             for i in self.incidents.values()
