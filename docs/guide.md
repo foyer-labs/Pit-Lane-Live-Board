@@ -17,6 +17,7 @@ the first two sections and you are set; come back to the others when you need th
 - [My drivers](#my-drivers)
 - [Session summary](#session-summary)
 - [Dashboard cards](#dashboard-cards)
+- [Dedicated screens](#dedicated-screens)
 - [Entities and automations](#entities-and-automations)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
@@ -346,6 +347,70 @@ It is also the **Session summary** event, with `title` and `message` ready to se
 speak and the facts behind them, for your own automations. With no-spoiler mode on it
 waits until you reveal the session or turn the mode off.
 
+## Dedicated screens
+
+**A TV, a monitor with a Raspberry Pi, a wall tablet.** Add `?kiosk` to the panel's
+address (Settings shows it, ready to copy): the panel fills the whole screen, over
+Home Assistant's sidebar and header, and the pointer hides when it rests. On a
+Raspberry Pi, open it with `chromium --kiosk "http://homeassistant.local:8123/pit-lane-live-board?kiosk"`.
+`&page=calendar` opens another page, `&scale=1.3` makes everything bigger for a TV
+seen from the sofa. The ⛶ button in the header does the same for the moment, until Esc.
+
+**A small screen: an ESP32 with ESPHome, an e-paper frame, a LED ring.** Enable the
+**Small screen** sensor (it is off by default: during a session it changes every few
+seconds, which only a screen needs; if you enable it, you can also leave it out of the
+recorder). Its state is the Live page's (`live`, `final`, `paused`…) and its attributes
+are short and flat, ready to print:
+
+| Attribute | Example |
+|---|---|
+| `meeting`, `session`, `kind` | Spanish Grand Prix, Race, race |
+| `lap`, `total_laps`, `part`, `remaining` | 31, 57 (or Q2 and seconds left) |
+| `track`, `flag_colour` | `safety_car`, `#ff8c00` — for a LED ring |
+| `safety_car`, `red_flag` | true / false |
+| `p1` … `p10` | `" 2 ANT   +3.561 M16"`: position, code, gap, tyre and its age |
+| `mine` | your drivers' rows, on one line |
+| `next_meeting`, `next_session`, `next_start` | the next session, for a countdown |
+
+The screen never talks to F1: the TV delay and no-spoiler mode are already applied.
+
+```yaml
+# ESPHome: read what the screen needs from Home Assistant.
+text_sensor:
+  - platform: homeassistant
+    id: f1_state        # live, final, paused, idle…
+    entity_id: sensor.pit_lane_live_board_small_screen
+  - platform: homeassistant
+    id: f1_track        # clear, yellow, safety_car, red_flag…
+    entity_id: sensor.pit_lane_live_board_small_screen
+    attribute: track
+  - platform: homeassistant
+    id: f1_p1           # " 1 LEC          H30"
+    entity_id: sensor.pit_lane_live_board_small_screen
+    attribute: p1
+  - platform: homeassistant
+    id: f1_p2
+    entity_id: sensor.pit_lane_live_board_small_screen
+    attribute: p2
+  - platform: homeassistant
+    id: f1_mine         # your drivers, one line
+    entity_id: sensor.pit_lane_live_board_small_screen
+    attribute: mine
+sensor:
+  - platform: homeassistant
+    id: f1_lap
+    entity_id: sensor.pit_lane_live_board_small_screen
+    attribute: lap
+
+display:
+  - platform: ...       # your screen
+    lambda: |-
+      it.printf(0, 0, id(font_big), "LAP %.0f", id(f1_lap).state);
+      it.print(0, 40, id(font_mono), id(f1_p1).state.c_str());
+      it.print(0, 60, id(font_mono), id(f1_p2).state.c_str());
+      it.print(0, 90, id(font_small), id(f1_mine).state.c_str());
+```
+
 ## Entities and automations
 
 The integration adds one device, **Pit Lane Live Board**, with these entities (their
@@ -371,6 +436,7 @@ ids follow Home Assistant's language when you install; find them on the device p
 | `sensor.pit_lane_live_board_driver_lec` (one per followed driver) | The driver's position; the rest as attributes. See [My drivers](#my-drivers). |
 | `event.pit_lane_live_board_my_drivers` | The followed drivers' events. |
 | `event.pit_lane_live_board_session_summary` | The summary when a session ends. |
+| `sensor.pit_lane_live_board_small_screen` (off by default) | For small screens: see [Dedicated screens](#dedicated-screens). |
 | `switch.pit_lane_live_board_live_timing` | Live timing on (play) or paused. |
 | `switch.pit_lane_live_board_no_spoiler_mode` | No-spoiler mode. |
 | `number.pit_lane_live_board_tv_delay` | TV delay in seconds. |

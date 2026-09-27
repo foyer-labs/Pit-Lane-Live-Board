@@ -66,6 +66,8 @@ One install, three ways to use it:
   session.
 - **You decide who sees it.** The panel is for the whole house, or for administrators
   only; each dashboard keeps its own visibility.
+- **On any screen.** A kiosk mode for a TV or a Raspberry Pi monitor, and a sensor made
+  for small screens: an ESP32 with ESPHome can show the lap, the flags and the top ten.
 - **English and Italian**, light and dark, on a phone or a wall tablet.
 
 <p align="center">
