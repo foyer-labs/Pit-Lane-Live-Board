@@ -22,7 +22,10 @@ class LiveStore {
     this.listeners.add(listener);
     window.clearTimeout(this.closeTimer);
     if (this.view) listener(this.view);
-    if (!this.unsubscribe && !this.opening) void this.open(hass);
+    if (!this.unsubscribe && !this.opening) {
+      window.clearTimeout(this.retryTimer);
+      void this.open(hass);
+    }
     return () => {
       this.listeners.delete(listener);
       if (!this.listeners.size) {
@@ -45,7 +48,7 @@ class LiveStore {
     } catch {
       window.clearTimeout(this.retryTimer);
       this.retryTimer = window.setTimeout(() => {
-        if (this.listeners.size && !this.unsubscribe) void this.open(hass);
+        if (this.listeners.size && !this.unsubscribe && !this.opening) void this.open(hass);
       }, RETRY_AFTER);
     } finally {
       this.opening = false;

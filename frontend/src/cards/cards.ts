@@ -442,7 +442,9 @@ export class PitLaneStandingsCard extends LiveCard {
   page?: StandingsPage;
   failed = false;
   private timer?: number;
+  private retryTimer?: number;
   private loading = false;
+  private request = 0;
 
   static getConfigForm() {
     const t = pageTranslator();
@@ -473,6 +475,7 @@ export class PitLaneStandingsCard extends LiveCard {
     super.setConfig(config);
     if (kind !== undefined && kind !== this.config.kind) {
       this.page = undefined;
+      this.loading = false; // a load for the old kind is discarded when it lands
       void this.load();
     }
   }
@@ -485,6 +488,7 @@ export class PitLaneStandingsCard extends LiveCard {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     window.clearInterval(this.timer);
+    window.clearTimeout(this.retryTimer);
   }
 
   protected override updated(): void {
@@ -494,14 +498,24 @@ export class PitLaneStandingsCard extends LiveCard {
   private async load(): Promise<void> {
     if (!this.hass || this.loading) return;
     this.loading = true;
+    const request = ++this.request;
+    const kind = String(this.config.kind);
     try {
       const settings = await api.settings(this.hass);
-      this.page = await api.standings(this.hass, settings.season, null, String(this.config.kind));
+      const page = await api.standings(this.hass, settings.season, null, kind);
+      if (request !== this.request) return; // the kind changed meanwhile
+      this.page = page;
       this.failed = false;
     } catch {
+      if (request !== this.request) return;
       this.failed = true;
+      // Not ten minutes of "unavailable": try again soon while there is nothing.
+      window.clearTimeout(this.retryTimer);
+      this.retryTimer = window.setTimeout(() => {
+        this.failed = false;
+      }, 20_000);
     } finally {
-      this.loading = false;
+      if (request === this.request) this.loading = false;
     }
   }
 
@@ -520,7 +534,7 @@ export class PitLaneStandingsCard extends LiveCard {
   protected override render() {
     if (!this.config) return nothing;
     const t = this.t;
-    const title = this.config.title === undefined ? this.defaultTitle(t) : this.config.title;
+    const title = this.cardTitle(t);
     const page = this.page;
     const rows = (page?.rows ?? []).slice(0, Number(this.config.rows) || 10);
     const drivers = this.config.kind !== "constructors";

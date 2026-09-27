@@ -323,13 +323,14 @@
       "description": "Classifica piloti o costruttori, primi N."
     },
     "fields": {
-      "title": "Titolo (vuoto per nessuno)",
+      "title": "Titolo",
       "rows": "Righe",
       "columns": "Colonne",
       "highlight": "Pilota da evidenziare (es. LEC)",
       "count": "Quanti",
       "filter": "Mostra",
-      "kind": "Campionato"
+      "kind": "Campionato",
+      "show_title": "Mostra il titolo"
     }
   }
 }

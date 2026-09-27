@@ -12,6 +12,54 @@ import type {
 } from "./types";
 
 const P = "pit_lane_live_board";
+const RETRY_AFTER = 10_000;
+
+/**
+ * A subscription that survives Home Assistant restarting.
+ *
+ * The WebSocket library resubscribes by itself after a reconnect, but when that
+ * fails (the integration is still starting) the subscription is lost without a
+ * word and the page keeps showing its last view. So the library's resubscribe is
+ * off, and on each "ready" of the connection the subscription is opened again,
+ * retried every 10 s until the integration answers. The first open is awaited:
+ * its failure reaches the caller, as before.
+ */
+async function resilient<T>(
+  hass: Hass,
+  msg: Record<string, unknown>,
+  callback: (message: T) => void,
+): Promise<() => void> {
+  const connection = hass.connection;
+  let current: (() => void) | undefined;
+  let closed = false;
+  let retry: number | undefined;
+  const open = async (): Promise<void> => {
+    const unsubscribe = await connection.subscribeMessage<T>(callback, msg, { resubscribe: false });
+    if (closed) unsubscribe();
+    else current = unsubscribe;
+  };
+  const reopen = () => {
+    window.clearTimeout(retry);
+    if (closed) return;
+    current = undefined; // the old socket's subscription is gone with it
+    open().catch(() => {
+      if (!closed) retry = window.setTimeout(reopen, RETRY_AFTER);
+    });
+  };
+  await open();
+  connection.addEventListener?.("ready", reopen);
+  return () => {
+    closed = true;
+    window.clearTimeout(retry);
+    connection.removeEventListener?.("ready", reopen);
+    try {
+      current?.();
+    } catch {
+      /* the connection is already closed */
+    }
+    current = undefined;
+  };
+}
 
 export const api = {
   settings: (hass: Hass) => hass.callWS<Settings>({ type: `${P}/settings/get` }),
@@ -38,9 +86,9 @@ export const api = {
   standings: (hass: Hass, season: number, round: number | null, kind: string) =>
     hass.callWS<StandingsPage>({ type: `${P}/standings/get`, season, round, kind }),
   subscribeSettings: (hass: Hass, callback: (settings: Settings) => void) =>
-    hass.connection.subscribeMessage<Settings>(callback, { type: `${P}/settings/subscribe` }),
+    resilient<Settings>(hass, { type: `${P}/settings/subscribe` }, callback),
   subscribeLive: (hass: Hass, callback: (view: LiveView) => void) =>
-    hass.connection.subscribeMessage<LiveView>(callback, { type: `${P}/live/subscribe` }),
+    resilient<LiveView>(hass, { type: `${P}/live/subscribe` }, callback),
   subscribeMap: (hass: Hass, callback: (view: MapView) => void) =>
-    hass.connection.subscribeMessage<MapView>(callback, { type: `${P}/map/subscribe` }),
+    resilient<MapView>(hass, { type: `${P}/map/subscribe` }, callback),
 };

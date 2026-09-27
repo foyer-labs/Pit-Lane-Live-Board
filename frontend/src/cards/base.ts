@@ -34,7 +34,7 @@ export function pageTranslator(): Translate {
 /** The editor's labels, translated like the rest of the panel. */
 export function form(fields: FormField[]) {
   return {
-    schema: fields,
+    schema: [...fields, { name: "show_title", selector: { boolean: {} } }],
     computeLabel: (field: FormField) => pageTranslator()(`cards.fields.${field.name}`),
   };
 }
@@ -141,6 +141,13 @@ export abstract class LiveCard extends LitElement {
     }
   }
 
+  /** The title: the user's, else the card's own; none when `show_title` is off
+   *  (the visual editor drops an emptied text field, so it cannot mean "none"). */
+  protected cardTitle(t: Translate): string {
+    if (this.config.show_title === false) return "";
+    return (this.config.title as string | undefined) || this.defaultTitle(t);
+  }
+
   protected hasBoard(v: LiveView): boolean {
     return ["live", "stale", "lost", "final"].includes(v.state);
   }
@@ -148,7 +155,7 @@ export abstract class LiveCard extends LitElement {
   protected override render() {
     if (!this.config) return nothing;
     const t = this.t;
-    const title = this.config.title === undefined ? this.defaultTitle(t) : this.config.title;
+    const title = this.cardTitle(t);
     const v = this.view;
     let body: unknown;
     if (!this.hass || !v) body = html`<div class="state">${t("common.loading")}</div>`;

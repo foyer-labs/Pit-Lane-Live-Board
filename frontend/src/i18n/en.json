@@ -323,13 +323,14 @@
       "description": "Drivers' or constructors' standings, top N."
     },
     "fields": {
-      "title": "Title (empty for none)",
+      "title": "Title",
       "rows": "Rows",
       "columns": "Columns",
       "highlight": "Driver to highlight (e.g. LEC)",
       "count": "How many",
       "filter": "Show",
-      "kind": "Championship"
+      "kind": "Championship",
+      "show_title": "Show the title"
     }
   }
 }
