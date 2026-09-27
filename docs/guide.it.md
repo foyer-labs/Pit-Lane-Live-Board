@@ -138,6 +138,28 @@ aperture successive sono immediate.
 
 Nel grafico delle posizioni, clicca una linea per evidenziare quel pilota.
 
+![Storico del circuito: l'indice di affinità di ogni pilota a Baku](screenshots/circuit.it.png)
+
+**Storico del circuito.** Da un weekend del Calendario o da una gara nei Risultati,
+*Storico del circuito* apre i precedenti di quel circuito per i piloti di questa
+stagione: gare corse lì, vittorie, podi, pole, miglior piazzamento, arrivo e qualifica
+medi, e un **indice di affinità**. Clicca un pilota per vedere ogni suo anno lì:
+squadra, qualifica, griglia (▼ quando una penalità o la partenza dalla pit lane l'ha
+messo dietro la sua qualifica), arrivo, punti, esito, giro veloce e le penalità dei
+commissari (dal 2018).
+
+![Gli anni di un pilota sul circuito](screenshots/circuit-driver.it.png)
+
+L'**indice di affinità** risponde a "questo circuito gli si addice, macchina a parte?".
+Ogni anno, il posto della squadra nel campionato costruttori di quella stagione dice
+dove ci si aspettava che arrivassero le sue macchine (costruttori P1 → P1,5, P5 → P9,5);
+l'indice guarda di quanti posti il pilota ha fatto meglio o peggio in gara (60%) e in
+qualifica (40%). 50 vuol dire "come la macchina"; ogni posto in meglio aggiunge 5. Gli
+anni recenti pesano di più (ogni anno indietro conta l'85% del successivo), un ritiro
+per guasto non conta, e con una o due gare soltanto l'indice resta vicino a 50: un
+pomeriggio fortunato non è un'affinità. Legge un circuito, non il valore di un pilota:
+non vede gli ordini di scuderia né un aggiornamento a metà stagione.
+
 ![La classifica piloti](screenshots/standings.it.png)
 
 **Classifiche.** Piloti e costruttori, qualsiasi stagione, dopo qualsiasi gara, con

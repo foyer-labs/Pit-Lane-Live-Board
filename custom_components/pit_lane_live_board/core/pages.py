@@ -154,6 +154,8 @@ def _round_row(
         "name": race.get("name") or (meeting.name if meeting else None),
         "date": race.get("date") or day,
         "circuit": race.get("circuit") or (meeting.circuit if meeting else None),
+        "circuit_id": race.get("circuit_id")
+        or (meeting.circuit_id if meeting else None),
         "country": race.get("country") or (meeting.country if meeting else None),
         "sprint": sprint,
         "hidden": race_hidden,

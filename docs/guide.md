@@ -130,6 +130,26 @@ downloaded once (a few MB) and kept in the cache, so later openings are instant.
 
 In the lap chart, click a line to highlight that driver.
 
+![Circuit history: every driver's affinity index at Baku](screenshots/circuit.png)
+
+**Circuit history.** From a weekend in the Calendar or a round in Results, *Circuit
+history* opens that circuit's record for this season's drivers: races there, wins,
+podiums, poles, best and average finish and qualifying, and an **affinity index**.
+Click a driver for each of their years there: team, qualifying, grid (▼ when a penalty
+or a pit-lane start put them behind their qualifying), finish, points, outcome, fastest
+lap and the stewards' penalties (from 2018).
+
+![A driver's years at the circuit](screenshots/circuit-driver.png)
+
+The **affinity index** answers "does this circuit suit them, whatever the car?". Each
+year, the team's place in that season's constructors' championship gives where its
+cars were expected to finish (constructors' P1 → P1.5, P5 → P9.5); the index looks at
+how many places better or worse the driver finished (60%) and qualified (40%). 50 means
+"as the car"; each place better adds 5. Recent years weigh more (each year back counts
+85% of the next), a mechanical retirement is left out, and with only one or two races
+the index stays close to 50 — one good afternoon is not an affinity. It reads a circuit,
+not a driver's worth: it cannot see team orders or an upgrade halfway through a season.
+
 ![Drivers' standings](screenshots/standings.png)
 
 **Standings.** Drivers and constructors, any season, after any round, with points,
