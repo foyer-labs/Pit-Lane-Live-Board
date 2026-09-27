@@ -31,6 +31,16 @@ def test_numbers_and_booleans():
     assert not to_bool("false") and not to_bool("0") and not to_bool(None)
 
 
+def test_to_int_refuses_what_int_would_raise_on():
+    assert to_int("-3") == -3 and to_int(" 7 ") == 7 and to_int(10**30) == 10**30
+    # `²` passes `str.isdigit` but not `int()`; other scripts are not F1's.
+    assert to_int("²") is None and to_int("١٢") is None
+    assert to_int("--5") is None and to_int("-") is None and to_int("5 5") is None
+    assert to_int("9" * 5000) is None
+    assert lap_ms("9" * 5000 + ".1") is None
+    assert clock_seconds("9" * 5000 + ":00:00") is None
+
+
 def test_colours_and_times():
     assert colour("f47600") == "#F47600" and colour("#27F4D2") == "#27F4D2"
     assert colour("red") is None and colour(None) is None

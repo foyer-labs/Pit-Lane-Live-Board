@@ -31,6 +31,22 @@ def _jwt_part(part: str) -> dict[str, Any]:
     return value
 
 
+def _expiry(exp: Any) -> datetime | None:
+    """A JWT `exp` as a datetime, or None when it is not a usable one.
+
+    `bool` is refused although it is an `int`, and so is anything `fromtimestamp`
+    cannot represent (`1e20`, `NaN`, which `json.loads` accepts): a pasted token or
+    one F1 sends back must end up `invalid`, never as an exception in the options
+    flow, the WebSocket command or the renewal check.
+    """
+    if isinstance(exp, bool) or not isinstance(exp, (int, float)):
+        return None
+    try:
+        return datetime.fromtimestamp(exp, tz=UTC)
+    except (OverflowError, OSError, ValueError):
+        return None
+
+
 def extract_token(pasted: Any) -> str | None:
     """The bare JWT from whatever the user pasted, or None."""
     if not isinstance(pasted, str):
@@ -80,10 +96,9 @@ def evaluate(token: str | None, now: datetime) -> TokenStatus:
         claims = _jwt_part(parts[1])
     except (ValueError, UnicodeDecodeError):
         return TokenStatus("invalid", reason="not_a_token")
-    exp = claims.get("exp")
-    if not isinstance(exp, (int, float)):
+    expires = _expiry(claims.get("exp"))
+    if expires is None:
         return TokenStatus("invalid", reason="no_expiry")
-    expires = datetime.fromtimestamp(exp, tz=UTC)
     subscription = str(claims.get("SubscriptionStatus") or "").lower()
     product = claims.get("SubscribedProduct")
     session_id = claims.get("SessionId")
@@ -129,4 +144,5 @@ def session_expired(session_id: str | None, now: datetime) -> bool:
         exp = _jwt_part(session_id.split(".")[1]).get("exp")
     except (ValueError, UnicodeDecodeError):
         return False
-    return isinstance(exp, (int, float)) and datetime.fromtimestamp(exp, tz=UTC) <= now
+    expires = _expiry(exp)
+    return expires is not None and expires <= now

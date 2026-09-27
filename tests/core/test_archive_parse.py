@@ -49,3 +49,16 @@ def test_damaged_z_is_none():
     assert decode_z("not base64 !!") is None
     assert decode_z("aGVsbG8=") is None  # valid base64, not deflate
     assert decode_z(42) is None
+
+
+def test_hostile_payloads_are_damaged_not_fatal():
+    import base64
+    import zlib
+
+    deep = "[" * 100_000 + "]" * 100_000
+    lines = ["00:00:01.000" + deep, "9" * 5000 + ":00:00.000{}", '00:00:02.000{"ok":1}']
+    assert list(iter_stream(lines)) == [(2000, {"ok": 1})]
+    bomb = zlib.compressobj(wbits=-zlib.MAX_WBITS)
+    raw = bomb.compress(b" " * (40 * 1024 * 1024)) + bomb.flush()
+    assert decode_z(base64.b64encode(raw).decode()) is None
+    assert decode_z(encode_z({"a": [1, 2]})) == {"a": [1, 2]}

@@ -16,7 +16,11 @@ import re
 from typing import Any
 import zlib
 
-_OFFSET = re.compile(r"^(\d+):(\d{2}):(\d{2})\.(\d{3})")
+# Hours bounded: `int()` raises past 4,300 digits, outside the per-line guard.
+_OFFSET = re.compile(r"^(\d{1,6}):(\d{2}):(\d{2})\.(\d{3})")
+# A `.z` message inflates to tens of kilobytes; anything past this is not F1's and
+# would only exhaust memory.
+MAX_INFLATED = 16 * 1024 * 1024
 
 
 def decode_text(data: bytes) -> str:
@@ -56,7 +60,8 @@ def iter_stream(
         offset = ((hours * 60 + minutes) * 60 + seconds) * 1000 + millis
         try:
             yield offset, json.loads(line[match.end() :])
-        except ValueError:
+        except (ValueError, RecursionError):
+            # RecursionError: absurdly nested JSON is as damaged as a torn line.
             continue
 
 
@@ -65,9 +70,12 @@ def decode_z(value: Any) -> Any:
     if not isinstance(value, str):
         return None
     try:
-        raw = zlib.decompress(base64.b64decode(value), -zlib.MAX_WBITS)
+        inflater = zlib.decompressobj(-zlib.MAX_WBITS)
+        raw = inflater.decompress(base64.b64decode(value), MAX_INFLATED)
+        if inflater.unconsumed_tail:
+            return None
         return json.loads(raw)
-    except (binascii.Error, zlib.error, ValueError):
+    except (binascii.Error, zlib.error, ValueError, RecursionError):
         return None
 
 

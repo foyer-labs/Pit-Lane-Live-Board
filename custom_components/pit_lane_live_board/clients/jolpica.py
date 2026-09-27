@@ -3,8 +3,10 @@
 Cached on disk: past seasons and settled rounds (their race ended two days ago)
 for 30 days, since they only change when a result is corrected; the rest of the
 current season for 10 minutes (the API's own max-age). Anything cached before a
-season ended is refreshed once it has. When the API fails or our budget is spent, a
-stale cached answer is better than none.
+season ended, or before a round settled, is refreshed once it has: a settled round
+is kept under its own key, which only holds answers written after it settled. When
+the API fails, asks us to wait (429), or our budget is spent, a stale cached answer
+is better than none.
 """
 
 from __future__ import annotations
@@ -19,7 +21,15 @@ import aiohttp
 from ..cache import DiskCache
 from ..const import JOLPICA_BASE, USER_AGENT
 from ..core.jolpica_parse import page_info
-from .http import BudgetExhausted, Executor, InFlight, RateLimiter, SourceError
+from .http import (
+    BackingOff,
+    BudgetExhausted,
+    Executor,
+    InFlight,
+    RateLimiter,
+    SourceError,
+    retry_after,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +37,15 @@ CURRENT_MAX_AGE = 10 * 60
 PAST_MAX_AGE = 30 * 24 * 3600
 SEASONS_MAX_AGE = 24 * 3600
 PAGE = 100
+# Laps, the longest resource, run to ~1,200 rows (13 pages): more than this is a
+# payload that lies about its total, not a race.
+MAX_PAGES = 30
 TIMEOUT = aiohttp.ClientTimeout(total=20)
+# A failure short of a 429 (5xx, timeout) closes the limiter for less, and never
+# for long: the source may be back in a minute.
+FAILURE_BACK_OFF = 15.0
+FAILURE_BACK_OFF_MAX = 300.0
+SETTLED_PREFIX = "jolpica/settled/"
 
 
 class JolpicaClient:
@@ -42,6 +60,16 @@ class JolpicaClient:
         self.last_error: str | None = None
         # Set by the hub: whether a round of the current season is settled.
         self.settled: Callable[[int, int], bool] = lambda _season, _round: False
+        # Settled answers are read only while their season is current.
+        cache.expire(SETTLED_PREFIX, 2 * PAST_MAX_AGE)
+
+    def _settled(self, season: int | None, rnd: int | None) -> bool:
+        return (
+            season is not None
+            and rnd is not None
+            and season >= datetime.now(UTC).year
+            and self.settled(season, rnd)
+        )
 
     def max_age(self, season: int | None, rnd: int | None = None) -> float:
         now = datetime.now(UTC)
@@ -51,7 +79,7 @@ class JolpicaClient:
             # Written before the season ended? Then it may miss its last rounds.
             since = (now - datetime(season + 1, 1, 1, tzinfo=UTC)).total_seconds()
             return min(PAST_MAX_AGE, since)
-        if rnd is not None and self.settled(season, rnd):
+        if self._settled(season, rnd):
             return PAST_MAX_AGE
         return CURRENT_MAX_AGE
 
@@ -89,26 +117,38 @@ class JolpicaClient:
         priority: bool,
     ) -> Any:
         key = f"jolpica/{path}?offset={offset}"
+        # A settled round's answer lives under its own key, written only once the
+        # round settled: what was cached before (empty on Friday, provisional
+        # during the two days after the race) never passes for 30-day data.
+        settled_key = f"{SETTLED_PREFIX}{path}?offset={offset}"
+        settled = self._settled(season, rnd)
+        write_key = settled_key if settled else key
         if not fresh:
             cached = await self._run(
-                self._cache.read_json, key, self.max_age(season, rnd)
+                self._cache.read_json, write_key, self.max_age(season, rnd)
             )
             if cached is not None:
                 return cached
         try:
             payload = await self._fetch(path, offset, priority)
         except SourceError as err:
-            stale = await self._run(self._cache.read_json, key, None)
-            if stale is not None:
-                _LOGGER.debug("Jolpica %s failed (%s); serving the cache", path, err)
-                return stale
+            for stale_key in (settled_key, key) if settled else (key,):
+                stale = await self._run(self._cache.read_json, stale_key, None)
+                if stale is not None:
+                    _LOGGER.debug(
+                        "Jolpica %s failed (%s); serving the cache", path, err
+                    )
+                    return stale
             raise
-        await self._run(self._cache.write_json, key, payload)
+        await self._run(self._cache.write_json, write_key, payload)
         return payload
 
     async def _fetch(self, path: str, offset: int, priority: bool) -> Any:
         try:
             await self.limiter.acquire(priority)
+        except BackingOff:
+            # last_error keeps saying why we are waiting.
+            raise
         except BudgetExhausted:
             self.last_error = "budget"
             raise
@@ -122,25 +162,44 @@ class JolpicaClient:
             ) as response:
                 if response.status != 200:
                     self.last_error = f"http {response.status}"
+                    if response.status == 429:
+                        self.limiter.back_off(retry_after(response.headers))
+                    elif response.status >= 500:
+                        self.limiter.back_off(
+                            retry_after(response.headers),
+                            first=FAILURE_BACK_OFF,
+                            cap=FAILURE_BACK_OFF_MAX,
+                        )
                     raise SourceError(f"Jolpica answered {response.status} for {path}")
                 payload = await response.json(content_type=None)
-        except (aiohttp.ClientError, TimeoutError, ValueError) as err:
+        except (aiohttp.ClientError, TimeoutError) as err:
             self.last_error = type(err).__name__
+            self.limiter.back_off(first=FAILURE_BACK_OFF, cap=FAILURE_BACK_OFF_MAX)
             raise SourceError(f"Jolpica unreachable for {path}: {err}") from err
+        except ValueError as err:
+            self.last_error = type(err).__name__
+            raise SourceError(f"Jolpica unreadable for {path}: {err}") from err
         self.last_error = None
+        self.limiter.succeeded()
         return payload
 
     async def get_all(
         self, path: str, *, season: int, rnd: int | None = None
     ) -> list[Any]:
-        """Every page of a paginated resource (laps run to ~1,200 rows a race)."""
+        """Every page of a paginated resource (laps run to ~1,200 rows a race).
+
+        The paging is ours, not the payload's: a limit outside 1-100 or a total
+        past `MAX_PAGES` pages could otherwise walk the budget away.
+        """
         first = await self.get(path, season=season, rnd=rnd)
         pages = [first]
         total, limit, _ = page_info(first)
-        offset = limit or PAGE
+        step = limit if 0 < limit <= PAGE else PAGE
+        total = min(total, step * MAX_PAGES)
+        offset = step
         while offset < total:
             pages.append(await self.get(path, season=season, rnd=rnd, offset=offset))
-            offset += limit or PAGE
+            offset += step
         return pages
 
     # The resources the pages use.
@@ -149,7 +208,13 @@ class JolpicaClient:
         return await self.get("seasons", season=None)
 
     async def schedule(self, season: int, *, fresh: bool = False) -> Any:
-        return await self.get(str(season), season=season, fresh=fresh, priority=True)
+        """The reserve is for the live windows: only this season's schedule (or
+        the next one's, around New Year) may draw on it, never a past season
+        someone is browsing."""
+        year = datetime.now(UTC).year
+        return await self.get(
+            str(season), season=season, fresh=fresh, priority=year <= season <= year + 1
+        )
 
     async def winners(self, season: int) -> Any:
         return await self.get(f"{season}/results/1", season=season)
@@ -172,4 +237,36 @@ class JolpicaClient:
     async def standings(self, season: int, rnd: int | None, kind: str) -> Any:
         """`kind` is `driver` or `constructor`; `rnd` None is the latest."""
         where = f"{season}/{rnd}" if rnd else str(season)
-        return await self.get(f"{where}/{kind}standings", season=season, rnd=rnd)
+        pages = await self.get_all(f"{where}/{kind}standings", season=season, rnd=rnd)
+        return _joined_standings(pages)
+
+
+def _joined_standings(pages: list[Any]) -> Any:
+    """One payload holding every page's rows (1952 has 103 drivers).
+
+    Built anew: a payload may be shared with another request in flight.
+    """
+    first = pages[0]
+    if len(pages) == 1:
+        return first
+    try:
+        table = first["MRData"]["StandingsTable"]
+        standing = dict(table["StandingsLists"][0])
+        row_key = next(
+            k for k in ("DriverStandings", "ConstructorStandings") if k in standing
+        )
+        rows = list(standing[row_key])
+        for page in pages[1:]:
+            more = page["MRData"]["StandingsTable"]["StandingsLists"][0].get(row_key)
+            if isinstance(more, list):
+                rows.extend(more)
+    except (KeyError, IndexError, TypeError, AttributeError, StopIteration):
+        return first
+    standing[row_key] = rows
+    return {
+        **first,
+        "MRData": {
+            **first["MRData"],
+            "StandingsTable": {**table, "StandingsLists": [standing]},
+        },
+    }
