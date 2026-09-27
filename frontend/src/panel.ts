@@ -13,15 +13,18 @@ import { TIME_PREFS_EVENT, loadTimePrefs } from "./timeprefs";
 import type { Hass, Settings } from "./types";
 import { PlbAge, PlbCountdown } from "./clock";
 import { PlbCalendar } from "./pages/calendar";
+import { PlbCircuit } from "./pages/circuit";
 import { PlbLive } from "./pages/live";
 import { PlbLiveMap } from "./pages/live-map";
 import { PlbResults } from "./pages/results";
 import { PlbSettings } from "./pages/settings";
 import { PlbStandings } from "./pages/standings";
 
-export type Page = "live" | "calendar" | "results" | "standings" | "settings";
+export type Page = "live" | "calendar" | "results" | "standings" | "settings" | "circuit";
 // The tabs; Settings opens from the gear, not a fifth tab.
 const PAGES: Page[] = ["live", "calendar", "results", "standings"];
+// The pages an address or the last visit can open. A circuit's history is not
+// among them: it needs the circuit it was opened for.
 const ALL_PAGES: Page[] = [...PAGES, "settings"];
 const STORAGE_KEY = "pit-lane-live-board-page";
 const SEASONS_RETRY = 30_000;
@@ -62,6 +65,11 @@ export interface GoTo {
   page: Page;
   season?: number;
   round?: number;
+  /** A circuit's history: Jolpica's circuit id and the name to show meanwhile. */
+  circuit_id?: string;
+  circuit?: string;
+  /** The page Back returns to (the circuit page). */
+  from?: Page;
 }
 
 type WakeLock = { release(): Promise<void> };
@@ -280,9 +288,11 @@ export class PitLaneLiveBoardPanel extends LitElement {
   }
 
   private go(target: GoTo): void {
+    if (target.page === "circuit" && !target.circuit_id) return;
     this.page = target.page;
     this.target = target;
     this.delayOpen = false;
+    if (target.page === "circuit") return; // not remembered: it needs its circuit
     try {
       localStorage.setItem(STORAGE_KEY, target.page);
     } catch {
@@ -337,6 +347,12 @@ export class PitLaneLiveBoardPanel extends LitElement {
     }
   }
 
+  /** Back from a circuit's history: the page it was opened from, as it was left. */
+  private back(): void {
+    const from = this.target?.page === "circuit" ? this.target.from : undefined;
+    this.go({ page: from && from !== "circuit" ? from : "calendar" });
+  }
+
   private toggleMenu(): void {
     this.dispatchEvent(new Event("hass-toggle-menu", { bubbles: true, composed: true }));
   }
@@ -363,7 +379,10 @@ export class PitLaneLiveBoardPanel extends LitElement {
           @plb-go=${(e: CustomEvent<GoTo>) => this.go(e.detail)}></plb-calendar>`;
       case "results":
         return html`<plb-results .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons} .clock=${common.clock}
-          .target=${this.target} @plb-reveal=${this.reveal}></plb-results>`;
+          .target=${this.target} @plb-reveal=${this.reveal} @plb-go=${(e: CustomEvent<GoTo>) => this.go(e.detail)}></plb-results>`;
+      case "circuit":
+        return html`<plb-circuit .hass=${common.hass} .settings=${common.settings} .circuitId=${this.target?.circuit_id ?? ""}
+          .circuitName=${this.target?.circuit ?? ""} @plb-back=${() => this.back()}></plb-circuit>`;
       case "standings":
         return html`<plb-standings .hass=${common.hass} .settings=${common.settings} .seasons=${common.seasons}></plb-standings>`;
       default:
@@ -386,7 +405,8 @@ export class PitLaneLiveBoardPanel extends LitElement {
         <div class="brand"><span class="mark">${icon(ICON.board, 18)}</span><span class="name">${t("common.title")}</span></div>
         <nav class="tabs">
           ${PAGES.map(
-            (p) => html`<button class="tab ${this.page === p ? "active" : ""}" aria-current=${this.page === p ? "page" : "false"}
+            (p) => html`<button class="tab ${this.page === p || (this.page === "circuit" && this.target?.from === p) ? "active" : ""}"
+              aria-current=${this.page === p ? "page" : "false"}
               @click=${() => this.go({ page: p })}>${t(`tabs.${p}`)}</button>`,
           )}
         </nav>
@@ -524,6 +544,7 @@ export class PitLaneLiveBoardPanel extends LitElement {
 
 define("plb-calendar", PlbCalendar);
 define("plb-results", PlbResults);
+define("plb-circuit", PlbCircuit);
 define("plb-standings", PlbStandings);
 define("plb-live", PlbLive);
 define("plb-live-map", PlbLiveMap);

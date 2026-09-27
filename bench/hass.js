@@ -48,10 +48,14 @@ export function applyTheme() {
   document.body.style.fontFamily = "Roboto, 'Segoe UI', system-ui, sans-serif";
 }
 
+// bench/data/ (generated, git-ignored) first; bench/fixtures/ (hand-written, tracked)
+// for what the generator does not make yet.
 async function data(name) {
-  const response = await fetch(`./data/${name}.json`, { cache: "no-store" });
-  if (!response.ok) throw new Error(`bench/data/${name}.json is missing: run scripts/bench_data.py`);
-  return response.json();
+  for (const folder of ["data", "fixtures"]) {
+    const response = await fetch(`./${folder}/${name}.json`, { cache: "no-store" });
+    if (response.ok) return response.json();
+  }
+  throw new Error(`bench/data/${name}.json is missing: run scripts/bench_data.py`);
 }
 
 export function createHass() {
@@ -142,13 +146,33 @@ export function createHass() {
           return data("seasons");
         case "calendar/get":
           return data("calendar");
-        case "results/season":
-          return data("rounds");
+        case "results/season": {
+          // Older generated files have no circuit_id on rounds: taken from the calendar.
+          const rounds = await data("rounds");
+          if (rounds.rounds.some((r) => !("circuit_id" in r))) {
+            const meetings = (await data("calendar")).meetings;
+            for (const r of rounds.rounds) r.circuit_id ??= meetings.find((m) => m.round === r.round)?.circuit_id ?? null;
+          }
+          return rounds;
+        }
         case "results/detail":
           if (settings.no_spoiler && msg.tab === "race") return { tab: "race", hidden: true, session: "2026-14-race" };
           return data(`detail_${msg.tab}`);
         case "standings/get":
           return data(`standings_${msg.kind}`);
+        case "circuit/history": {
+          // One circuit in the files (Baku); any other answers as unknown.
+          const history = await data("circuit_history");
+          return msg.circuit_id === history.circuit_id
+            ? history
+            : { ...history, circuit_id: msg.circuit_id, circuit: null, locality: null, country: null, first_season: null, last_season: null, drivers: [] };
+        }
+        case "circuit/driver": {
+          // Keyed by driver id; `circuitFail=true` makes it fail, to see the retry.
+          if (params.get("circuitFail") === "true") throw { code: "source_unavailable", message: "source_unavailable" };
+          const drivers = await data("circuit_driver");
+          return drivers[msg.driver_id] ?? { circuit_id: msg.circuit_id, driver_id: msg.driver_id, code: null, name: null, index: null, years: [] };
+        }
         default:
           throw new Error(`bench: no answer for ${msg.type}`);
       }

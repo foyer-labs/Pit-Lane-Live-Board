@@ -12,7 +12,8 @@
     python -m http.server 8777
   then open http://127.0.0.1:8777/bench/?page=live&lang=it&theme=dark
   Data: python scripts/bench_data.py (git-ignored bench/data/).
-  Extra: round=14&tab=strategy opens a Results detail; select=16 selects a driver.
+  Extra: round=14&tab=strategy opens a Results detail; select=16 selects a driver;
+  page=circuit&circuit=baku&driver=leclerc opens a circuit's history and a driver's years.
 -->
 <script type="module">
   const params = new URLSearchParams(location.search);
@@ -40,6 +41,21 @@
         break;
       }
       await wait(100);
+    }
+  }
+  if (params.get("page") === "circuit") {
+    // A circuit's history (circuit=baku): opened as the Calendar's link opens it;
+    // driver=leclerc opens that driver's years.
+    for (let i = 0; i < 50 && !panel.settings; i++) await new Promise((r) => setTimeout(r, 100));
+    const circuit = params.get("circuit") ?? "baku";
+    panel.go({ page: "circuit", circuit_id: circuit, circuit: circuit === "baku" ? "Baku City Circuit" : circuit, from: "calendar" });
+    if (params.get("driver")) {
+      for (let i = 0; i < 50; i++) {
+        const circuit = panel.shadowRoot?.querySelector("plb-circuit");
+        const driver = circuit?.data?.drivers.find((d) => d.driver_id === params.get("driver"));
+        if (driver) { circuit.toggle(driver); break; }
+        await new Promise((r) => setTimeout(r, 100));
+      }
     }
   }
   if (params.get("delayOpen") === "true") panel.delayOpen = true;

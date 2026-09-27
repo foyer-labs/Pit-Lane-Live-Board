@@ -40,7 +40,7 @@ function calmAfter(s: Stewards): boolean {
 }
 
 /** "+5s", "DT", "SG 10s", "3 grid", "DSQ". */
-export function penaltyLabel(t: Translate, d: Decision): string {
+export function penaltyLabel(t: Translate, d: Pick<Decision, "kind"> & Partial<Pick<Decision, "seconds" | "places">>): string {
   switch (d.kind) {
     case "time_penalty":
       return `+${d.seconds ?? "?"}s`;
