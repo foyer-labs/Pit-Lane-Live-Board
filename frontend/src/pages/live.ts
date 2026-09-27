@@ -16,7 +16,7 @@ import { ICON, icon } from "../icons";
 import { failure, gained, onKey, tyre } from "../parts";
 import { tokens } from "../styles";
 import type { Hass, LiveView, Message, NextSession, Row, Settings, Timed } from "../types";
-import { stewardsCard, stewardsStyles } from "./stewards";
+import { pillStyles, stewardsCard, stewardsStyles } from "./stewards";
 
 const FILTER_KIND: Record<string, string | null> = { all: null, flags: "flag", penalties: "penalty", other: "other" };
 const BOARD_STATES = new Set(["live", "stale", "lost", "final"]);
@@ -429,6 +429,7 @@ export class PlbLive extends LitElement {
 
   static override styles = [
     tokens,
+    pillStyles,
     stewardsStyles,
     css`
       :host { display: block; }
@@ -449,15 +450,6 @@ export class PlbLive extends LitElement {
       .play-live { display: inline-flex; align-items: center; gap: 6px; }
       .state .play-live svg { width: 18px; height: 18px; opacity: 1; }
       .state .next { display: grid; gap: 8px; justify-items: center; margin-top: 12px; }
-      .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; letter-spacing: 0.04em; }
-      .status-pill::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
-      .st-clear { background: color-mix(in srgb, var(--plb-green) 16%, transparent); color: var(--plb-green); }
-      .st-yellow { background: color-mix(in srgb, var(--plb-yellow) 22%, transparent); color: #a07d00; }
-      .st-sc { background: #f2c200; color: #1a1a1a; }
-      .st-red { background: var(--error-color, #db4437); color: #fff; }
-      .st-chequered { background: var(--secondary-background-color); color: var(--primary-text-color); }
-      .st-chequered::before { border-radius: 2px; background: repeating-conic-gradient(#222 0 25%, #fff 0 50%) 0 0 / 5px 5px;
-        box-shadow: 0 0 0 1px var(--divider-color); }
       .banner { display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin-bottom: var(--plb-gap); border-radius: 10px; font-size: 14px;
         background: color-mix(in srgb, var(--warning-color, #ffa600) 16%, transparent); }
       .banner.lost { background: color-mix(in srgb, var(--error-color, #db4437) 16%, transparent); }

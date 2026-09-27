@@ -22,6 +22,9 @@ export const api = {
   // Admins only; the answer carries the token's status, never the token (INV-3).
   setToken: (hass: Hass, token: string) => hass.callWS<Settings>({ type: `${P}/f1tv/set`, token }),
   removeToken: (hass: Hass) => hass.callWS<Settings>({ type: `${P}/f1tv/remove` }),
+  // Admins only: the panel's place in the sidebar and who may open it.
+  setPanel: (hass: Hass, values: { show_in_sidebar?: boolean; admin_only?: boolean }) =>
+    hass.callWS<Settings>({ type: `${P}/panel/set`, ...values }),
   entities: (hass: Hass) => hass.callWS<{ entities: LinkedEntity[] }>({ type: `${P}/entities` }),
   reveal: (hass: Hass, session: string) =>
     hass.callWS<Settings>({ type: `${P}/spoiler/reveal`, session }),

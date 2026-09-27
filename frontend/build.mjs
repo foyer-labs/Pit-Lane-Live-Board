@@ -15,21 +15,25 @@ const banner =
   "\n * Includes Lit (https://lit.dev): Copyright 2017 Google LLC, BSD-3-Clause." +
   "\n * Icons from Material Design Icons (https://pictogrammers.com), Apache-2.0. */";
 
-await build({
-  configFile: false,
-  root: here,
-  logLevel: "warn",
-  build: {
-    outDir: out,
-    emptyOutDir: true,
-    minify: true,
-    sourcemap: false,
-    lib: {
-      entry: resolve(here, "src/panel.ts"),
-      formats: ["es"],
-      fileName: () => "pit-lane-live-board-panel.js",
+// Two self-contained modules: the panel, and the dashboard cards that Home
+// Assistant loads on every page (decision 47), so a dashboard never loads the panel.
+const bundles = [
+  ["src/panel.ts", "pit-lane-live-board-panel.js"],
+  ["src/cards-entry.ts", "pit-lane-live-board-cards.js"],
+];
+for (const [index, [entry, file]] of bundles.entries()) {
+  await build({
+    configFile: false,
+    root: here,
+    logLevel: "warn",
+    build: {
+      outDir: out,
+      emptyOutDir: index === 0,
+      minify: true,
+      sourcemap: false,
+      lib: { entry: resolve(here, entry), formats: ["es"], fileName: () => file },
+      rolldownOptions: { output: { banner } },
     },
-    rolldownOptions: { output: { banner } },
-  },
-});
-console.log("built pit-lane-live-board-panel.js");
+  });
+  console.log(`built ${file}`);
+}

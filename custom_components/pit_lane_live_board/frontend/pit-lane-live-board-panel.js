@@ -539,6 +539,10 @@ var P = "pit_lane_live_board", F = {
 		token: t
 	}),
 	removeToken: (e) => e.callWS({ type: `${P}/f1tv/remove` }),
+	setPanel: (e, t) => e.callWS({
+		type: `${P}/panel/set`,
+		...t
+	}),
 	entities: (e) => e.callWS({ type: `${P}/entities` }),
 	reveal: (e, t) => e.callWS({
 		type: `${P}/spoiler/reveal`,
@@ -808,7 +812,12 @@ var Ie = {
 			token_no_subscription: "This F1TV account has no active subscription.",
 			token_missing: "Paste a token.",
 			remove_failed: "The token could not be removed. Try again in a moment."
-		}
+		},
+		panel: "Panel",
+		sidebar: "Show Live Board in the sidebar",
+		sidebarHelp: "Off: the panel still opens from the integration's device page, and the cards keep working on dashboards.",
+		adminPanel: "Only administrators can open the panel",
+		adminPanelHelp: "Off (the default): every user of the house sees Live Board. On: only administrators do. The cards follow the visibility of the dashboard they are on."
 	},
 	stewards: {
 		title: "Flags & stewards",
@@ -853,6 +862,54 @@ var Ie = {
 			warning: "Warning",
 			black_and_white_flag: "Black and white flag",
 			lap_deleted: "Lap deleted"
+		}
+	},
+	cards: {
+		stale: "DELAYED",
+		lost: "NO FEED",
+		mapAfter: "The map is live only: it comes back at the next session.",
+		mapNeedsF1tv: "The live map needs F1TV: an administrator can add a token in the panel's Settings.",
+		tower: {
+			title: "Timing",
+			name: "Timing tower",
+			description: "Positions, gaps, lap times, sectors and tyres; choose the rows and columns."
+		},
+		map: {
+			name: "Track map",
+			description: "The cars on the circuit, live (needs F1TV)."
+		},
+		stewards: {
+			name: "Flags & stewards",
+			description: "Track status, yellow sectors, safety car, penalties, investigations and track limits."
+		},
+		radio: {
+			name: "Team radio",
+			description: "The latest team radio clips, with play."
+		},
+		race_control: {
+			name: "Race control",
+			description: "The latest race control messages, filtered by flags or penalties."
+		},
+		session: {
+			name: "Session",
+			description: "The session under way, its lap or clock and track status; after it, the next session's countdown."
+		},
+		weather: {
+			name: "Weather",
+			description: "Air and track temperature, rain, humidity, wind and pressure at the circuit."
+		},
+		standings: {
+			name: "Championship",
+			description: "Drivers' or constructors' standings, top N."
+		},
+		fields: {
+			title: "Title (empty for none)",
+			rows: "Rows",
+			columns: "Columns",
+			highlight: "Driver to highlight (e.g. LEC)",
+			count: "How many",
+			filter: "Show",
+			kind: "Championship"
 		}
 	}
 }, Le = {
@@ -1091,7 +1148,12 @@ var Ie = {
 				token_no_subscription: "Questo account F1TV non ha un abbonamento attivo.",
 				token_missing: "Incolla un token.",
 				remove_failed: "Non è stato possibile rimuovere il token. Riprova tra un momento."
-			}
+			},
+			panel: "Pannello",
+			sidebar: "Mostra Live Board nella barra laterale",
+			sidebarHelp: "Spento: il pannello si apre comunque dalla pagina del dispositivo dell'integrazione, e le card continuano a funzionare nelle plance.",
+			adminPanel: "Solo gli amministratori possono aprire il pannello",
+			adminPanelHelp: "Spento (predefinito): tutti gli utenti di casa vedono Live Board. Acceso: solo gli amministratori. Le card seguono la visibilità della plancia in cui si trovano."
 		},
 		stewards: {
 			title: "Bandiere e commissari",
@@ -1136,6 +1198,54 @@ var Ie = {
 				warning: "Ammonizione",
 				black_and_white_flag: "Bandiera bianconera",
 				lap_deleted: "Giro cancellato"
+			}
+		},
+		cards: {
+			stale: "IN RITARDO",
+			lost: "NESSUN DATO",
+			mapAfter: "La mappa è solo dal vivo: torna alla prossima sessione.",
+			mapNeedsF1tv: "La mappa live richiede F1TV: un amministratore può aggiungere un token nelle Impostazioni del pannello.",
+			tower: {
+				title: "Tempi",
+				name: "Classifica live",
+				description: "Posizioni, distacchi, tempi, settori e gomme; scegli righe e colonne."
+			},
+			map: {
+				name: "Mappa della pista",
+				description: "Le auto sul circuito, in diretta (richiede F1TV)."
+			},
+			stewards: {
+				name: "Bandiere e commissari",
+				description: "Stato della pista, settori in giallo, safety car, penalità, investigazioni e limiti della pista."
+			},
+			radio: {
+				name: "Team radio",
+				description: "Gli ultimi team radio, con play."
+			},
+			race_control: {
+				name: "Direzione gara",
+				description: "Gli ultimi messaggi della direzione gara, filtrabili per bandiere o penalità."
+			},
+			session: {
+				name: "Sessione",
+				description: "La sessione in corso, il giro o il tempo e lo stato della pista; dopo, il conto alla rovescia per la prossima."
+			},
+			weather: {
+				name: "Meteo",
+				description: "Temperatura dell'aria e dell'asfalto, pioggia, umidità, vento e pressione al circuito."
+			},
+			standings: {
+				name: "Campionato",
+				description: "Classifica piloti o costruttori, primi N."
+			},
+			fields: {
+				title: "Titolo (vuoto per nessuno)",
+				rows: "Righe",
+				columns: "Colonne",
+				highlight: "Pilota da evidenziare (es. LEC)",
+				count: "Quanti",
+				filter: "Mostra",
+				kind: "Campionato"
 			}
 		}
 	}
@@ -1825,8 +1935,10 @@ function kt(e, t, n, r = !1, i = () => void 0) {
   </section>` : O;
 }
 var At = o`
-  .stewards { margin-bottom: var(--plb-gap); }
-  .stewards.calm { display: flex; align-items: center; gap: 12px; padding: 10px 16px; font-size: 13px; }
+  /* Sized by its own width, not the window's: the same card sits in the panel
+     and, narrower, on a dashboard. */
+  .stewards { margin-bottom: var(--plb-gap); container-type: inline-size; }
+  .stewards.calm { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 16px; font-size: 13px; }
   .stewards.accent-sc { box-shadow: inset 4px 0 #f2c200, var(--ha-card-box-shadow, 0 1px 2px rgba(0, 0, 0, 0.08)); }
   .stewards.accent-red { box-shadow: inset 4px 0 var(--error-color, #db4437), var(--ha-card-box-shadow, 0 1px 2px rgba(0, 0, 0, 0.08)); }
   .stewards .cols { display: grid; grid-template-columns: minmax(160px, 0.7fr) 1.2fr 1.2fr 0.8fr; }
@@ -1861,30 +1973,39 @@ var At = o`
   .stewards details summary { cursor: pointer; font-size: 12px; color: var(--primary-color); list-style: none; }
   .stewards details[open] summary { display: none; }
   .stewards details { display: grid; gap: 6px; }
-  @media (max-width: 1100px) {
+  @container (max-width: 1000px) {
     .stewards .cols { grid-template-columns: 1fr 1fr; }
     .stewards .col:nth-child(3) { border-left: 0; }
     .stewards .col:nth-child(n + 3) { border-top: 1px solid var(--divider-color); }
   }
-  @media (max-width: 640px) {
+  @container (max-width: 560px) {
     .stewards .card-head { display: none; }
     .stewards .compact { display: flex; }
     .stewards .cols { grid-template-columns: 1fr; display: none; border-top: 1px solid var(--divider-color); }
     .stewards.open .cols { display: grid; }
     .stewards .col + .col { border-left: 0; border-top: 1px solid var(--divider-color); }
-    .stewards.calm { flex-wrap: wrap; }
   }
-`, jt = {
+`, jt = o`
+  .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; letter-spacing: 0.04em; }
+  .status-pill::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+  .st-clear { background: color-mix(in srgb, var(--plb-green) 16%, transparent); color: var(--plb-green); }
+  .st-yellow { background: color-mix(in srgb, var(--plb-yellow) 22%, transparent); color: #a07d00; }
+  .st-sc { background: #f2c200; color: #1a1a1a; }
+  .st-red { background: var(--error-color, #db4437); color: #fff; }
+  .st-chequered { background: var(--secondary-background-color); color: var(--primary-text-color); }
+  .st-chequered::before { border-radius: 2px; background: repeating-conic-gradient(#222 0 25%, #fff 0 50%) 0 0 / 5px 5px;
+  box-shadow: 0 0 0 1px var(--divider-color); }
+`, Mt = {
 	all: null,
 	flags: "flag",
 	penalties: "penalty",
 	other: "other"
-}, Mt = /* @__PURE__ */ new Set([
+}, Nt = /* @__PURE__ */ new Set([
 	"live",
 	"stale",
 	"lost",
 	"final"
-]), Nt = class extends N {
+]), Pt = class extends N {
 	constructor(...e) {
 		super(...e), this.selected = "", this.filter = "all", this.playing = "", this.failed = !1, this.starting = !1, this.stewardsOpen = !1, this.subscribing = !1, this.receivedAt = Date.now();
 	}
@@ -1967,7 +2088,7 @@ var At = o`
 		if (!t) return this.failed ? W(e, () => {
 			window.clearTimeout(this.retry), this.retry = void 0, this.subscribe();
 		}) : T`<div class="card loading">${e("common.loading")}</div>`;
-		if (Mt.has(t.state)) return this.renderBoard(e, t);
+		if (Nt.has(t.state)) return this.renderBoard(e, t);
 		switch (t.state) {
 			case "hidden": return T`<div class="card state">${z(R.eyeOff, 56)}<h2>${e("live.hidden")}</h2>
           <div>${e("live.hiddenHelp", {
@@ -2118,10 +2239,10 @@ var At = o`
         @plb-select=${(e) => this.select(e.detail)}></plb-live-map></div>`;
 	}
 	renderRaceControl(e, t) {
-		let n = jt[this.filter], r = t.filter((e) => !n || e.kind === n);
+		let n = Mt[this.filter], r = t.filter((e) => !n || e.kind === n);
 		return T`<div class="card">
       <div class="card-head">${e("live.raceControl")}</div>
-      <div class="filters">${Object.keys(jt).map((t) => T`<button class="chip small ${this.filter === t ? "on" : ""}" @click=${() => this.filter = t}>${e(`live.${t}`)}</button>`)}</div>
+      <div class="filters">${Object.keys(Mt).map((t) => T`<button class="chip small ${this.filter === t ? "on" : ""}" @click=${() => this.filter = t}>${e(`live.${t}`)}</button>`)}</div>
       <div class="feed">${Q(r, (e) => `${e.utc}|${e.message}`, (t) => T`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : ""}</span>
           <span>${t.message}<time>${J(this.hass, t.utc)}</time></span></div>`)}</div>
     </div>`;
@@ -2173,6 +2294,7 @@ var At = o`
 	static {
 		this.styles = [
 			B,
+			jt,
 			At,
 			o`
       :host { display: block; }
@@ -2193,15 +2315,6 @@ var At = o`
       .play-live { display: inline-flex; align-items: center; gap: 6px; }
       .state .play-live svg { width: 18px; height: 18px; opacity: 1; }
       .state .next { display: grid; gap: 8px; justify-items: center; margin-top: 12px; }
-      .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; letter-spacing: 0.04em; }
-      .status-pill::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
-      .st-clear { background: color-mix(in srgb, var(--plb-green) 16%, transparent); color: var(--plb-green); }
-      .st-yellow { background: color-mix(in srgb, var(--plb-yellow) 22%, transparent); color: #a07d00; }
-      .st-sc { background: #f2c200; color: #1a1a1a; }
-      .st-red { background: var(--error-color, #db4437); color: #fff; }
-      .st-chequered { background: var(--secondary-background-color); color: var(--primary-text-color); }
-      .st-chequered::before { border-radius: 2px; background: repeating-conic-gradient(#222 0 25%, #fff 0 50%) 0 0 / 5px 5px;
-        box-shadow: 0 0 0 1px var(--divider-color); }
       .banner { display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin-bottom: var(--plb-gap); border-radius: 10px; font-size: 14px;
         background: color-mix(in srgb, var(--warning-color, #ffa600) 16%, transparent); }
       .banner.lost { background: color-mix(in srgb, var(--error-color, #db4437) 16%, transparent); }
@@ -2264,7 +2377,7 @@ var At = o`
     `
 		];
 	}
-}, Pt = class extends N {
+}, Ft = class extends N {
 	constructor(...e) {
 		super(...e), this.tower = [], this.selected = "", this.cars = [], this.path = "", this.subscribing = !1, this.onScreen = !1, this.visibility = () => this.sync();
 	}
@@ -2352,12 +2465,12 @@ var At = o`
     @media (prefers-reduced-motion: reduce) { .car { transition: none; } }
   `;
 	}
-}, Ft = /* @__PURE__ */ new Set([
+}, It = /* @__PURE__ */ new Set([
 	"strategy",
 	"lap_times",
 	"race_control",
 	"weather"
-]), It = class extends N {
+]), Lt = class extends N {
 	constructor(...e) {
 		super(...e), this.seasons = [], this.failed = !1, this.tab = "race", this.tabFailed = !1, this.driver = "", this.filter = "all", this.highlight = "", this.request = 0, this.roundsRequest = 0, this.spoilers = "";
 	}
@@ -2459,14 +2572,14 @@ var At = o`
 	renderTab(e) {
 		if (this.tabFailed) return W(e, () => this.loadTab());
 		let t = this.result;
-		if (!t || t.tab !== this.tab) return T`<div class="loading">${e("common.loading")}${Ft.has(this.tab) ? T`<br /><small>${e("results.archive")}</small>` : O}</div>`;
+		if (!t || t.tab !== this.tab) return T`<div class="loading">${e("common.loading")}${It.has(this.tab) ? T`<br /><small>${e("results.archive")}</small>` : O}</div>`;
 		if (t.hidden) return T`<div class="state">${z(R.eyeOff, 56)}<div>${e("spoiler.revealNote")}</div>
         <button class="btn" @click=${() => this.dispatchEvent(new CustomEvent("plb-reveal", {
 			detail: t.session,
 			bubbles: !0,
 			composed: !0
 		}))}>${e("spoiler.reveal")}</button></div>`;
-		if (!t.available || !t.data) return T`<div class="state">${Ft.has(this.tab) ? e("results.notArchived") : e("common.noData")}</div>`;
+		if (!t.available || !t.data) return T`<div class="state">${It.has(this.tab) ? e("results.notArchived") : e("common.noData")}</div>`;
 		let n = t.data;
 		switch (this.tab) {
 			case "race":
@@ -2631,12 +2744,12 @@ var At = o`
       @media (max-width: 640px) { .phone-hide { display: none; } }
     `];
 	}
-}, Lt = /* @__PURE__ */ new Set([
+}, Rt = /* @__PURE__ */ new Set([
 	"token_invalid",
 	"token_expired",
 	"token_no_subscription",
 	"token_missing"
-]), Rt = class extends N {
+]), zt = class extends N {
 	constructor(...e) {
 		super(...e), this.token = "", this.tokenError = "", this.saving = !1, this.confirmRemove = !1, this.busy = !1, this.asked = !1;
 	}
@@ -2688,7 +2801,7 @@ var At = o`
 			await F.setToken(this.hass, e), this.token = "";
 		} catch (e) {
 			let t = e?.message ?? "";
-			this.tokenError = Lt.has(t) ? t : "token_invalid";
+			this.tokenError = Rt.has(t) ? t : "token_invalid";
 		} finally {
 			this.saving = !1;
 		}
@@ -2715,6 +2828,7 @@ var At = o`
 		return T`<div class="page">
       ${this.renderLive(e, t)}
       ${this.renderDelay(e, t)}
+      ${t.is_admin ? this.renderPanel(e, t) : O}
       ${t.is_admin ? this.renderF1tv(e, t) : O}
       ${this.renderEntities(e)}
     </div>`;
@@ -2737,6 +2851,29 @@ var At = o`
         <input type="checkbox" .checked=${t.auto_start} ?disabled=${this.busy}
           @change=${(e) => this.set({ auto_start: e.target.checked })} />
         <span><b>${e("settings.autoStart")}</b><small>${e("settings.autoStartHelp")}</small></span>
+      </label>
+    </section>`;
+	}
+	async setPanel(e) {
+		this.busy = !0;
+		try {
+			await F.setPanel(this.hass, e);
+		} catch {} finally {
+			this.busy = !1;
+		}
+	}
+	renderPanel(e, t) {
+		return T`<section class="card">
+      <div class="card-head">${e("settings.panel")}<span class="spacer"></span><small>${e("settings.adminOnly")}</small></div>
+      <label class="row">
+        <input type="checkbox" .checked=${t.show_in_sidebar} ?disabled=${this.busy}
+          @change=${(e) => this.setPanel({ show_in_sidebar: e.target.checked })} />
+        <span><b>${e("settings.sidebar")}</b><small>${e("settings.sidebarHelp")}</small></span>
+      </label>
+      <label class="row">
+        <input type="checkbox" .checked=${t.admin_only} ?disabled=${this.busy}
+          @change=${(e) => this.setPanel({ admin_only: e.target.checked })} />
+        <span><b>${e("settings.adminPanel")}</b><small>${e("settings.adminPanelHelp")}</small></span>
       </label>
     </section>`;
 	}
@@ -2846,7 +2983,7 @@ var At = o`
       }
     `];
 	}
-}, zt = class extends N {
+}, Bt = class extends N {
 	constructor(...e) {
 		super(...e), this.seasons = [], this.kind = "drivers", this.round = null, this.failed = !1, this.request = 0, this.spoilers = "";
 	}
@@ -2937,23 +3074,23 @@ var At = o`
       @media (max-width: 640px) { .barcol { display: none; } }
     `];
 	}
-}, Bt = [
+}, Vt = [
 	"live",
 	"calendar",
 	"results",
 	"standings"
-], Vt = [...Bt, "settings"], Ht = "pit-lane-live-board-page";
-function Ut() {
+], Ht = [...Vt, "settings"], Ut = "pit-lane-live-board-page";
+function Wt() {
 	try {
-		let e = localStorage.getItem(Ht);
-		return e && Vt.includes(e) ? e : "live";
+		let e = localStorage.getItem(Ut);
+		return e && Ht.includes(e) ? e : "live";
 	} catch {
 		return "live";
 	}
 }
-var Wt = class extends N {
+var Gt = class extends N {
 	constructor(...e) {
-		super(...e), this.narrow = !1, this.page = Ut(), this.seasons = [], this.delayOpen = !1, this.failed = !1, this.connecting = !1, this.backoff = 5e3, this.pendingDelay = null;
+		super(...e), this.narrow = !1, this.page = Wt(), this.seasons = [], this.delayOpen = !1, this.failed = !1, this.connecting = !1, this.backoff = 5e3, this.pendingDelay = null;
 	}
 	static {
 		this.properties = {
@@ -3005,7 +3142,7 @@ var Wt = class extends N {
 	go(e) {
 		this.page = e.page, this.target = e, this.delayOpen = !1;
 		try {
-			localStorage.setItem(Ht, e.page);
+			localStorage.setItem(Ut, e.page);
 		} catch {}
 	}
 	setDelay(e) {
@@ -3073,7 +3210,7 @@ var Wt = class extends N {
         ${this.narrow ? T`<button class="icon-btn" @click=${this.toggleMenu} aria-label=${e("common.menu")}>${z(R.menu, 24)}</button>` : O}
         <div class="brand"><span class="mark">${z(R.board, 18)}</span><span class="name">${e("common.title")}</span></div>
         <nav class="tabs">
-          ${Bt.map((t) => T`<button class="tab ${this.page === t ? "active" : ""}" @click=${() => this.go({ page: t })}>
+          ${Vt.map((t) => T`<button class="tab ${this.page === t ? "active" : ""}" @click=${() => this.go({ page: t })}>
               ${e(`tabs.${t}`)}
             </button>`)}
         </nav>
@@ -3171,6 +3308,6 @@ var Wt = class extends N {
     `];
 	}
 };
-I("plb-calendar", st), I("plb-results", It), I("plb-standings", zt), I("plb-live", Nt), I("plb-live-map", Pt), I("plb-settings", Rt), I("plb-countdown", it), I("plb-age", at), I("pit-lane-live-board-panel", Wt);
+I("plb-calendar", st), I("plb-results", Lt), I("plb-standings", Bt), I("plb-live", Pt), I("plb-live-map", Ft), I("plb-settings", zt), I("plb-countdown", it), I("plb-age", at), I("pit-lane-live-board-panel", Gt);
 //#endregion
-export { Wt as PitLaneLiveBoardPanel };
+export { Gt as PitLaneLiveBoardPanel };

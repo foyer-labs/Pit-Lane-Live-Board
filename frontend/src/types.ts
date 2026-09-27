@@ -21,6 +21,8 @@ export interface Settings {
   live: boolean;
   auto_start: boolean;
   running: boolean;
+  show_in_sidebar: boolean;
+  admin_only: boolean;
   revealed: string[];
   season: number;
   first_season: number;

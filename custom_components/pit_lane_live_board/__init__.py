@@ -28,6 +28,7 @@ class RuntimeData:
     store: SettingsStore
     hub: Hub
     sidebar: bool = True
+    admin_only: bool = False
 
 
 type LiveBoardConfigEntry = ConfigEntry[RuntimeData]
@@ -42,7 +43,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) ->
     await store.async_load()
     hub = Hub(hass, entry, store)
     entry.runtime_data = RuntimeData(
-        store=store, hub=hub, sidebar=panel.show_in_sidebar(entry)
+        store=store,
+        hub=hub,
+        sidebar=panel.show_in_sidebar(entry),
+        admin_only=panel.admin_only(entry),
     )
     if not hass.data.get(_COMMANDS_KEY):
         websocket.async_register(hass)
@@ -51,6 +55,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) ->
     # Timers and the calendar start in the background: setup never waits on F1.
     await hub.async_start()
     await panel.async_register(hass, entry)
+    await panel.async_register_cards(hass)
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
 
@@ -58,13 +63,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) ->
 async def _async_options_updated(
     hass: HomeAssistant, entry: LiveBoardConfigEntry
 ) -> None:
-    """Only the sidebar option needs the panel again; a saved token does not."""
+    """Only the panel's options need the panel again; a saved token does not."""
     from . import panel
 
-    sidebar = panel.show_in_sidebar(entry)
-    if sidebar != entry.runtime_data.sidebar:
-        entry.runtime_data.sidebar = sidebar
+    sidebar, admin_only = panel.show_in_sidebar(entry), panel.admin_only(entry)
+    data = entry.runtime_data
+    if (sidebar, admin_only) != (data.sidebar, data.admin_only):
+        data.sidebar, data.admin_only = sidebar, admin_only
         await panel.async_register(hass, entry)
+        from homeassistant.helpers.dispatcher import async_dispatcher_send
+
+        from .hub import SIGNAL_SETTINGS
+
+        async_dispatcher_send(hass, SIGNAL_SETTINGS)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -> bool:

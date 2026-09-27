@@ -63,6 +63,11 @@ prima, risultati e classifiche dopo. Gratis e senza account.
 - **Leggero anche su un Raspberry Pi.** I tempi live partono in pausa: niente si collega
   a F1 e niente viene scritto su disco finché non premi play, o finché non li lasci
   partire da soli a ogni sessione.
+- **Card per le tue plance.** Classifica live, mappa, bandiere e commissari, team radio,
+  direzione gara, sessione, meteo e campionato, ognuna una card con editor visuale,
+  già pronta nel selettore delle card senza installare niente.
+- **Decidi tu chi lo vede.** Il pannello è per tutta la casa o solo per gli
+  amministratori; ogni plancia mantiene la sua visibilità.
 - **Italiano e inglese**, tema chiaro e scuro, sul telefono o su un tablet a parete.
 
 <p align="center">
@@ -90,7 +95,7 @@ propone automazioni pronte.
 
 | | |
 |---|---|
-| [Guida](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.it.md) | Installazione, le quattro pagine, leggere la classifica live, ritardo TV, modalità senza spoiler, F1TV, entità e automazioni, problemi, domande frequenti |
+| [Guida](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.it.md) | Installazione, impostazioni, le quattro pagine, leggere la classifica live, bandiere e commissari, ritardo TV, modalità senza spoiler, F1TV, card per le plance, entità e automazioni, problemi, domande frequenti |
 | [Novità](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/CHANGELOG.md) | Cosa cambia in ogni versione (in inglese) |
 | [Aiuto](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/SUPPORT.it.md) | Come chiedere aiuto e segnalare un problema |
 

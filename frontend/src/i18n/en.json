@@ -232,7 +232,12 @@
       "token_no_subscription": "This F1TV account has no active subscription.",
       "token_missing": "Paste a token.",
       "remove_failed": "The token could not be removed. Try again in a moment."
-    }
+    },
+    "panel": "Panel",
+    "sidebar": "Show Live Board in the sidebar",
+    "sidebarHelp": "Off: the panel still opens from the integration's device page, and the cards keep working on dashboards.",
+    "adminPanel": "Only administrators can open the panel",
+    "adminPanelHelp": "Off (the default): every user of the house sees Live Board. On: only administrators do. The cards follow the visibility of the dashboard they are on."
   },
   "stewards": {
     "title": "Flags & stewards",
@@ -277,6 +282,54 @@
       "warning": "Warning",
       "black_and_white_flag": "Black and white flag",
       "lap_deleted": "Lap deleted"
+    }
+  },
+  "cards": {
+    "stale": "DELAYED",
+    "lost": "NO FEED",
+    "mapAfter": "The map is live only: it comes back at the next session.",
+    "mapNeedsF1tv": "The live map needs F1TV: an administrator can add a token in the panel's Settings.",
+    "tower": {
+      "title": "Timing",
+      "name": "Timing tower",
+      "description": "Positions, gaps, lap times, sectors and tyres; choose the rows and columns."
+    },
+    "map": {
+      "name": "Track map",
+      "description": "The cars on the circuit, live (needs F1TV)."
+    },
+    "stewards": {
+      "name": "Flags & stewards",
+      "description": "Track status, yellow sectors, safety car, penalties, investigations and track limits."
+    },
+    "radio": {
+      "name": "Team radio",
+      "description": "The latest team radio clips, with play."
+    },
+    "race_control": {
+      "name": "Race control",
+      "description": "The latest race control messages, filtered by flags or penalties."
+    },
+    "session": {
+      "name": "Session",
+      "description": "The session under way, its lap or clock and track status; after it, the next session's countdown."
+    },
+    "weather": {
+      "name": "Weather",
+      "description": "Air and track temperature, rain, humidity, wind and pressure at the circuit."
+    },
+    "standings": {
+      "name": "Championship",
+      "description": "Drivers' or constructors' standings, top N."
+    },
+    "fields": {
+      "title": "Title (empty for none)",
+      "rows": "Rows",
+      "columns": "Columns",
+      "highlight": "Driver to highlight (e.g. LEC)",
+      "count": "How many",
+      "filter": "Show",
+      "kind": "Championship"
     }
   }
 }
