@@ -21,6 +21,14 @@ tu. Pit Lane Live Board ti dà la dashboard: la installi, apri **Live Board** ne
 laterale e c'è tutto il weekend — la classifica live durante la sessione, il calendario
 prima, risultati e classifiche dopo. Gratis e senza account.
 
+Un'installazione, tre modi di usarla:
+
+| | |
+|---|---|
+| 🏁 **Un pannello già pronto** | Tempi live, calendario, risultati dal 1950 e i due campionati, nella barra laterale. |
+| 🧩 **Otto card per le plance** | La classifica live, la mappa, bandiere e commissari, i team radio e altro, per le tue plance. Niente da installare, un editor visuale per ognuna. |
+| ⚡ **Sensori ed eventi** | Safety car, bandiera rossa, settori in giallo, penalità, ogni decisione dei commissari: spunti per luci, altoparlanti e telefono. |
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/live.it.png" alt="La pagina Live durante una gara: la classifica con distacchi, settori in viola e verde e gomme, la mappa della pista, la direzione gara e i team radio" width="900">
 </p>
@@ -55,17 +63,9 @@ prima, risultati e classifiche dopo. Gratis e senza account.
 - **Dopo la bandiera a scacchi.** Tra una sessione e l'altra la pagina Live conserva la
   classifica finale, le decisioni dei commissari e i pit stop, con il conto alla rovescia
   per la sessione successiva.
-- **Automazioni.** Un calendario delle sessioni, lo stato della pista, sensori per
-  safety car, VSC, bandiera rossa e gialla, penalità e investigazioni, ed eventi per la
-  direzione gara e per ogni decisione dei commissari: le luci diventano gialle con la
-  safety car, il telefono ti avvisa che il tuo pilota è stato penalizzato o che la gara
-  parte tra 15 minuti.
 - **Leggero anche su un Raspberry Pi.** I tempi live partono in pausa: niente si collega
   a F1 e niente viene scritto su disco finché non premi play, o finché non li lasci
   partire da soli a ogni sessione.
-- **Card per le tue plance.** Classifica live, mappa, bandiere e commissari, team radio,
-  direzione gara, sessione, meteo e campionato, ognuna una card con editor visuale,
-  già pronta nel selettore delle card senza installare niente.
 - **Decidi tu chi lo vede.** Il pannello è per tutta la casa o solo per gli
   amministratori; ogni plancia mantiene la sua visibilità.
 - **Italiano e inglese**, tema chiaro e scuro, sul telefono o su un tablet a parete.
@@ -73,6 +73,58 @@ prima, risultati e classifiche dopo. Gratis e senza account.
 <p align="center">
   <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/strategy.it.png" alt="Risultati: la strategia gomme di ogni pilota in una gara, stint colorati per mescola" width="820">
 </p>
+
+## La tua plancia, le tue card
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/cards.it.png" alt="Le card per le plance: sessione, classifica live, bandiere e commissari, mappa, direzione gara, team radio, meteo e classifica piloti" width="900">
+</p>
+
+Ogni pezzo della pagina Live è anche una card. *Modifica plancia → Aggiungi card → Pit
+Lane*, e metti quello che vuoi dove vuoi:
+
+| Card | Cosa mostra |
+|---|---|
+| **Classifica live** | Posizioni, distacchi, tempi, settori e gomme; scegli righe e colonne, evidenzia il tuo pilota. |
+| **Mappa della pista** | Tutte le auto sul circuito, in diretta (con F1TV). |
+| **Bandiere e commissari** | Stato della pista, settori in giallo, safety car, penalità, investigazioni, limiti della pista. |
+| **Team radio** | Gli ultimi messaggi, con play. |
+| **Direzione gara** | Gli ultimi messaggi, filtrabili per bandiere o penalità. |
+| **Sessione** | La sessione, il giro o il tempo e lo stato della pista; dopo, il conto alla rovescia per la prossima. |
+| **Meteo** | Temperatura dell'aria e dell'asfalto, pioggia, umidità, vento. |
+| **Campionato** | Classifica piloti o costruttori, primi N. |
+
+Nessuna risorsa da aggiungere a mano, un editor visuale per ogni card, e lo stesso
+ritardo TV e la stessa modalità senza spoiler del pannello. Un tablet a parete con la
+classifica e le bandiere, il telefono con solo la sessione e il tuo pilota: [la
+guida](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.it.md#card-per-le-plance) ha degli esempi.
+
+## Sensori ed eventi per le automazioni
+
+| Entità | Per cosa usarla |
+|---|---|
+| `binary_sensor` Safety car · Virtual safety car · Bandiera rossa · Bandiera gialla | Luci che seguono la pista: arancioni con la safety car, rosse con la bandiera rossa. |
+| `sensor` Stato della pista · Stato della sessione · Giro | Lo stato della sessione, in qualsiasi card o condizione. |
+| `sensor` Penalità · Investigazioni · Messaggio della direzione gara | Cosa stanno guardando i commissari, con i dettagli negli attributi. |
+| `event` Direzione gara | Bandiera verde, gialla, safety car, VSC, rossa, a scacchi, inizio e fine sessione. |
+| `event` Commissari | Un evento per ogni decisione: penalità in tempo, drive-through, investigazione, ammonizione, giro cancellato… con pilota, secondi e motivo. |
+| `calendar` Sessioni · `sensor` Prossima sessione | "La gara parte tra 15 minuti", senza codice. |
+| `switch` Tempi live · Modalità senza spoiler · `number` Ritardo TV | Comanda il pannello dalle tue automazioni e dall'assistente vocale. |
+
+Tutto passa attraverso il ritardo TV, quindi le luci cambiano quando lo mostra il *tuo*
+schermo. Automazioni pronte [nella guida](https://github.com/foyer-labs/Pit-Lane-Live-Board/blob/main/docs/guide.it.md#entità-e-automazioni):
+
+```yaml
+triggers:
+  - trigger: state
+    entity_id: event.pit_lane_live_board_stewards
+conditions:
+  - "{{ 'LEC' in trigger.to_state.attributes.drivers }}"
+actions:
+  - action: notify.mobile_app_mio_telefono
+    data:
+      message: "Penalità per Leclerc: {{ trigger.to_state.attributes.reason }}"
+```
 
 ## Per iniziare
 
