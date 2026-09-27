@@ -26,7 +26,6 @@ import asyncio
 from collections.abc import Callable
 import json
 import logging
-import math
 import random
 import time
 from typing import Any
@@ -35,6 +34,7 @@ import aiohttp
 
 from ..const import USER_AGENT
 from ..core.live_state import AUTH_TOPICS, PUBLIC_TOPICS
+from .http import retry_after
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,15 +62,11 @@ _EXPECTED = (aiohttp.ClientError, TimeoutError, ValueError, KeyError, LiveTiming
 
 def _retry_after(err: aiohttp.ClientResponseError) -> float | None:
     """The seconds F1 asks for on 429/503 (`Retry-After`), capped; else None."""
-    if err.status not in (429, 503) or not err.headers:
+    if err.status not in (429, 503):
         return None
-    try:
-        seconds = float(err.headers.get("Retry-After", ""))
-    except ValueError:
-        return None  # an HTTP date, or garbage: the ordinary backoff applies
-    if not math.isfinite(seconds) or seconds < 0:
-        return None
-    return min(seconds, RETRY_AFTER_MAX)
+    # A date, or garbage, leaves it to the ordinary backoff.
+    seconds = retry_after(err.headers)
+    return None if seconds is None else min(seconds, RETRY_AFTER_MAX)
 
 
 def _ws_url(base: str) -> str:
