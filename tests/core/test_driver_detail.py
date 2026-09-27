@@ -189,6 +189,46 @@ def test_favourite_events_between_snapshots():
     assert [e for e, _ in favourites.derive(second, third, False)] == ["fastest_lap"]
 
 
+def test_pit_out_names_the_new_tyre():
+    """Spain 2026: `PitOut` arrives before F1 opens the new stint, whose compound
+    is "UNKNOWN" for a moment more; the event waits for the real one."""
+
+    def at(in_pit, stint, compound, laps=13):
+        tyre = {"compound": compound, "age": 0, "stint": stint}
+        return favourites.snapshot(
+            [row("LEC", 4, in_pit=in_pit, laps=laps, tyre=tyre)], ("LEC",)
+        )
+
+    running = at(False, 1, "hard")
+    boxed = at(True, 1, "hard")
+    assert [e for e, _ in favourites.derive(running, boxed, True)] == ["pit_in"]
+    out = at(False, 1, "hard", laps=14)
+    assert favourites.derive(boxed, out, True) == []
+    opened = at(False, 2, "unknown", laps=14)
+    assert favourites.derive(out, opened, True) == []
+    named = at(False, 2, "medium", laps=14)
+    ((event, data),) = favourites.derive(opened, named, True)
+    assert (event, data["tyre"], data["lap"]) == ("pit_out", "medium", 14)
+    assert favourites.derive(named, at(False, 2, "medium", laps=14), True) == []
+
+
+def test_a_stop_with_no_new_tyre_goes_out_with_the_lap():
+    boxed = favourites.snapshot([row("LEC", 4, in_pit=True, laps=13)], ("LEC",))
+    out = favourites.snapshot([row("LEC", 4, laps=13)], ("LEC",))
+    assert favourites.derive(boxed, out, True) == []
+    lap = favourites.snapshot([row("LEC", 4, laps=14)], ("LEC",))
+    assert [e for e, _ in favourites.derive(out, lap, True)] == ["pit_out"]
+
+
+def test_no_pit_events_on_the_way_to_the_grid():
+    """Before the start the cars drive out to the grid and back, with no lap."""
+    garage = favourites.snapshot([row("LEC", 4, in_pit=True, laps=None)], ("LEC",))
+    out = favourites.snapshot([row("LEC", 4, laps=None)], ("LEC",))
+    back = favourites.snapshot([row("LEC", 4, in_pit=True, laps=None)], ("LEC",))
+    assert favourites.derive(garage, out, True) == []
+    assert favourites.derive(out, back, True) == []
+
+
 def test_the_summary_of_a_race():
     rows = [
         {
