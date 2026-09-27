@@ -43,7 +43,7 @@ for lang in en it; do
   shot "strategy$suffix" 1440 860 "page=results&round=14&tab=strategy&lang=$lang"
   shot "lap-chart$suffix" 1440 760 "page=results&round=14&tab=lap_chart&lang=$lang&theme=dark"
   shot "standings$suffix" 1440 900 "page=standings&lang=$lang"
-  # A circuit's history (bench/fixtures: Baku), then Leclerc's years there.
+  # A circuit's history (bench/data, else bench/fixtures: Baku), then Leclerc's years there.
   shot "circuit$suffix" 1440 1100 "page=circuit&circuit=baku&lang=$lang"
   shot "circuit-driver$suffix" 1440 1250 "page=circuit&circuit=baku&driver=leclerc&lang=$lang&theme=dark"
   shot "phone$suffix" 500 1000 "page=live&live=race&lang=$lang"

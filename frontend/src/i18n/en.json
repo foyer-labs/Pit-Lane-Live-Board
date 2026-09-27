@@ -448,7 +448,7 @@
     "seasonOne": "Season {n}",
     "explain": "Affinity index: 50 = as the car that year; higher = the circuit suits the driver, lower = it does not.",
     "how": "How it is computed",
-    "howText": "For every year a driver raced here, the car's level is the team's place in that season's constructors' championship, two cars per team: first place expects P1.5, fifth P9.5. The race counts for 60% and qualifying for 40%: places gained or lost on that level. A retirement counts only when it is the driver's doing (an accident, a collision, a spin, a disqualification); mechanical failures are left out. Recent years weigh more: each year back counts 15% less. The index is 50 plus 5 points for every place better than the car, from 0 to 100. Years with no constructors' championship (before 1958) do not count.",
+    "howText": "For every year a driver raced here, the car's level is the team's place in that season's constructors' championship, two cars per team: first place expects P1.5, fifth P9.5. The race counts for 60% and qualifying for 40%: places gained or lost on that level. A retirement counts only when it is the driver's doing (an accident, a collision, a spin, a disqualification); mechanical failures are left out. Recent years weigh more: each year back counts 15% less. The index is 50 plus 5 points for every place better than the car, from 0 to 100; with few races it is pulled towards 50 (one race keeps a third of the distance, eight keep 80%), so one good afternoon does not top the list. Years with no constructors' championship (before 1958) do not count.",
     "index": "Index",
     "races": "Races",
     "racesHelp": "Races counted in the index / races here",
