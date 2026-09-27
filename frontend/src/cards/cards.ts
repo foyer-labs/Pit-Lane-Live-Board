@@ -6,7 +6,7 @@ import { api } from "../api";
 import { clockTime, number, sessionClock, sessionTime, shortTime } from "../format";
 import type { Translate } from "../i18n";
 import { ICON, icon } from "../icons";
-import { gained, tyre } from "../parts";
+import { alsoTime, gained, tyre } from "../parts";
 import { teamColour } from "../teams";
 import { stewardsCard, stewardsStyles, trackClass } from "../pages/stewards";
 import type { LiveView, Row, StandingsPage, Timed } from "../types";
@@ -367,7 +367,8 @@ export class PitLaneSessionCard extends LiveCard {
       ${final && next
         ? html`<div class="next small">${t("live.next", { meeting: next.meeting, session: t(`sessions.${next.kind}`) })}
             ${next.start ? html`· <b class="num"><plb-countdown .to=${next.start}></plb-countdown></b>` : nothing}
-            ${next.start ? html`<span class="muted">(${sessionTime(this.hass!, next.start, next.date)})</span>` : nothing}</div>`
+            ${next.start ? html`<span class="muted">(${sessionTime(this.hass!, next.start, next.date, next.timezone)})</span>` : nothing}
+            ${alsoTime(t, this.hass!, next.start, next.timezone)}</div>`
         : nothing}
     </div>`;
   }

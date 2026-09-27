@@ -6,6 +6,18 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-27
+
+### Added
+- **Choose the clock for the times**, in the panel's Settings, each user for
+  themselves: as in your Home Assistant profile, this device's time zone, or the local
+  time at the track. *Show both times* adds the other one in small, e.g. "15:00 at the
+  track" next to your time.
+
+### Fixed
+- Times now follow the time zone chosen in your Home Assistant profile ("use my
+  device's time zone"); before, they always used the server's.
+
 ## [0.3.0] - 2026-09-27
 
 ### Added

@@ -4,7 +4,7 @@ import { LitElement, css, html, nothing } from "lit";
 import { api } from "../api";
 import { countdown, dayRange, sessionTime } from "../format";
 import { translator } from "../i18n";
-import { failure, loading, person, spoilerKey } from "../parts";
+import { failure, loading, person, spoilerKey, alsoTime } from "../parts";
 import { tokens } from "../styles";
 import type { CalendarPage, Hass, Meeting, Settings } from "../types";
 
@@ -116,7 +116,7 @@ export class PlbCalendar extends LitElement {
             </button>`
         : html`<ul>
             ${m.sessions.map(
-              (s) => html`<li><span>${t(`sessions.${s.kind}`)}</span><span class="num">${sessionTime(this.hass, s.start, s.date)}</span></li>`,
+              (s) => html`<li><span>${t(`sessions.${s.kind}`)}</span><span class="num">${sessionTime(this.hass, s.start, s.date, m.timezone)}${alsoTime(t, this.hass, s.start, m.timezone)}</span></li>`,
             )}
           </ul>`}
       ${m.state === "live"

@@ -3,6 +3,7 @@
 // Intl formatters are expensive to build and the Live page formats many times a
 // second at its busiest: each one is built once per language and shape, and kept.
 import { language } from "./i18n";
+import { timePrefs } from "./timeprefs";
 import type { Hass } from "./types";
 
 function locale(hass: Hass): string {
@@ -32,19 +33,55 @@ function numberFormat(hass: Hass, digits: number): Intl.NumberFormat {
   return format;
 }
 
-function zone(hass: Hass): string {
-  return hass.config.time_zone;
+export function deviceZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 }
 
-export function sessionTime(hass: Hass, iso: string | null, day: string): string {
+/** The zone Home Assistant itself would use for this user (their profile). */
+export function homeZone(hass: Hass): string {
+  return hass.locale?.time_zone === "local" ? deviceZone() : hass.config.time_zone;
+}
+
+/** The zone times are shown in (decision 50): the user's choice, and the track's
+ *  when they chose it and it is known. */
+export function zone(hass: Hass, trackZone?: string | null): string {
+  const mode = timePrefs().zone;
+  if (mode === "circuit" && trackZone) return trackZone;
+  if (mode === "device") return deviceZone();
+  return homeZone(hass);
+}
+
+export function sessionTime(hass: Hass, iso: string | null, day: string, trackZone?: string | null): string {
   if (!iso) {
     return dateFormat(hass, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(
       new Date(`${day}T12:00:00Z`),
     );
   }
-  return dateFormat(hass, { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: zone(hass) }).format(
+  return dateFormat(hass, { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: zone(hass, trackZone) }).format(
     new Date(iso),
   );
+}
+
+/**
+ * The other clock, when the user asked for both: the track's time next to theirs,
+ * or theirs next to the track's. `local` says which of the two it is. Empty when
+ * both clocks read the same zone or the track's is unknown.
+ */
+export function otherTime(
+  hass: Hass,
+  iso: string | null,
+  trackZone: string | null | undefined,
+): { time: string; local: boolean } | null {
+  if (!iso || !trackZone || !timePrefs().both) return null;
+  const shown = zone(hass, trackZone);
+  const other = shown === trackZone ? homeZone(hass) : trackZone;
+  if (other === shown) return null;
+  const at = (timeZone: string) =>
+    dateFormat(hass, { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone }).format(new Date(iso));
+  const time = at(other);
+  // Two zone names, one clock (Madrid and Rome): nothing to add.
+  if (time === at(shown)) return null;
+  return { time, local: other === trackZone };
 }
 
 export function longDate(hass: Hass, iso: string | null): string {

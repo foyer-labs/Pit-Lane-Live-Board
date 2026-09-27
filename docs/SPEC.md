@@ -506,6 +506,7 @@ Behind the gear in the header:
   connects to F1 and nothing live is written to disk"), and "Start automatically at each
   session";
 - **TV delay:** the same control as the header's;
+- **Times** (decision 50, each user): the clock of the times shown;
 - **F1TV** (administrators only): status and expiry, a password field to paste a token,
   save, and remove with a confirmation. The backend validates the token as the options
   flow does; the answer carries the status only (INV-3);
@@ -980,6 +981,14 @@ Decisions taken in chat with the owner.
   change `show_in_sidebar` and `admin_only` from the panel as well as from *Configure*;
   both write the entry's options, and the panel is registered again only when one of
   them changes.
+
+50. **Each user chooses the clock of the times** (asked by the owner, 0.4): as in the
+  Home Assistant profile (server's zone, or the device's when the profile says so;
+  before 0.4 the server's was always used), the device's zone, or local time at the
+  track; optionally both, the other in small and omitted when both read the same hour.
+  The choice is the user's, kept with `frontend/set_user_data`. The track's zone is an
+  IANA name per circuit in `core/circuits.py` (Jolpica has none), else per country when
+  the country has one zone; unknown means no track time rather than a wrong one.
 
 ---
 

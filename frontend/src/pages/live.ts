@@ -13,7 +13,7 @@ import { ageLabel } from "../clock";
 import { clockTime, hassChanged, number, sessionClock, sessionTime, shortTime } from "../format";
 import { translator, type Translate } from "../i18n";
 import { ICON, icon } from "../icons";
-import { failure, gained, onKey, tyre } from "../parts";
+import { alsoTime, failure, gained, onKey, tyre } from "../parts";
 import { tokens } from "../styles";
 import type { Hass, LiveView, Message, NextSession, Row, Settings, Timed } from "../types";
 import { pillStyles, stewardsCard, stewardsStyles } from "./stewards";
@@ -174,7 +174,8 @@ export class PlbLive extends LitElement {
     return html`<div>${t("live.next", { meeting: next.meeting, session: t(`sessions.${next.kind}`) })}</div>
       ${next.start
         ? html`<div class="big num"><plb-countdown .to=${next.start}></plb-countdown></div>
-            <div>${t("live.startsIn")} · ${sessionTime(this.hass, next.start, next.date)}</div>`
+            <div>${t("live.startsIn")} · ${sessionTime(this.hass, next.start, next.date, next.timezone)}
+              ${alsoTime(t, this.hass, next.start, next.timezone)}</div>`
         : nothing}`;
   }
 
