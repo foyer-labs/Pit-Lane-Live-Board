@@ -34,6 +34,7 @@ export interface Settings {
   favourites: string[];
   notify_targets: string[];
   summary_kinds: string[];
+  summary_format: "compact" | "full";
   revealed: string[];
   season: number;
   first_season: number;

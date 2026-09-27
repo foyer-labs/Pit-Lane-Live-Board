@@ -976,7 +976,12 @@ var Re = {
 		testNothing: "Nothing to summarise yet: it needs a session on the Live page.",
 		testFailed: "Not sent.",
 		spoiler: "With no-spoiler mode on, the summary waits until you reveal the session or turn the mode off.",
-		testHidden: "Not sent: no-spoiler mode hides the Live page."
+		testHidden: "Not sent: no-spoiler mode hides the Live page.",
+		format: "Content",
+		compact: "Compact",
+		full: "Full",
+		compactHelp: "Podium, fastest lap, retirements, penalties and your drivers.",
+		fullHelp: "The same, then the whole classification with every driver's time: gap and best lap in a race, best lap and gap in qualifying and practice."
 	},
 	kiosk: {
 		enter: "Full screen",
@@ -1364,7 +1369,12 @@ var Re = {
 			testNothing: "Ancora niente da riepilogare: serve una sessione nella pagina Live.",
 			testFailed: "Non inviato.",
 			spoiler: "Con la modalità senza spoiler attiva, il riepilogo aspetta che tu scopra la sessione o spenga la modalità.",
-			testHidden: "Non inviato: la modalità senza spoiler nasconde la pagina Live."
+			testHidden: "Non inviato: la modalità senza spoiler nasconde la pagina Live.",
+			format: "Contenuto",
+			compact: "Compatto",
+			full: "Esteso",
+			compactHelp: "Podio, giro veloce, ritirati, penalità e i tuoi piloti.",
+			fullHelp: "Lo stesso, poi la classifica completa con il tempo di ogni pilota: distacco e giro migliore in gara, giro migliore e distacco in qualifica e nelle libere."
 		},
 		kiosk: {
 			enter: "Schermo intero",
@@ -3181,6 +3191,13 @@ var Gt = o`
 			return T`<button class="chip ${n ? "on" : ""}" ?disabled=${this.busy}
             @click=${() => this.setHousehold({ summary_kinds: this.toggle(i, t, !n) })}>${e(`sessions.${t}`)}</button>`;
 		})}</div>
+        <b class="small">${e("summary.format")}</b>
+        <div class="chips" role="radiogroup" aria-label=${e("summary.format")}>
+          ${["compact", "full"].map((n) => T`<button class="chip ${(t.summary_format ?? "compact") === n ? "on" : ""}" role="radio"
+              aria-checked=${(t.summary_format ?? "compact") === n ? "true" : "false"} ?disabled=${this.busy}
+              @click=${() => this.setHousehold({ summary_format: n })}>${e(`summary.${n}`)}</button>`)}
+        </div>
+        <small class="muted">${e(`summary.${t.summary_format === "full" ? "fullHelp" : "compactHelp"}`)}</small>
         <div class="line">
           <button class="btn flat" ?disabled=${!r.length} @click=${() => this.testSummary()}>${e("summary.test")}</button>
           ${this.testResult ? T`<span class="muted small">${e(this.testResult)}</span>` : O}

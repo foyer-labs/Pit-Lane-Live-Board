@@ -122,6 +122,7 @@ def ws_settings_get(hass, connection, msg):
         vol.Optional("favourites"): [vol.All(str, vol.Length(max=3))],
         vol.Optional("notify_targets"): [vol.All(str, vol.Length(max=100))],
         vol.Optional("summary_kinds"): [str],
+        vol.Optional("summary_format"): vol.In(("compact", "full")),
     }
 )
 @websocket_api.async_response
@@ -137,15 +138,17 @@ async def ws_settings_set(hass, connection, msg):
         settings = settings.with_live(msg["live"])
     if "auto_start" in msg:
         settings = settings.with_auto_start(msg["auto_start"])
-    household = ("favourites", "notify_targets", "summary_kinds")
+    household = ("favourites", "notify_targets", "summary_kinds", "summary_format")
     if any(key in msg for key in household) and not connection.user.is_admin:
         connection.send_error(msg["id"], "unauthorized", "Administrators only")
         return
     if "favourites" in msg:
         settings = settings.with_favourites(msg["favourites"])
-    if "notify_targets" in msg or "summary_kinds" in msg:
+    if any(k in msg for k in ("notify_targets", "summary_kinds", "summary_format")):
         settings = settings.with_summary(
-            msg.get("notify_targets"), msg.get("summary_kinds")
+            msg.get("notify_targets"),
+            msg.get("summary_kinds"),
+            msg.get("summary_format"),
         )
     await hub.async_update_settings(settings)
     connection.send_result(msg["id"], _settings_payload(hub, connection.user.is_admin))

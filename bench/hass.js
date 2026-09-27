@@ -63,6 +63,7 @@ export function createHass() {
     favourites: (params.get("fav") ?? "LEC").split(",").filter(Boolean),
     notify_targets: ["mobile_app_pixel"],
     summary_kinds: ["sprint", "race"],
+    summary_format: "compact",
     admin_only: params.get("adminOnly") === "true",
     running: ["race", "qualifying", "stale"].includes(params.get("live") ?? "race"),
     revealed: [],
@@ -95,7 +96,7 @@ export function createHass() {
           if ("no_spoiler" in msg) settings.no_spoiler = msg.no_spoiler;
           if ("live" in msg) settings.live = msg.live;
           if ("auto_start" in msg) settings.auto_start = msg.auto_start;
-          for (const key of ["favourites", "notify_targets", "summary_kinds"]) {
+          for (const key of ["favourites", "notify_targets", "summary_kinds", "summary_format"]) {
             if (key in msg) settings[key] = msg[key];
           }
           pushSettings();

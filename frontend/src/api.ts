@@ -76,7 +76,12 @@ export const api = {
   // Admins only: the household's drivers and the session summary (decisions 52, 53).
   setHousehold: (
     hass: Hass,
-    values: { favourites?: string[]; notify_targets?: string[]; summary_kinds?: string[] },
+    values: {
+      favourites?: string[];
+      notify_targets?: string[];
+      summary_kinds?: string[];
+      summary_format?: "compact" | "full";
+    },
   ) => hass.callWS<Settings>({ type: `${P}/settings/set`, ...values }),
   testSummary: (hass: Hass) =>
     hass.callWS<{ result: "sent" | "nothing" | "hidden" }>({ type: `${P}/summary/test` }),
