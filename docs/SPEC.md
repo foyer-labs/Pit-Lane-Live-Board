@@ -534,12 +534,13 @@ Behind the gear in the header:
 - **Panel** (administrators only): show in the sidebar, and only administrators can
   open it (decisions 48, 49).
 
-### 7.6 Dashboard cards (decision 47)
+### 7.6 Dashboard cards (decisions 47, 59)
 
 Each piece of the Live page is a Lovelace card, in its own module
-(`pit-lane-live-board-cards.js`) that the integration adds to every page of the
-frontend with `frontend.add_extra_js_url`: the cards are in the card picker with no
-resource to add, and a dashboard never loads the panel.
+(`pit-lane-live-board-cards.js`) that reaches every page of the frontend through two
+channels (decision 59): a Lovelace resource the integration adds by itself (in memory
+with YAML resources) and `frontend.add_extra_js_url`. The cards are in the card picker
+with no resource to add by hand, and a dashboard never loads the panel.
 
 | Card | Element | Options |
 |---|---|---|
@@ -993,7 +994,7 @@ Decisions taken in chat with the owner.
 
 47. **Dashboard cards** (asked by the owner, 0.3): §7.6. A separate module loaded on
   every page, registered by the integration (no resource to add), one shared stream,
-  a visual editor for each card.
+  a visual editor for each card. How the module reaches the page: decision 59.
 48. **The panel for administrators only, as an option** (asked by the owner, 0.3): off
   by default. It sets the panel's `require_admin`; it is not presented as a security
   boundary (§10.2).
@@ -1075,6 +1076,35 @@ Decisions taken in chat with the owner.
   list. Seasons without a constructors' table (before 1958) do not count. It reads a
   circuit, not a driver's worth: team orders and upgrades within a season are out of
   reach of these data.
+
+59. **The cards also arrive as a Lovelace resource** (asked by the owner, 0.9.2, after the
+  same fix worked on the owner's phone in another integration); it replaces the
+  delivery part of decision 47. The Companion app opens on `/?external_auth=1`, and Home
+  Assistant's service worker answers with the copy of `index.html` saved when it
+  installed, possibly weeks old: a module brought only by the index can be missing on a
+  cold start, and the card shows "Configuration error" until the resources are
+  reloaded. Resources travel over the websocket and are always current. How it is
+  built:
+  - the resource is `/api/pit_lane_live_board/frontend/loader.js`, stable, never cached
+    by the service worker, `no-cache` with an ETag; it imports the cards' module with
+    its content hash in the path, cached forever (`immutable`, `Vary:
+    Accept-Encoding`). The resource and the index lead to the same module; the panel
+    opens from its own hashed module, which also comes over the websocket;
+  - with resources in storage (the usual case) the entry is added once and removed
+    with the integration; with YAML resources it lives in memory only, never touches
+    `configuration.yaml`, and is put back after "Reload resources": the collection is
+    watched every 0.1 s for 30 s after each reload and after the registration, because
+    the page reloads without waiting for the service and reloads can overlap;
+  - addresses of earlier versions (`…cards.js?v=…`, superseded hashes) lead to the
+    current module, never to an error;
+  - the frontend registers first in the setup: the cards arrive even when the entry
+    does not start; unreadable frontend files cost the panel and the cards, not the
+    rest;
+  - after a reconnect the page's subscriptions wait 3 s before opening again, and one
+    that died with its socket is never unsubscribed. Right after a reconnect Home
+    Assistant's sidebar unsubscribes its own subscription with the old socket's id;
+    measured on Raccolta, a subscription opened in that instant gets exactly that id
+    and is cancelled with it.
 
 ---
 

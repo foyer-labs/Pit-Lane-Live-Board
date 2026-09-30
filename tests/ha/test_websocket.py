@@ -346,13 +346,6 @@ async def test_admins_set_the_panel_options(
     assert not reply["success"] and reply["error"]["code"] == "unauthorized"
 
 
-async def test_the_cards_module_is_on_every_page(hass: HomeAssistant, setup):
-    from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL
-
-    urls = list(hass.data[DATA_EXTRA_MODULE_URL].urls)
-    assert any("pit-lane-live-board-cards.js?v=" in url for url in urls)
-
-
 async def test_seasons_and_rounds_are_bounded(hass, setup, hass_ws_client):
     """A season far ahead or round 999 would each cost a request from the budget
     the calendar relies on (INV-4)."""

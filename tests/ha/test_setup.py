@@ -73,6 +73,8 @@ async def test_setup_loads_settings_and_calendar(
     await hass.async_block_till_done()
 
     runtime = entry.runtime_data
+    # The calendar loads in the background (setup never waits on F1).
+    await runtime.hub.first_tick
     assert runtime.store.settings.tv_delay == 30
     assert runtime.store.settings.no_spoiler is True
     assert runtime.store.marks == {"x": 1}
