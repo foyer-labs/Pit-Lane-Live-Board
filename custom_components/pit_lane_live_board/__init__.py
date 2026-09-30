@@ -39,6 +39,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) ->
     from .hub import Hub
     from .store import SettingsStore
 
+    # First, before anything that can fail: the cards reach every page even when
+    # the entry does not start, and say so instead of "Configuration error"
+    # (decision 59).
+    await panel.async_register_frontend(hass)
     store = SettingsStore(hass)
     await store.async_load()
     hub = Hub(hass, entry, store)
@@ -55,7 +59,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) ->
     # Timers and the calendar start in the background: setup never waits on F1.
     await hub.async_start()
     await panel.async_register(hass, entry)
-    await panel.async_register_cards(hass)
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
 
@@ -91,7 +94,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -
     if not unloaded:
         return False
     if entry.disabled_by is not None:
-        panel.async_remove(hass)
+        await panel.async_remove(hass)
     return True
 
 
@@ -102,7 +105,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: LiveBoardConfigEntry) -
     from .const import DOMAIN
     from .hub import ISSUE_F1TV, ISSUE_LIVE
 
-    panel.async_remove(hass)
+    await panel.async_remove(hass)
     for issue in (ISSUE_F1TV, ISSUE_LIVE):
         ir.async_delete_issue(hass, DOMAIN, issue)
     await store.async_remove(hass)

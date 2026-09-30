@@ -6,6 +6,30 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-09-30
+
+Restart Home Assistant after updating. Nothing to add by hand.
+
+### Fixed
+- **"Configuration error" in the Companion app:** opening the app, the dashboard
+  cards could be missing, and came back only with *Reload resources* until the next
+  opening. The app started from an old copy of the page kept by Home Assistant's
+  service worker, without the cards; now they also arrive as a dashboard resource,
+  which the app always receives up to date.
+- **Live cards after the app comes back from the background:** their subscription is
+  opened again a moment later instead of in the very instant the connection returns,
+  when Home Assistant's own sidebar could cancel it by mistake, and a subscription
+  that died with the connection is no longer unsubscribed with an id the new
+  connection may have given to someone else.
+
+### Changed
+- **A new dashboard resource**, `/api/pit_lane_live_board/frontend/loader.js`, added
+  and removed by the integration. With YAML resources it lives in memory only and never
+  touches your files; a Pit Lane resource you added by hand in the past is no longer
+  needed (removed by itself from UI-managed resources).
+- **If the integration cannot start**, the cards still load and say so, and if the
+  frontend files are unreadable only the panel and the cards are missing.
+
 ## [0.9.1] - 2026-09-27
 
 ### Changed

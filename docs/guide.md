@@ -283,6 +283,12 @@ Every piece of the Live page is also a card for your own dashboards. There is no
 to install: after the integration is set up, *Edit dashboard → Add card* lists them
 under **Pit Lane**, each with a visual editor.
 
+Among the dashboard resources (*Settings → Dashboards → ⋮ → Resources*) you will find
+one added by the integration, `/api/pit_lane_live_board/frontend/loader.js`: it is what
+brings the cards to the Companion app too. Leave it there; if you remove it, it comes
+back at the next restart, and it goes away by itself when you remove the integration.
+With YAML resources it never ends up in your files.
+
 | Card | Type | Options |
 |---|---|---|
 | Timing tower | `custom:pit-lane-tower-card` | `rows` (1–22), `columns` (`gap`, `interval`, `last`, `best`, `sectors`, `tyre`, `pits`), `highlight` (a driver's code or number) |
@@ -628,6 +634,15 @@ minute: what was loaded before is served from the cache.
 
 **Team radio list is empty.** F1 publishes a selection of clips, and for some sessions
 none at all.
+
+**In the Companion app a card says "Configuration error".** From 0.9.2 this should no
+longer happen: the app started from an old copy of the page, kept by Home Assistant's
+service worker, in which the cards were missing; now they also arrive as a dashboard
+resource, which the app always receives up to date. If it still happens after closing
+and reopening the app twice, clear the page cache from the app's settings: on Android
+*Settings → Companion app → Troubleshooting → Reset frontend cache* (Android's "Clear
+cache" is not enough); on iPhone *Settings → Companion app → Debugging → Reset frontend
+cache* (in some versions *Clear web view cache*).
 
 ## FAQ
 
