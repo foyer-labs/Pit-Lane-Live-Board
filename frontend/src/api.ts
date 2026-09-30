@@ -15,6 +15,7 @@ import type {
 
 const P = "pit_lane_live_board";
 const RETRY_AFTER = 10_000;
+const AFTER_READY = 3_000;
 
 /**
  * A subscription that survives Home Assistant restarting.
@@ -29,6 +30,13 @@ const RETRY_AFTER = 10_000;
  * Opens can overlap (two "ready" events close together, or the retry timer firing
  * while one is in flight): a generation counter keeps only the newest, and any
  * other subscription that lands is closed at once, so none is left behind.
+ *
+ * After "ready" the subscription waits 3 s (decision 59). Right after a reconnect
+ * Home Assistant's sidebar unsubscribes its own subscription with the old
+ * socket's id; ids restart on the new socket, and a subscription opened in that
+ * instant tends to get exactly that id and be cancelled with it. A subscription
+ * that died with its socket is never unsubscribed: its id, on the new socket, can
+ * belong to someone else.
  */
 async function resilient<T>(
   hass: Hass,
@@ -41,6 +49,7 @@ async function resilient<T>(
   let retry: number | undefined;
   let generation = 0;
   const release = (unsubscribe: (() => void) | undefined) => {
+    if (connection.connected === false) return; // it died with its socket
     try {
       // The library's unsubscribe is async: a refusal (the socket went) is fine.
       void Promise.resolve(unsubscribe?.() as unknown).catch(() => undefined);
@@ -68,20 +77,26 @@ async function resilient<T>(
     window.clearTimeout(retry);
     retry = undefined;
     if (closed) return;
-    current = undefined; // the old socket's subscription is gone with it
+    if (connection.connected === false) return; // the next "ready" brings us back
     const mine = generation + 1;
     open().catch(() => {
       // Only the newest open schedules a retry.
       if (!closed && mine === generation) retry = window.setTimeout(reopen, RETRY_AFTER);
     });
   };
+  const ready = () => {
+    current = undefined; // the old socket's subscription is gone with it
+    generation++; // a late answer from the old socket is ignored and closed
+    window.clearTimeout(retry);
+    if (!closed) retry = window.setTimeout(reopen, AFTER_READY);
+  };
   await open();
-  connection.addEventListener?.("ready", reopen);
+  connection.addEventListener?.("ready", ready);
   return () => {
     closed = true;
     generation++;
     window.clearTimeout(retry);
-    connection.removeEventListener?.("ready", reopen);
+    connection.removeEventListener?.("ready", ready);
     release(current);
     current = undefined;
   };

@@ -20,6 +20,7 @@ export interface Hass {
     ): Promise<() => void>;
     addEventListener?(event: "ready" | "disconnected", listener: () => void): void;
     removeEventListener?(event: "ready" | "disconnected", listener: () => void): void;
+    connected?: boolean;
   };
 }
 
