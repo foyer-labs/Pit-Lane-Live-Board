@@ -299,6 +299,12 @@ Ogni pezzo della pagina Live è anche una card per le tue plance. Non c'è nient
 installare: dopo aver configurato l'integrazione, *Modifica plancia → Aggiungi card* le
 elenca sotto **Pit Lane**, ognuna con il suo editor visuale.
 
+Tra le risorse delle plance (*Impostazioni → Plance → ⋮ → Risorse*) trovi una voce
+aggiunta dall'integrazione, `/api/pit_lane_live_board/frontend/loader.js`: è lei che
+porta le card anche nell'app Companion. Lasciala dov'è; se la togli si rimette al
+riavvio, e sparisce da sola quando rimuovi l'integrazione. Con le risorse in YAML la
+voce non finisce nei tuoi file.
+
 | Card | Tipo | Opzioni |
 |---|---|---|
 | Classifica live | `custom:pit-lane-tower-card` | `rows` (1–22), `columns` (`gap`, `interval`, `last`, `best`, `sectors`, `tyre`, `pits`), `highlight` (sigla o numero di un pilota) |
@@ -655,6 +661,16 @@ all'ora. Riprova tra un minuto: quello che era già stato caricato arriva dalla 
 
 **L'elenco dei team radio è vuoto.** La F1 pubblica una selezione dei messaggi, e per
 alcune sessioni nessuno.
+
+**Nell'app Companion una card dice «Errore di configurazione».** Dalla 0.9.2 non
+dovrebbe più succedere: l'app partiva da una copia vecchia della pagina, conservata dal
+service worker di Home Assistant, in cui le card non c'erano; ora arrivano anche come
+risorsa delle plance, che l'app riceve sempre aggiornata. Se succede ancora dopo aver
+chiuso e riaperto l'app due volte, svuota la cache della pagina dalle impostazioni
+dell'app: su Android *Impostazioni → App Companion → Risoluzione dei problemi → Reset
+frontend cache* (lo "Svuota cache" di Android non basta); su iPhone *Impostazioni → App
+Companion → Debug → Reimposta la cache del frontend* (in alcune versioni *Clear web view
+cache*).
 
 ## Domande frequenti
 
