@@ -10,7 +10,7 @@ import json
 import time
 from unittest.mock import AsyncMock, patch
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from custom_components.pit_lane_live_board import hub as hub_module
@@ -232,7 +232,10 @@ async def test_live_entities_write_only_what_changed(hass: HomeAssistant, hub):
 
 async def test_the_small_screen_writes_only_on_change(hass: HomeAssistant, hub):
     written: list[None] = []
-    unsub = async_dispatcher_connect(hass, SIGNAL_DISPLAY, lambda: written.append(None))
+    # A plain lambda would run in the executor, counted too late on a slow runner.
+    unsub = async_dispatcher_connect(
+        hass, SIGNAL_DISPLAY, callback(lambda: written.append(None))
+    )
     hub.display_enabled = True
     hub._update_display()
     count = len(written)
