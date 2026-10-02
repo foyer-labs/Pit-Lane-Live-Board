@@ -84,6 +84,7 @@ from .core.settings import Settings
 from .core.spoiler import hidden_sessions, live_hidden
 from .core.stewards import PENALTIES
 from .core.values import to_int
+from .panel import URL_PATH as PANEL_PATH
 from .store import SettingsStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -1251,12 +1252,13 @@ class Hub:
             if not self.hass.services.has_service("notify", target):
                 _LOGGER.warning("Summary not sent: notify.%s does not exist", target)
                 continue
+            call = {"title": record["title"], "message": record["message"]}
+            data = session_summary.delivery_data(target, PANEL_PATH)
+            if data:
+                call["data"] = data
             try:
                 await self.hass.services.async_call(
-                    "notify",
-                    target,
-                    {"title": record["title"], "message": record["message"]},
-                    blocking=True,
+                    "notify", target, call, blocking=True
                 )
             except Exception as err:  # a phone offline must not stop the others
                 _LOGGER.warning("Summary not sent to notify.%s: %s", target, err)
