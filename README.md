@@ -145,9 +145,19 @@ in. Red flag? Red. Green again? Green.
 stewards event fires with the driver, the seconds and the reason — straight to your phone
 if you want.
 
-**Chequered flag.** The session summary lands on your phone: podium, fastest lap,
-retirements, penalties and your drivers — or the whole classification with every time. In
-no-spoiler mode it waits until you reveal the session.
+**Chequered flag.** The session summary lands on your phone, written like a headline — or
+with the whole classification and every time. A tap opens the board. In no-spoiler mode it
+waits until you reveal the session.
+
+```text
+🏆 Antonelli wins the Spanish GP
+🥇 ANT · 🥈 VER +4.351 · 🥉 NOR +5.089
+★ LEC P4 ▲1 · HAM DNF lap 7
+⏱️ Fastest lap: RUS 1:35.587
+📈 Biggest mover: BEA P22 → P16
+❌ DNF: HAM, STR, PER, SAI
+⚖️ Penalties: SAI +5s, GAS +5s
+```
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/final.png" alt="The Live page after the race: final classification with the chequered flag, penalties, investigations, track limits, and the countdown to the next session" width="820">

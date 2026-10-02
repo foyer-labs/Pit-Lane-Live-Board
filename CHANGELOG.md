@@ -6,6 +6,30 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-02
+
+### Changed — read before updating
+- **The session summary has a new look**, written like a push headline: the title says
+  what happened (`🏆 Antonelli wins the Spanish GP`, `⚡ Norris on pole by 0.011s`),
+  the first line is the result with medals, the second your drivers (★) with places
+  gained or the lap they retired on, then the fastest lap, the biggest mover,
+  retirements and penalties. The full format adds the classification with medals, gaps
+  like `+1:26.746` and `+1 lap`, retirements at the end, and qualifying in its parts
+  (Q3, out in Q2, out in Q1). Automations that read `title` or `message` see the new
+  text.
+- The event's `facts`: `retired` is in the order the cars stopped; new `dnf` (driver and
+  lap) and `mover`; retired cars come last in `classification`; qualifying rows carry
+  `segment` (the part reached).
+
+### Added
+- On phones with the Home Assistant app, a tap on the summary opens the board, a new
+  summary replaces the previous one, and on Android it has its own notification
+  channel (*Pit Lane Live Board*) for a sound of its own. In Home Assistant's
+  notifications the summary replaces the previous one too.
+
+### Fixed
+- A followed driver who retired no longer reads as "P22 (-18)" but as retired on lap N.
+
 ## [0.9.2] - 2026-09-30
 
 Restart Home Assistant after updating. Nothing to add by hand.

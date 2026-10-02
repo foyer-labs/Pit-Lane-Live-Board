@@ -147,9 +147,19 @@ rientra. Bandiera rossa? Rosse. Di nuovo verde? Verdi.
 **Cinque secondi di penalità.** Accanto al pilota compare un `+5s` finché non la sconta, e
 l'evento dei commissari parte con pilota, secondi e motivo — dritto sul telefono, se vuoi.
 
-**Bandiera a scacchi.** Il riepilogo della sessione arriva sul telefono: podio, giro
-veloce, ritiri, penalità e i tuoi piloti — oppure la classifica completa con tutti i tempi.
-Con la modalità senza spoiler aspetta che tu scopra la sessione.
+**Bandiera a scacchi.** Il riepilogo della sessione arriva sul telefono, scritto come un
+titolo di giornale — oppure con la classifica completa e tutti i tempi. Un tocco apre la
+plancia. Con la modalità senza spoiler aspetta che tu scopra la sessione.
+
+```text
+🏆 Antonelli vince · Spanish GP
+🥇 ANT · 🥈 VER +4.351 · 🥉 NOR +5.089
+★ LEC P4 ▲1 · HAM ritirato al giro 7
+⏱️ Giro veloce: RUS 1:35.587
+📈 Rimonta: BEA da P22 a P16
+❌ Ritirati: HAM, STR, PER, SAI
+⚖️ Penalità: SAI +5s, GAS +5s
+```
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/final.it.png" alt="La pagina Live dopo la gara: classifica finale con la bandiera a scacchi, penalità, investigazioni, limiti della pista e il conto alla rovescia per la sessione successiva" width="820">
