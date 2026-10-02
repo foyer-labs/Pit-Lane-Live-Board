@@ -364,17 +364,42 @@ actions:
 
 ## Session summary
 
-When a session ends, the integration writes a short summary — podium, fastest lap,
-retirements, penalties, your drivers — and sends it to the notify services chosen in
+When a session ends, the integration sends a summary to the notify services chosen in
 Settings (one per phone with the mobile app, or `persistent_notification`), after the
 kinds of session you pick. Type a service's name to have it suggested, then *Add*; each
-chosen service has its *Remove* button. *Send a test* sends the summary of what the Live page shows.
+chosen service has its *Remove* button. *Send a test* sends the summary of what the
+Live page shows.
 
-*Content* chooses how much: **Compact** (podium, fastest lap, retirements, penalties,
-your drivers) or **Full**, which then lists the whole classification with every driver's
-time — `2. VER +4.351 · 1:35.100` in a race (gap and best lap), `2. NOR 1:26.322 +0.222`
-in qualifying and practice (best lap and gap), `ALB out (lap 23)` for a retirement. The
-event's `facts` always carry the whole classification.
+It reads like a headline: the title says what happened, the first line is the result
+and the second your drivers (★), so a locked phone already tells the story.
+
+```text
+🏆 Antonelli wins the Spanish GP
+🥇 ANT · 🥈 VER +4.351 · 🥉 NOR +5.089
+★ LEC P4 ▲1 · HAM DNF lap 7
+⏱️ Fastest lap: RUS 1:35.587
+📈 Biggest mover: BEA P22 → P16
+❌ DNF: HAM, STR, PER, SAI
+⚖️ Penalties: SAI +5s, GAS +5s
+```
+
+Qualifying leads with the pole (`⚡ Norris on pole · Spanish GP`, or the margin when it
+is under five hundredths), practice with the fastest (`⏱️ FP2: Piastri fastest`). The
+*biggest mover* is the finisher off the podium who gained most places, from three. A
+retirement shows the lap it happened on.
+
+*Content* chooses how much: **Compact**, as above, or **Full**, which adds the whole
+classification — medals for the podium, `4. ★LEC +29.116 · 1:36.063` (gap and best
+lap), `+1 lap`, ⏱️ by the fastest lap, the retirements at the end with their lap; in
+qualifying, the order in its parts: Q3 with the gaps, then *Out in Q2* and *Out in Q1*
+with each driver's time. The event's `facts` always carry the whole classification.
+
+On a phone with the Home Assistant app, a tap on the summary opens the board, and each
+summary replaces the one before instead of piling up; on Android it has a channel of
+its own, *Pit Lane Live Board*, so you can give it its own sound in the phone's
+settings. In Home Assistant's notifications, too, the new summary replaces the old one.
+Speaking it with a TTS automation? Every emoji opens its line: strip them with
+`{{ message | regex_replace('^\\W+', '', multiline=True) }}` if your speaker reads them out.
 
 It is also the **Session summary** event, with `title` and `message` ready to send or
 speak and the facts behind them, for your own automations. With no-spoiler mode on it
