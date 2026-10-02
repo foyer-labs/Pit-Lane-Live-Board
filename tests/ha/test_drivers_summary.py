@@ -112,8 +112,10 @@ async def test_the_summary_goes_to_the_chosen_services(hass: HomeAssistant, entr
     hub = entry.runtime_data.hub
     sent: list[ServiceCall] = []
     hass.services.async_register("notify", "family_phone", sent.append)
+    phone: list[ServiceCall] = []
+    hass.services.async_register("notify", "mobile_app_pixel", phone.append)
     await hub.async_update_settings(
-        hub.settings.with_summary(["notify.family_phone"], ["race"])
+        hub.settings.with_summary(["notify.family_phone", "mobile_app_pixel"], ["race"])
     )
     await hub._async_start_live(None, None)
     client = FakeClient.instances[-1]
@@ -125,8 +127,14 @@ async def test_the_summary_goes_to_the_chosen_services(hass: HomeAssistant, entr
     await settle()
     await until(lambda: sent)
     assert len(sent) == 1
-    assert sent[0].data["title"].endswith("Test Grand Prix — Race")
-    assert sent[0].data["message"].splitlines()[0] == "1. NOR · 2. LEC +1.2"
+    assert sent[0].data["title"] == "🏆 NOR wins the Test GP"
+    assert sent[0].data["message"].splitlines()[0] == "🥇 NOR · 🥈 LEC +1.2"
+    # Not a phone and not persistent_notification: title and message only.
+    assert "data" not in sent[0].data
+    await until(lambda: phone)
+    # The Companion app opens the panel on a tap and replaces the last summary.
+    assert phone[0].data["data"]["clickAction"] == "/pit-lane-live-board"
+    assert phone[0].data["data"]["tag"] == "pit_lane_live_board_summary"
     state = hass.states.get("event.pit_lane_live_board_session_summary")
     assert state.attributes["event_type"] == "summary"
 

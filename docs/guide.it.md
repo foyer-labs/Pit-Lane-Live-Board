@@ -381,18 +381,43 @@ actions:
 
 ## Riepilogo della sessione
 
-A fine sessione l'integrazione scrive un breve riepilogo — podio, giro veloce, ritiri,
-penalità, i tuoi piloti — e lo invia ai servizi di notifica scelti nelle Impostazioni
-(uno per telefono con l'app, oppure `persistent_notification`), dopo i tipi di sessione
-che scegli. Scrivi il nome di un servizio per vederlo suggerito, poi *Aggiungi*; ogni
-servizio scelto ha il suo pulsante *Rimuovi*. *Invia una prova* manda il riepilogo di ciò che mostra la pagina Live.
+A fine sessione l'integrazione invia un riepilogo ai servizi di notifica scelti nelle
+Impostazioni (uno per telefono con l'app, oppure `persistent_notification`), dopo i tipi
+di sessione che scegli. Scrivi il nome di un servizio per vederlo suggerito, poi
+*Aggiungi*; ogni servizio scelto ha il suo pulsante *Rimuovi*. *Invia una prova* manda
+il riepilogo di ciò che mostra la pagina Live.
 
-*Contenuto* sceglie quanto: **Compatto** (podio, giro veloce, ritirati, penalità, i tuoi
-piloti) oppure **Esteso**, che aggiunge la classifica completa con il tempo di ogni
-pilota — `2. VER +4.351 · 1:35.100` in gara (distacco e giro migliore),
-`2. NOR 1:26.322 +0.222` in qualifica e nelle libere (giro migliore e distacco),
-`ALB ritirato (giro 23)` per un ritiro. I `facts` dell'evento contengono sempre la
+Si legge come un titolo di giornale: il titolo dice cosa è successo, la prima riga è il
+risultato e la seconda i tuoi piloti (★), così il telefono bloccato racconta già tutto.
+
+```text
+🏆 Antonelli vince · Spanish GP
+🥇 ANT · 🥈 VER +4.351 · 🥉 NOR +5.089
+★ LEC P4 ▲1 · HAM ritirato al giro 7
+⏱️ Giro veloce: RUS 1:35.587
+📈 Rimonta: BEA da P22 a P16
+❌ Ritirati: HAM, STR, PER, SAI
+⚖️ Penalità: SAI +5s, GAS +5s
+```
+
+La qualifica apre con la pole (`⚡ Norris in pole · Spanish GP`, o il distacco quando è
+sotto i cinque centesimi), le libere con il più veloce (`⏱️ Libere 2: Piastri il più
+veloce`). La *rimonta* è quella del pilota fuori dal podio che ha guadagnato più
+posizioni, da tre in su. Un ritiro indica il giro in cui è avvenuto.
+
+*Contenuto* sceglie quanto: **Compatto**, come sopra, oppure **Esteso**, che aggiunge la
+classifica completa — medaglie per il podio, `4. ★LEC +29.116 · 1:36.063` (distacco e
+giro migliore), `+1 giro`, ⏱️ accanto al giro veloce, i ritirati in fondo con il loro
+giro; in qualifica, l'ordine diviso nelle sue parti: Q3 con i distacchi, poi *Fuori in
+Q2* e *Fuori in Q1* con il tempo di ciascuno. I `facts` dell'evento contengono sempre la
 classifica completa.
+
+Sul telefono con l'app di Home Assistant un tocco sul riepilogo apre la plancia, e ogni
+riepilogo sostituisce il precedente invece di accumularsi; su Android ha un canale suo,
+*Pit Lane Live Board*, così puoi dargli un suono dedicato nelle impostazioni del
+telefono. Anche nelle notifiche di Home Assistant il nuovo riepilogo sostituisce il
+vecchio. Lo fai leggere da un'automazione TTS? Ogni emoji apre la sua riga: toglile con
+`{{ message | regex_replace('^\\W+', '', multiline=True) }}` se l'altoparlante le legge.
 
 È anche l'evento **Riepilogo della sessione**, con `title` e `message` pronti da inviare
 o da far leggere e i dati da cui nascono, per le tue automazioni. Con la modalità senza

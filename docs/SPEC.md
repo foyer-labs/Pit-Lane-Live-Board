@@ -1106,6 +1106,22 @@ Decisions taken in chat with the owner.
     measured on Raccolta, a subscription opened in that instant gets exactly that id
     and is cancelled with it.
 
+59. **The summary reads like a push headline** (asked by the owner; copy by a
+  social/marketing review, platform facts from the Companion and core sources). Title:
+  what happened, then the meeting (`🏆 {winner} wins the {meeting}`, pole, sprint
+  pole, fastest in practice; the margin replaces the meeting under 0.050 s; "Grand
+  Prix" → "GP"). Message: line 1 the result, line 2 the household's drivers, then
+  fastest lap, biggest mover (a finisher off the podium, from 3 places), retirements by
+  the lap they happened on (`laps + 1`), penalties. Emoji only open a line. Full: race
+  with medals, `+m:ss.sss` from a minute, `+1 lap`, retirements last; qualifying in the
+  parts each driver reached (from the part bests). Plain text everywhere. The notify
+  `data` goes only where it is understood: `mobile_app_*` gets `url`/`clickAction` (the
+  panel), `tag` (replace the last summary), `group` and an Android `channel`;
+  `persistent_notification` gets `notification_id`; nothing else gets `data`. An image
+  card (Pillow is a core dependency) was weighed and left for later: Android drops the
+  long text when a picture is attached, and away from home the phone needs an external
+  URL to fetch it.
+
 ---
 
 ## 18. Choices awaiting confirmation
