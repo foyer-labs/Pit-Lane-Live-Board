@@ -364,11 +364,13 @@ actions:
 
 ## Session summary
 
-When a session ends, the integration sends a summary to the notify services chosen in
-Settings (one per phone with the mobile app, or `persistent_notification`), after the
-kinds of session you pick. Type a service's name to have it suggested, then *Add*; each
-chosen service has its *Remove* button. *Send a test* sends the summary of what the
-Live page shows.
+When a session ends, the integration sends a summary to the destinations chosen in
+Settings, after the kinds of session you pick: a phone with the Home Assistant app,
+Home Assistant's own notifications, or the notify entities that integrations such as
+the Telegram bot or e-mail create. Type part of a name — `pixel`, `telegram` — and
+pick it from the suggestions (or use the arrow keys and Enter); each chosen
+destination has its *Remove* button. *Send a test* sends the summary of what the Live
+page shows.
 
 It reads like a headline: the title says what happened, the first line is the result
 and the second your drivers (★), so a locked phone already tells the story.

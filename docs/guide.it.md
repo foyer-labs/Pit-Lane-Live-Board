@@ -381,11 +381,13 @@ actions:
 
 ## Riepilogo della sessione
 
-A fine sessione l'integrazione invia un riepilogo ai servizi di notifica scelti nelle
-Impostazioni (uno per telefono con l'app, oppure `persistent_notification`), dopo i tipi
-di sessione che scegli. Scrivi il nome di un servizio per vederlo suggerito, poi
-*Aggiungi*; ogni servizio scelto ha il suo pulsante *Rimuovi*. *Invia una prova* manda
-il riepilogo di ciò che mostra la pagina Live.
+A fine sessione l'integrazione invia un riepilogo alle destinazioni scelte nelle
+Impostazioni, dopo i tipi di sessione che scegli: un telefono con l'app di Home
+Assistant, le notifiche di Home Assistant stesso, oppure le entità di notifica create da
+integrazioni come il bot Telegram o l'e-mail. Scrivi una parte del nome — `pixel`,
+`telegram` — e sceglila tra i suggerimenti (o con le frecce e Invio); ogni destinazione
+scelta ha il suo pulsante *Rimuovi*. *Invia una prova* manda il riepilogo di ciò che
+mostra la pagina Live.
 
 Si legge come un titolo di giornale: il titolo dice cosa è successo, la prima riga è il
 risultato e la seconda i tuoi piloti (★), così il telefono bloccato racconta già tutto.

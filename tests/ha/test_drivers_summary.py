@@ -139,6 +139,32 @@ async def test_the_summary_goes_to_the_chosen_services(hass: HomeAssistant, entr
     assert state.attributes["event_type"] == "summary"
 
 
+async def test_the_summary_goes_to_a_notify_entity(hass: HomeAssistant, entry):
+    """Integrations such as the Telegram bot give notify entities, not services:
+    those are reached through notify.send_message (decision 60)."""
+    hub = entry.runtime_data.hub
+    sent: list[ServiceCall] = []
+    hass.states.async_set(
+        "notify.telegram_bot_1", "unknown", {"friendly_name": "Telegram"}
+    )
+    hass.services.async_register("notify", "send_message", sent.append)
+    await hub.async_update_settings(
+        hub.settings.with_summary(["notify.telegram_bot_1"], ["race"])
+    )
+    await hub._async_start_live(None, None)
+    client = FakeClient.instances[-1]
+    client.keyframes(
+        race(**{"4": {"Position": "1"}, "16": {"Position": "2", "GapToLeader": "+1.2"}})
+    )
+    await settle()
+    client.feed("SessionStatus", {"Status": "Finalised"})
+    await settle()
+    await until(lambda: sent)
+    assert sent[0].data["entity_id"] == "notify.telegram_bot_1"
+    assert sent[0].data["title"] == "🏆 NOR wins the Test GP"
+    assert "data" not in sent[0].data
+
+
 async def test_no_spoiler_holds_the_summary_until_it_is_off(hass: HomeAssistant, entry):
     hub = entry.runtime_data.hub
     sent: list[ServiceCall] = []

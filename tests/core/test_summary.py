@@ -252,3 +252,35 @@ def test_the_templates_have_the_same_placeholders_in_both_languages():
         assert set(re.findall(r"{\w+}", en[key])) == set(
             re.findall(r"{\w+}", it[key])
         ), key
+
+
+def test_targets_are_services_by_name_or_notify_entities_by_id():
+    from custom_components.pit_lane_live_board.core.settings import Settings
+
+    settings = Settings().with_summary(
+        [
+            " Mobile_App_Pixel ",
+            "notify.telegram_bot_1",
+            "notify.x y",
+            "a.b",
+            "mobile_app_pixel",
+        ]
+    )
+    assert settings.notify_targets == ("mobile_app_pixel", "notify.telegram_bot_1")
+
+
+def test_a_target_is_resolved_against_what_exists():
+    entities = {"notify.telegram_bot_1"}
+    services = {"mobile_app_pixel", "family_phone", "send_message"}
+
+    def resolve(target):
+        return summary.resolve_target(
+            target, entities.__contains__, services.__contains__
+        )
+
+    assert resolve("notify.telegram_bot_1") == ("entity", "notify.telegram_bot_1")
+    assert resolve("mobile_app_pixel") == ("service", "mobile_app_pixel")
+    # Older settings wrote a service with its domain.
+    assert resolve("notify.family_phone") == ("service", "family_phone")
+    assert resolve("send_message") is None
+    assert resolve("notify.gone") is None

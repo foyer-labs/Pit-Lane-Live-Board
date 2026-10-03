@@ -1111,7 +1111,7 @@ var it = {
 		help: "When a session ends, a headline with the result, your drivers, the fastest lap, the biggest mover, retirements and penalties, sent to the notify services you choose. On a phone, a tap opens the board and each summary replaces the last. It is also the “Session summary” event, for your own automations.",
 		where: "Send to",
 		which: "After",
-		noServices: "No notify service in this Home Assistant (the mobile app adds one per phone).",
+		noServices: "No notification target in this Home Assistant: the phone app adds one per phone, and integrations such as Telegram or e-mail add theirs.",
 		test: "Send a test",
 		testSent: "Sent: the summary of what the Live page shows.",
 		testNothing: "Nothing to summarise yet: it needs a session on the Live page.",
@@ -1125,9 +1125,15 @@ var it = {
 		fullHelp: "The same, then the whole classification: medals, gaps and best laps in a race with retirements at the end; qualifying in its parts (Q3, out in Q2, out in Q1).",
 		add: "Add",
 		remove: "Remove",
-		placeholder: "Type a notify service…",
-		none: "No service chosen yet.",
-		missing: "not found"
+		placeholder: "Search a phone or a service…",
+		none: "No destination chosen yet.",
+		missing: "not found",
+		noMatch: "Nothing matches: try part of the name, such as “pixel” or “telegram”.",
+		pickOne: "Pick one of the suggestions below.",
+		saveFailed: "Not saved: only administrators can change this.",
+		haNotifications: "Home Assistant notifications",
+		app: "phone app",
+		allChosen: "Every notification target is chosen."
 	},
 	kiosk: {
 		enter: "Full screen",
@@ -1605,7 +1611,7 @@ var it = {
 			help: "A fine sessione, un titolo con il risultato, i tuoi piloti, il giro veloce, la rimonta migliore, i ritiri e le penalità, inviati ai servizi di notifica che scegli. Sul telefono un tocco apre la plancia e ogni riepilogo sostituisce il precedente. È anche l'evento «Riepilogo della sessione», per le tue automazioni.",
 			where: "Invia a",
 			which: "Dopo",
-			noServices: "Nessun servizio di notifica in questo Home Assistant (l'app per telefono ne aggiunge uno per telefono).",
+			noServices: "Nessuna destinazione per le notifiche in questo Home Assistant: l'app ne aggiunge una per telefono, e integrazioni come Telegram o l'e-mail aggiungono le loro.",
 			test: "Invia una prova",
 			testSent: "Inviato: il riepilogo di ciò che mostra la pagina Live.",
 			testNothing: "Ancora niente da riepilogare: serve una sessione nella pagina Live.",
@@ -1619,9 +1625,15 @@ var it = {
 			fullHelp: "Lo stesso, poi la classifica completa: medaglie, distacchi e giri migliori in gara con i ritirati in fondo; la qualifica divisa nelle sue parti (Q3, fuori in Q2, fuori in Q1).",
 			add: "Aggiungi",
 			remove: "Rimuovi",
-			placeholder: "Scrivi un servizio di notifica…",
-			none: "Nessun servizio scelto.",
-			missing: "non trovato"
+			placeholder: "Cerca un telefono o un servizio…",
+			none: "Nessuna destinazione scelta.",
+			missing: "non trovato",
+			noMatch: "Nessun risultato: prova con una parte del nome, come «pixel» o «telegram».",
+			pickOne: "Scegli uno dei suggerimenti qui sotto.",
+			saveFailed: "Non salvato: solo gli amministratori possono cambiarlo.",
+			haNotifications: "Notifiche di Home Assistant",
+			app: "app sul telefono",
+			allChosen: "Hai già scelto tutte le destinazioni."
 		},
 		kiosk: {
 			enter: "Schermo intero",
@@ -3255,7 +3267,7 @@ var vn = class extends k {
 	let r = /* @__PURE__ */ new Map();
 	for (let i = t; i <= n; i++) r.set(e[i], i);
 	return r;
-}, Q = Be(class extends Ve {
+}, xn = Be(class extends Ve {
 	constructor(e) {
 		if (super(e), e.type !== ze.CHILD) throw Error("repeat() can only be used in text expressions");
 	}
@@ -3305,7 +3317,7 @@ var vn = class extends k {
 });
 //#endregion
 //#region src/merge.ts
-function xn(e, t) {
+function Sn(e, t) {
 	let n = new Map((e ?? []).map((e) => [e.number, e])), r = [];
 	for (let e of t.order) {
 		let i = String(e), a = t.rows[i] ?? n.get(i);
@@ -3313,34 +3325,34 @@ function xn(e, t) {
 	}
 	return r;
 }
-function Sn(e, t) {
+function Cn(e, t) {
 	if (t.full || !e) {
 		if (!t.tower_patch) return t;
 		let { tower_patch: e, ...n } = t;
 		return {
 			...n,
-			tower: xn(void 0, e)
+			tower: Sn(void 0, e)
 		};
 	}
 	let { tower_patch: n, ...r } = t, i = {
 		...e,
 		...r
 	};
-	return n && (i.tower = xn(e.tower, n)), i;
+	return n && (i.tower = Sn(e.tower, n)), i;
 }
 //#endregion
 //#region src/pages/live.ts
-var Cn = {
+var wn = {
 	all: null,
 	flags: "flag",
 	penalties: "penalty",
 	other: "other"
-}, wn = /* @__PURE__ */ new Set([
+}, Tn = /* @__PURE__ */ new Set([
 	"live",
 	"stale",
 	"lost",
 	"final"
-]), Tn = /* @__PURE__ */ new Set(["race", "sprint"]), En = class extends k {
+]), En = /* @__PURE__ */ new Set(["race", "sprint"]), Dn = class extends k {
 	constructor(...e) {
 		super(...e), this.kiosk = !1, this.clock = 0, this.selected = "", this.filter = "all", this.playing = "", this.failed = !1, this.starting = !1, this.stewardsOpen = !1, this.subscribing = !1, this.receivedAt = Date.now(), this.byNumber = /* @__PURE__ */ new Map(), this.visibility = () => {
 			document.visibilityState === "visible" && this.requestUpdate();
@@ -3398,7 +3410,7 @@ var Cn = {
 		}
 	}
 	receive(e) {
-		this.view = Sn(this.view, e), this.receivedAt = Date.now();
+		this.view = Cn(this.view, e), this.receivedAt = Date.now();
 	}
 	select(e) {
 		this.selected = this.selected === e ? "" : e;
@@ -3433,7 +3445,7 @@ var Cn = {
 		if (!t) return this.failed ? X(e, () => {
 			window.clearTimeout(this.retry), this.retry = void 0, this.subscribe();
 		}) : S`<div class="card loading">${e("common.loading")}</div>`;
-		if (wn.has(t.state)) return this.renderBoard(e, t);
+		if (Tn.has(t.state)) return this.renderBoard(e, t);
 		switch (t.state) {
 			case "hidden": return S`<div class="card state">${L(I.eyeOff, 56)}<h2>${e("live.hidden")}</h2>
           <div>${e("live.hiddenHelp", {
@@ -3586,7 +3598,7 @@ var Cn = {
         <th class="col-s">S1</th><th class="col-s">S2</th><th class="col-s">S3</th>
         <th>${e("live.tyre")}</th>${n ? T : S`<th class="col-pits">${e("live.pits")}</th>`}
       </tr></thead>
-      ${Q(t, (e) => e.number, (t, a) => S`<tbody>${this.row(e, t, a, n, r, a === i - 1)}</tbody>`)}
+      ${xn(t, (e) => e.number, (t, a) => S`<tbody>${this.row(e, t, a, n, r, a === i - 1)}</tbody>`)}
     </table>`;
 	}
 	row(e, t, n, r, i, a) {
@@ -3669,12 +3681,12 @@ var Cn = {
         @plb-select=${(e) => this.select(e.detail)}></plb-live-map></div>`;
 	}
 	renderRaceControl(e, t) {
-		let n = Cn[this.filter], r = t.filter((e) => !n || e.kind === n);
+		let n = wn[this.filter], r = t.filter((e) => !n || e.kind === n);
 		return S`<div class="card">
       <div class="card-head">${e("live.raceControl")}</div>
-      <div class="filters">${Object.keys(Cn).map((t) => S`<button class="chip small ${this.filter === t ? "on" : ""}" aria-pressed=${this.filter === t ? "true" : "false"}
+      <div class="filters">${Object.keys(wn).map((t) => S`<button class="chip small ${this.filter === t ? "on" : ""}" aria-pressed=${this.filter === t ? "true" : "false"}
           @click=${() => this.filter = t}>${e(`live.${t}`)}</button>`)}</div>
-      <div class="feed">${Q(r, (e) => `${e.utc}|${e.message}`, (t) => S`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : K(this.hass, t.utc, !0)}</span>
+      <div class="feed">${xn(r, (e) => `${e.utc}|${e.message}`, (t) => S`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : K(this.hass, t.utc, !0)}</span>
           <span>${t.message}${t.lap ? S`<time>${K(this.hass, t.utc)}</time>` : T}</span></div>`)}</div>
     </div>`;
 	}
@@ -3682,7 +3694,7 @@ var Cn = {
 		let n = t.radio ?? [];
 		return S`<div class="card">
       <div class="card-head">${e("live.radio")}</div>
-      ${n.length ? S`<div class="feed short">${Q(n, (e) => e.url, (t) => {
+      ${n.length ? S`<div class="feed short">${xn(n, (e) => e.url, (t) => {
 			let n = this.driver(t.number), r = this.playing === t.url, i = K(this.hass, t.utc);
 			return S`<div class="radio ${t.number === this.selected ? "sel" : ""}">
                 <button class="play" @click=${() => this.play(t.url)}
@@ -3712,11 +3724,11 @@ var Cn = {
     </div>`;
 	}
 	renderPits(e, t) {
-		if (!Tn.has(t.header?.kind ?? "")) return T;
+		if (!En.has(t.header?.kind ?? "")) return T;
 		let n = t.pits ?? [];
 		return S`<div class="card">
       <div class="card-head">${e("live.pitStops")}<span class="spacer"></span><small>${e("live.pitLane")}</small></div>
-      ${n.length ? S`<div class="feed short pits">${Q(n, (e) => `${e.number}|${e.lap}`, (t) => {
+      ${n.length ? S`<div class="feed short pits">${xn(n, (e) => `${e.number}|${e.lap}`, (t) => {
 			let n = this.driver(t.number);
 			return S`<div><span class="bar" style="background:${n?.colour ?? "var(--divider-color)"}"></span><b>${n?.tla ?? t.number}</b>
                 <span>${e("common.lap")} ${t.lap}</span><span class="num end">${e("delay.seconds", { n: t.duration })}</span></div>`;
@@ -3858,19 +3870,19 @@ var Cn = {
     `
 		];
 	}
-}, Dn = 5e3, On = 6e4, kn = .05, An = 30, jn = 15, Mn = [
+}, On = 5e3, kn = 6e4, An = .05, jn = 30, Mn = 15, Nn = [
 	"r",
 	"l",
 	"t",
 	"b"
-], $ = {
+], Q = {
 	r: [9, -15 / 2],
 	l: [-39, -15 / 2],
 	t: [-15, -23],
 	b: [-15, 8]
-}, Nn = class extends k {
+}, Pn = class extends k {
 	constructor(...e) {
-		super(...e), this.tower = [], this.selected = "", this.favourites = [], this.cars = [], this.width = 0, this.path = "", this.subscribing = !1, this.backoff = Dn, this.onScreen = !1, this.sides = /* @__PURE__ */ new Map(), this.focusNumber = "", this.visibility = () => this.sync();
+		super(...e), this.tower = [], this.selected = "", this.favourites = [], this.cars = [], this.width = 0, this.path = "", this.subscribing = !1, this.backoff = On, this.onScreen = !1, this.sides = /* @__PURE__ */ new Map(), this.focusNumber = "", this.visibility = () => this.sync();
 	}
 	static {
 		this.properties = {
@@ -3909,7 +3921,7 @@ var Cn = {
 		let e = !1;
 		try {
 			let e = await N.subscribeMap(this.hass, (e) => this.receive(e));
-			this.unsubscribe = e, this.backoff = Dn;
+			this.unsubscribe = e, this.backoff = On;
 		} catch {
 			e = !0;
 		} finally {
@@ -3918,7 +3930,7 @@ var Cn = {
 		if (e) {
 			this.isConnected && (this.retry = window.setTimeout(() => {
 				this.retry = void 0, this.sync();
-			}, this.backoff), this.backoff = Math.min(this.backoff * 2, On));
+			}, this.backoff), this.backoff = Math.min(this.backoff * 2, kn));
 			return;
 		}
 		this.sync();
@@ -3961,13 +3973,13 @@ var Cn = {
 			e.y + 7
 		]), i = /* @__PURE__ */ new Map(), a = (e) => r.some((t) => e[0] < t[2] && e[2] > t[0] && e[1] < t[3] && e[3] > t[1]);
 		for (let o of e) {
-			let e = this.sides.get(o.number), s = e ? [e, ...Mn.filter((t) => t !== e)] : [...Mn], c = null, l = null;
+			let e = this.sides.get(o.number), s = e ? [e, ...Nn.filter((t) => t !== e)] : [...Nn], c = null, l = null;
 			for (let e of s) {
-				let [i, s] = $[e], u = [
+				let [i, s] = Q[e], u = [
 					o.x + i,
 					o.y + s,
-					o.x + i + An,
-					o.y + s + jn
+					o.x + i + jn,
+					o.y + s + Mn
 				], d = u[0] >= 0 && u[2] <= t && u[1] >= 0 && u[3] <= n;
 				if (d && !l && (l = u), d && !a(u)) {
 					c = e, r.push(u);
@@ -3975,8 +3987,8 @@ var Cn = {
 				}
 			}
 			!c && o.important && l && (c = s.find((e) => {
-				let [r, i] = $[e];
-				return o.x + r >= 0 && o.x + r + An <= t && o.y + i >= 0 && o.y + i + jn <= n;
+				let [r, i] = Q[e];
+				return o.x + r >= 0 && o.x + r + jn <= t && o.y + i >= 0 && o.y + i + Mn <= n;
 			}) ?? null, r.push(l)), i.set(o.number, c), c && this.sides.set(o.number, c);
 		}
 		return i;
@@ -3984,7 +3996,7 @@ var Cn = {
 	render() {
 		let e = F(this.hass), t = this.outline;
 		if (!t) return S`<div class="locked">${e("live.mapDrawing")}</div>`;
-		let n = Math.max(t.width, t.height) * kn, r = t.width + 2 * n, i = t.height + 2 * n, a = new Map(this.tower.map((e) => [e.number, e])), o = new Set(this.favourites), s = this.selected.toUpperCase(), c = this.cars.filter((e) => {
+		let n = Math.max(t.width, t.height) * An, r = t.width + 2 * n, i = t.height + 2 * n, a = new Map(this.tower.map((e) => [e.number, e])), o = new Set(this.favourites), s = this.selected.toUpperCase(), c = this.cars.filter((e) => {
 			let t = a.get(e.number);
 			return t ? t.status !== "retired" : !this.tower.length;
 		}), l = (e) => {
@@ -4004,7 +4016,7 @@ var Cn = {
       <svg viewBox="${-n} ${-n} ${r} ${i}" aria-hidden="true">
         ${this.path ? C`<path class="track" d=${this.path}></path><path class="track-line" d=${this.path}></path>` : T}
       </svg>
-      ${Q(c, (e) => e.number, (e) => {
+      ${xn(c, (e) => e.number, (e) => {
 			let t = a.get(e.number), r = l(e.number), i = f.get(e.number);
 			return S`<div class=${[
 				"car",
@@ -4040,26 +4052,199 @@ var Cn = {
     .car:focus-visible .dot { box-shadow: 0 0 0 3px var(--primary-color); }
     /* The dot is small; the target around it is 36 px. */
     .car::before { content: ""; position: absolute; left: -18px; top: -18px; width: 36px; height: 36px; border-radius: 50%; }
-    .label { position: absolute; width: ${An}px; height: ${jn}px; line-height: ${jn}px; font-size: 12px; font-weight: 700;
+    .label { position: absolute; width: ${jn}px; height: ${Mn}px; line-height: ${Mn}px; font-size: 12px; font-weight: 700;
       color: var(--primary-text-color); text-align: center; pointer-events: none; white-space: nowrap;
       text-shadow: 0 0 3px var(--card-background-color), 0 0 3px var(--card-background-color), 0 0 2px var(--card-background-color); }
-    .label.r { left: ${$.r[0]}px; top: ${$.r[1]}px; text-align: left; }
-    .label.l { left: ${$.l[0]}px; top: ${$.l[1]}px; text-align: right; }
-    .label.t { left: ${$.t[0]}px; top: ${$.t[1]}px; }
-    .label.b { left: ${$.b[0]}px; top: ${$.b[1]}px; }
+    .label.r { left: ${Q.r[0]}px; top: ${Q.r[1]}px; text-align: left; }
+    .label.l { left: ${Q.l[0]}px; top: ${Q.l[1]}px; text-align: right; }
+    .label.t { left: ${Q.t[0]}px; top: ${Q.t[1]}px; }
+    .label.b { left: ${Q.b[0]}px; top: ${Q.b[1]}px; }
     .car.sel .label { z-index: 1; }
     .locked { padding: 20px 16px; color: var(--secondary-text-color); font-size: 13px; }
     @media (prefers-reduced-motion: reduce) { .car { transition: none; } }
   `;
 	}
-}, Pn = /* @__PURE__ */ new Set([
+}, Fn = /* @__PURE__ */ new Set(["send_message"]);
+function In(e) {
+	let t = e.replace(/_+/g, " ").trim();
+	return t ? t[0].toUpperCase() + t.slice(1) : e;
+}
+function Ln(e, t) {
+	let n = Object.keys(e.services?.notify ?? {}).filter((e) => !Fn.has(e)).map((e) => ({
+		id: e,
+		label: e === "persistent_notification" ? t("summary.haNotifications") : e.startsWith("mobile_app_") ? `${In(e.slice(11))} · ${t("summary.app")}` : In(e),
+		detail: `notify.${e}`
+	})), r = Object.entries(e.states ?? {}).filter(([e]) => e.startsWith("notify.")).map(([e, t]) => ({
+		id: e,
+		label: String(t.attributes?.friendly_name ?? "") || In(e.slice(7)),
+		detail: e
+	})), i = (e, t) => e.label.localeCompare(t.label);
+	return [...n.sort(i), ...r.sort(i)];
+}
+function $(e) {
+	return e.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[_.\-]+/g, " ").replace(/\s+/g, " ").trim();
+}
+function Rn(e, t) {
+	let n = $(t).split(" ").filter(Boolean);
+	return n.length ? e.filter((e) => {
+		let t = $(`${e.label} ${e.id} ${e.detail}`);
+		return n.every((e) => t.includes(e));
+	}) : e;
+}
+//#endregion
+//#region src/notify-picker-define.ts
+P("plb-notify-picker", class extends k {
+	constructor(...e) {
+		super(...e), this.chosen = [], this.disabled = !1, this.query = "", this.open = !1, this.active = 0, this.hint = "";
+	}
+	static {
+		this.properties = {
+			hass: { attribute: !1 },
+			t: { attribute: !1 },
+			chosen: { attribute: !1 },
+			disabled: { type: Boolean },
+			query: { state: !0 },
+			open: { state: !0 },
+			active: { state: !0 },
+			hint: { state: !0 }
+		};
+	}
+	all() {
+		return this.hass && this.t ? Ln(this.hass, this.t) : [];
+	}
+	suggestions(e) {
+		return Rn(e.filter((e) => !this.chosen.includes(e.id)), this.query);
+	}
+	pick(e) {
+		if (!e) {
+			this.hint = this.query.trim() ? "summary.pickOne" : "", this.open = !0;
+			return;
+		}
+		this.query = "", this.hint = "", this.active = 0, !this.chosen.includes(e.id) && this.dispatchEvent(new CustomEvent("targets-changed", { detail: { targets: [...this.chosen, e.id] } }));
+	}
+	pickTyped(e) {
+		let t = $(this.query), n = e.find((e) => $(e.id) === t || $(e.detail) === t || $(e.label) === t), r = this.open ? e[this.activeIn(e)] : void 0;
+		this.pick(n ?? r ?? (e.length === 1 ? e[0] : void 0));
+	}
+	activeIn(e) {
+		return this.active < e.length ? this.active : 0;
+	}
+	drop(e) {
+		this.dispatchEvent(new CustomEvent("targets-changed", { detail: { targets: this.chosen.filter((t) => t !== e) } }));
+	}
+	onKey(e, t) {
+		if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+			if (e.preventDefault(), !this.open) {
+				this.open = !0;
+				return;
+			}
+			let n = e.key === "ArrowDown" ? 1 : -1, r = this.activeIn(t);
+			this.active = t.length ? (r + n + t.length) % t.length : 0, this.updateComplete.then(() => this.renderRoot.querySelector(".option.active")?.scrollIntoView({ block: "nearest" }));
+		} else e.key === "Enter" ? (e.preventDefault(), this.pickTyped(t)) : e.key === "Escape" && (this.open = !1);
+	}
+	render() {
+		let e = this.t;
+		if (!e || !this.hass) return T;
+		let t = this.all(), n = new Map(t.map((e) => [e.id, e])), r = this.suggestions(t), i = this.activeIn(r), a = t.filter((e) => !this.chosen.includes(e.id)), o = "plb-notify-options";
+		return S`
+      ${this.chosen.length ? S`<ul class="chosen">
+            ${this.chosen.map((t) => {
+			let r = n.get(t) ?? n.get(t.replace(/^notify\./, ""));
+			return S`<li>
+                <span class="who">
+                  <strong>${r?.label ?? t}</strong>
+                  <span class="muted small">${r?.detail ?? t}</span>
+                </span>
+                ${r ? T : S`<span class="missing small">${e("summary.missing")}</span>`}
+                <button class="btn flat" ?disabled=${this.disabled} @click=${() => this.drop(t)}>
+                  ${e("summary.remove")}
+                </button>
+              </li>`;
+		})}
+          </ul>` : S`<span class="muted small">${e("summary.none")}</span>`}
+      ${t.length ? S`<div class="search">
+            <div class="add-row">
+              <input
+                type="text"
+                role="combobox"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                enterkeyhint="done"
+                aria-autocomplete="list"
+                aria-controls=${o}
+                aria-expanded=${this.open ? "true" : "false"}
+                aria-activedescendant=${this.open && r[i] ? `plb-opt-${i}` : ""}
+                aria-label=${e("summary.placeholder")}
+                placeholder=${a.length ? e("summary.placeholder") : e("summary.allChosen")}
+                .value=${this.query}
+                ?disabled=${this.disabled || !a.length}
+                @focus=${() => this.open = !0}
+                @click=${() => this.open = !0}
+                @blur=${() => this.open = !1}
+                @input=${(e) => {
+			this.query = e.target.value, this.open = !0, this.active = 0, this.hint = "";
+		}}
+                @keydown=${(e) => this.onKey(e, r)}
+              />
+              <button class="btn flat" ?disabled=${this.disabled || !a.length}
+                @click=${() => this.pickTyped(r)}>${e("summary.add")}</button>
+            </div>
+            ${this.open && a.length ? r.length ? S`<ul class="options" id=${o} role="listbox">
+                    ${r.map((e, t) => S`<li
+                        id=${`plb-opt-${t}`}
+                        role="option"
+                        class="option ${t === i ? "active" : ""}"
+                        aria-selected=${t === i ? "true" : "false"}
+                        @pointerdown=${(e) => e.preventDefault()}
+                        @pointerenter=${() => this.active = t}
+                        @click=${() => this.pick(e)}
+                      >
+                        <strong>${e.label}</strong>
+                        <span class="muted small">${e.detail}</span>
+                      </li>`)}
+                  </ul>` : S`<div class="muted small empty">${e("summary.noMatch")}</div>` : T}
+            ${this.hint ? S`<div class="hint small">${e(this.hint)}</div>` : T}
+          </div>` : S`<span class="muted">${e("summary.noServices")}</span>`}
+    `;
+	}
+	static {
+		this.styles = [R, o`
+      :host { display: grid; gap: 6px; }
+      .small { font-size: 12px; }
+      .muted { color: var(--secondary-text-color); }
+      ul { list-style: none; margin: 0; padding: 0; }
+      .chosen li { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 14px;
+        border-bottom: 1px solid var(--divider-color, #e0e0e0); }
+      .who { display: flex; flex-direction: column; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+      .missing, .hint { color: var(--error-color, #db4437); }
+      .search { display: grid; gap: 4px; }
+      .add-row { display: flex; gap: 8px; align-items: center; }
+      input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 8px 10px; border-radius: 8px;
+        border: 1px solid var(--divider-color, #ccc); background: var(--card-background-color, #fff);
+        color: var(--primary-text-color); box-sizing: border-box; }
+      input:focus { outline: 2px solid var(--primary-color); outline-offset: -1px; }
+      /* In the flow, not floating: nothing to clip it, on any screen. */
+      .options { max-height: 240px; overflow-y: auto; border: 1px solid var(--divider-color, #ccc);
+        border-radius: 8px; background: var(--card-background-color, #fff); }
+      .option { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; cursor: pointer;
+        min-height: 40px; justify-content: center; overflow-wrap: anywhere; }
+      .option + .option { border-top: 1px solid var(--divider-color, #e0e0e0); }
+      .option.active { background: color-mix(in srgb, var(--primary-color) 14%, transparent); }
+      .empty { padding: 6px 2px; }
+    `];
+	}
+});
+//#endregion
+//#region src/pages/settings.ts
+var zn = /* @__PURE__ */ new Set([
 	"token_invalid",
 	"token_expired",
 	"token_no_subscription",
 	"token_missing"
-]), Fn = class extends k {
+]), Bn = class extends k {
 	constructor(...e) {
-		super(...e), this.testResult = "", this.token = "", this.tokenError = "", this.saving = !1, this.confirmRemove = !1, this.busy = !1, this.clock = 0, this.asked = !1;
+		super(...e), this.testResult = "", this.token = "", this.tokenError = "", this.saving = !1, this.confirmRemove = !1, this.busy = !1, this.saveError = "", this.clock = 0, this.asked = !1;
 	}
 	static {
 		this.properties = {
@@ -4073,6 +4258,7 @@ var Cn = {
 			saving: { state: !0 },
 			confirmRemove: { state: !0 },
 			busy: { state: !0 },
+			saveError: { state: !0 },
 			clock: { attribute: !1 }
 		};
 	}
@@ -4126,7 +4312,7 @@ var Cn = {
 			await N.setToken(this.hass, e), this.token = "";
 		} catch (e) {
 			let t = e?.message ?? "";
-			this.tokenError = Pn.has(t) ? t : "token_invalid";
+			this.tokenError = zn.has(t) ? t : "token_invalid";
 		} finally {
 			this.saving = !1;
 		}
@@ -4190,11 +4376,11 @@ var Cn = {
     </section>`;
 	}
 	async setHousehold(e, t) {
-		this.busy = !0;
+		this.busy = !0, this.saveError = "";
 		try {
 			await N.setHousehold(this.hass, e), e.favourites && this.loadEntities();
 		} catch {
-			t instanceof HTMLInputElement && (t.checked = !t.checked);
+			t instanceof HTMLInputElement && (t.checked = !t.checked), this.saveError = "summary.saveFailed";
 		} finally {
 			this.busy = !1;
 		}
@@ -4228,43 +4414,16 @@ var Cn = {
 			this.testResult = "summary.testFailed";
 		}
 	}
-	renderTargets(e, t, n) {
-		let r = (e) => {
-			if (!e) return;
-			let r = e.value.trim().replace(/^notify\./, "");
-			t.includes(r) && (e.value = "", n.includes(r) || this.setHousehold({ notify_targets: [...n, r] }));
-		}, i = t.filter((e) => !n.includes(e));
-		return S`<div class="targets">
-      ${n.length ? S`<ul>${n.map((r) => S`<li>
-              <span class="who">notify.${r}</span>
-              ${t.includes(r) ? T : S`<span class="missing small">${e("summary.missing")}</span>`}
-              <button class="btn flat" ?disabled=${this.busy}
-                @click=${() => this.setHousehold({ notify_targets: n.filter((e) => e !== r) })}>${e("summary.remove")}</button>
-            </li>`)}</ul>` : S`<span class="muted small">${e("summary.none")}</span>`}
-      ${t.length ? S`<div class="add-row">
-            <input list="plb-notify-services" placeholder=${e("summary.placeholder")}
-              aria-label=${e("summary.placeholder")} ?disabled=${this.busy || !i.length}
-              @change=${(e) => {
-			let n = e.target;
-			t.includes(n.value.trim().replace(/^notify\./, "")) && r(n);
-		}}
-              @keydown=${(e) => {
-			e.key === "Enter" && r(e.target);
-		}} />
-            <button class="btn flat" ?disabled=${this.busy || !i.length}
-              @click=${(e) => r(e.target.previousElementSibling)}>${e("summary.add")}</button>
-          </div>
-          <datalist id="plb-notify-services">${i.map((e) => S`<option value=${`notify.${e}`}></option>`)}</datalist>` : S`<span class="muted">${e("summary.noServices")}</span>`}
-    </div>`;
-	}
 	renderSummary(e, t) {
-		let n = Object.keys(this.hass.services?.notify ?? {}).filter((e) => !["send_message"].includes(e)).sort(), r = t.notify_targets ?? [], i = t.summary_kinds ?? [];
+		let n = t.notify_targets ?? [], r = t.summary_kinds ?? [];
 		return S`<section class="card">
       <div class="card-head">${e("summary.title")}<span class="spacer"></span><small>${e("settings.adminOnly")}</small></div>
       <div class="body">
         <p>${e("summary.help")}</p>
         <b class="small">${e("summary.where")}</b>
-        ${this.renderTargets(e, n, r)}
+        <plb-notify-picker .hass=${this.hass} .t=${e} .chosen=${n} ?disabled=${this.busy}
+          @targets-changed=${(e) => this.setHousehold({ notify_targets: e.detail.targets })}></plb-notify-picker>
+        ${this.saveError ? S`<span class="error small">${e(this.saveError)}</span>` : T}
         <b class="small">${e("summary.which")}</b>
         <div class="chips">${[
 			"race",
@@ -4273,9 +4432,9 @@ var Cn = {
 			"sprint_qualifying",
 			"practice"
 		].map((t) => {
-			let n = i.includes(t);
+			let n = r.includes(t);
 			return S`<button class="chip ${n ? "on" : ""}" ?disabled=${this.busy}
-            @click=${() => this.setHousehold({ summary_kinds: this.toggle(i, t, !n) })}>${e(`sessions.${t}`)}</button>`;
+            @click=${() => this.setHousehold({ summary_kinds: this.toggle(r, t, !n) })}>${e(`sessions.${t}`)}</button>`;
 		})}</div>
         <b class="small">${e("summary.format")}</b>
         <div class="chips" role="radiogroup" aria-label=${e("summary.format")}>
@@ -4285,7 +4444,7 @@ var Cn = {
         </div>
         <small class="muted">${e(`summary.${t.summary_format === "full" ? "fullHelp" : "compactHelp"}`)}</small>
         <div class="line">
-          <button class="btn flat" ?disabled=${!r.length} @click=${() => this.testSummary()}>${e("summary.test")}</button>
+          <button class="btn flat" ?disabled=${!n.length} @click=${() => this.testSummary()}>${e("summary.test")}</button>
           ${this.testResult ? S`<span class="muted small">${e(this.testResult)}</span>` : T}
         </div>
         <small class="muted">${e("summary.spoiler")}</small>
@@ -4433,16 +4592,7 @@ var Cn = {
       .chips { display: flex; flex-wrap: wrap; gap: 6px; }
       .line { display: flex; align-items: center; gap: 10px; font-size: 14px; }
       .line input { width: 18px; height: 18px; accent-color: var(--primary-color); }
-      .targets { display: grid; gap: 6px; }
-      .targets ul { list-style: none; margin: 0; padding: 0; }
-      .targets li { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 14px;
-        border-bottom: 1px solid var(--divider-color, #e0e0e0); }
-      .targets .who { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-      .targets .missing { color: var(--error-color, #db4437); }
-      .add-row { display: flex; gap: 8px; align-items: center; }
-      .add-row input { flex: 1; min-width: 0; font: inherit; padding: 8px 10px; border-radius: 8px;
-        border: 1px solid var(--divider-color, #ccc); background: var(--card-background-color, #fff);
-        color: var(--primary-text-color); }
+      .error { color: var(--error-color, #db4437); }
       .body > .btn { justify-self: start; }
       .live { display: flex; align-items: center; gap: 18px; padding: 18px 16px 8px; }
       .play-box { display: grid; justify-items: center; gap: 4px; flex: none; }
@@ -4487,7 +4637,7 @@ var Cn = {
       }
     `];
 	}
-}, In = 6e5, Ln = class extends k {
+}, Vn = 6e5, Hn = class extends k {
 	constructor(...e) {
 		super(...e), this.seasons = [], this.kind = "drivers", this.round = null, this.failed = !1, this.request = 0, this.spoilers = "", this.pages = /* @__PURE__ */ new Map(), this.visibility = () => {
 			document.visibilityState === "visible" && this.refresh();
@@ -4516,7 +4666,7 @@ var Cn = {
 	}
 	refresh() {
 		let e = this.pages.get(this.key);
-		this.round === null && e && Date.now() - e.at > In && document.visibilityState !== "hidden" && this.load(!0);
+		this.round === null && e && Date.now() - e.at > Vn && document.visibilityState !== "hidden" && this.load(!0);
 	}
 	willUpdate(e) {
 		this.season === void 0 && this.settings && (this.season = this.settings.season);
@@ -4530,7 +4680,7 @@ var Cn = {
 	async load(e = !1) {
 		if (!this.hass || this.season === void 0) return;
 		let t = this.key, n = this.pages.get(t);
-		if (n && !e && (this.round !== null || Date.now() - n.at < In)) {
+		if (n && !e && (this.round !== null || Date.now() - n.at < Vn)) {
 			this.request++, this.data = n.data, this.failed = !1;
 			return;
 		}
@@ -4603,17 +4753,17 @@ var Cn = {
       @container (max-width: 420px) { .col-behind { display: none; } }
     `];
 	}
-}, Rn = [
+}, Un = [
 	"live",
 	"calendar",
 	"results",
 	"standings"
-], zn = [...Rn, "settings"], Bn = "pit-lane-live-board-page", Vn = 3e4;
-function Hn() {
+], Wn = [...Un, "settings"], Gn = "pit-lane-live-board-page", Kn = 3e4;
+function qn() {
 	return new URLSearchParams(location.search);
 }
-function Un() {
-	let e = Hn();
+function Jn() {
+	let e = qn();
 	return e.has("kiosk") && ![
 		"0",
 		"false",
@@ -4621,22 +4771,22 @@ function Un() {
 		"no"
 	].includes((e.get("kiosk") ?? "").toLowerCase());
 }
-function Wn() {
-	return Math.min(2.5, Math.max(.6, Number(Hn().get("scale")) || 1));
+function Yn() {
+	return Math.min(2.5, Math.max(.6, Number(qn().get("scale")) || 1));
 }
-function Gn() {
-	let e = Hn().get("page");
-	if (e && zn.includes(e)) return e;
+function Xn() {
+	let e = qn().get("page");
+	if (e && Wn.includes(e)) return e;
 	try {
-		let e = localStorage.getItem(Bn);
-		return e && zn.includes(e) ? e : "live";
+		let e = localStorage.getItem(Gn);
+		return e && Wn.includes(e) ? e : "live";
 	} catch {
 		return "live";
 	}
 }
-var Kn = class extends k {
+var Zn = class extends k {
 	constructor(...e) {
-		super(...e), this.narrow = !1, this.page = Gn(), this.seasons = [], this.delayOpen = !1, this.failed = !1, this.clockVersion = 0, this.kiosk = !1, this.fullscreen = !1, this.kioskAsked = !1, this.scale = 1, this.moved = () => {
+		super(...e), this.narrow = !1, this.page = Xn(), this.seasons = [], this.delayOpen = !1, this.failed = !1, this.clockVersion = 0, this.kiosk = !1, this.fullscreen = !1, this.kioskAsked = !1, this.scale = 1, this.moved = () => {
 			this.classList.remove("idle"), window.clearTimeout(this.idleTimer), this.kiosk && (this.idleTimer = window.setTimeout(() => {
 				this.kiosk && this.classList.add("idle");
 			}, 3e3));
@@ -4668,9 +4818,9 @@ var Kn = class extends k {
 		return F(this.hass);
 	}
 	connectedCallback() {
-		super.connectedCallback(), window.addEventListener(V, this.clockChanged), window.addEventListener("pointermove", this.moved), document.addEventListener("fullscreenchange", this.fullscreenChanged), document.addEventListener("visibilitychange", this.visibilityChanged), this.kioskAsked = Un(), this.kiosk = this.kioskAsked, this.fullscreen = !!document.fullscreenElement, this.scale = Wn();
-		let e = Hn().get("page");
-		e && zn.includes(e) && (this.page = e), this.kiosk && this.startKiosk();
+		super.connectedCallback(), window.addEventListener(V, this.clockChanged), window.addEventListener("pointermove", this.moved), document.addEventListener("fullscreenchange", this.fullscreenChanged), document.addEventListener("visibilitychange", this.visibilityChanged), this.kioskAsked = Jn(), this.kiosk = this.kioskAsked, this.fullscreen = !!document.fullscreenElement, this.scale = Yn();
+		let e = qn().get("page");
+		e && Wn.includes(e) && (this.page = e), this.kiosk && this.startKiosk();
 	}
 	startKiosk() {
 		this.moved(), this.keepAwake();
@@ -4729,7 +4879,7 @@ var Kn = class extends k {
 			} catch {
 				window.clearTimeout(this.seasonsTimer), this.seasonsTimer = window.setTimeout(() => {
 					this.seasonsTimer = void 0, this.loadSeasons();
-				}, Vn);
+				}, Kn);
 			} finally {
 				this.askingSeasons = !1;
 			}
@@ -4750,7 +4900,7 @@ var Kn = class extends k {
 	}
 	go(e) {
 		if ((e.page !== "circuit" || e.circuit_id) && (this.page = e.page, this.target = e, this.delayOpen = !1, e.page !== "circuit")) try {
-			localStorage.setItem(Bn, e.page);
+			localStorage.setItem(Gn, e.page);
 		} catch {}
 	}
 	setDelay(e) {
@@ -4825,7 +4975,7 @@ var Kn = class extends k {
         ${this.narrow && !this.kiosk ? S`<button class="icon-btn" @click=${this.toggleMenu} aria-label=${e("common.menu")}>${L(I.menu, 24)}</button>` : T}
         <div class="brand"><span class="mark">${L(I.board, 18)}</span><span class="name">${e("common.title")}</span></div>
         <nav class="tabs">
-          ${Rn.map((t) => S`<button class="tab ${this.page === t || this.page === "circuit" && this.target?.from === t ? "active" : ""}"
+          ${Un.map((t) => S`<button class="tab ${this.page === t || this.page === "circuit" && this.target?.from === t ? "active" : ""}"
               aria-current=${this.page === t ? "page" : "false"}
               @click=${() => this.go({ page: t })}>${e(`tabs.${t}`)}</button>`)}
         </nav>
@@ -4953,6 +5103,6 @@ var Kn = class extends k {
     `];
 	}
 };
-P("plb-calendar", qt), P("plb-results", Zt), P("plb-circuit", vn), P("plb-standings", Ln), P("plb-live", En), P("plb-live-map", Nn), P("plb-settings", Fn), P("plb-countdown", Ut), P("plb-age", Wt), P("pit-lane-live-board-panel", Kn);
+P("plb-calendar", qt), P("plb-results", Zt), P("plb-circuit", vn), P("plb-standings", Hn), P("plb-live", Dn), P("plb-live-map", Pn), P("plb-settings", Bn), P("plb-countdown", Ut), P("plb-age", Wt), P("pit-lane-live-board-panel", Zn);
 //#endregion
-export { Kn as PitLaneLiveBoardPanel };
+export { Zn as PitLaneLiveBoardPanel };

@@ -418,7 +418,7 @@
     "help": "A fine sessione, un titolo con il risultato, i tuoi piloti, il giro veloce, la rimonta migliore, i ritiri e le penalità, inviati ai servizi di notifica che scegli. Sul telefono un tocco apre la plancia e ogni riepilogo sostituisce il precedente. È anche l'evento «Riepilogo della sessione», per le tue automazioni.",
     "where": "Invia a",
     "which": "Dopo",
-    "noServices": "Nessun servizio di notifica in questo Home Assistant (l'app per telefono ne aggiunge uno per telefono).",
+    "noServices": "Nessuna destinazione per le notifiche in questo Home Assistant: l'app ne aggiunge una per telefono, e integrazioni come Telegram o l'e-mail aggiungono le loro.",
     "test": "Invia una prova",
     "testSent": "Inviato: il riepilogo di ciò che mostra la pagina Live.",
     "testNothing": "Ancora niente da riepilogare: serve una sessione nella pagina Live.",
@@ -432,9 +432,15 @@
     "fullHelp": "Lo stesso, poi la classifica completa: medaglie, distacchi e giri migliori in gara con i ritirati in fondo; la qualifica divisa nelle sue parti (Q3, fuori in Q2, fuori in Q1).",
     "add": "Aggiungi",
     "remove": "Rimuovi",
-    "placeholder": "Scrivi un servizio di notifica…",
-    "none": "Nessun servizio scelto.",
-    "missing": "non trovato"
+    "placeholder": "Cerca un telefono o un servizio…",
+    "none": "Nessuna destinazione scelta.",
+    "missing": "non trovato",
+    "noMatch": "Nessun risultato: prova con una parte del nome, come «pixel» o «telegram».",
+    "pickOne": "Scegli uno dei suggerimenti qui sotto.",
+    "saveFailed": "Non salvato: solo gli amministratori possono cambiarlo.",
+    "haNotifications": "Notifiche di Home Assistant",
+    "app": "app sul telefono",
+    "allChosen": "Hai già scelto tutte le destinazioni."
   },
   "kiosk": {
     "enter": "Schermo intero",
