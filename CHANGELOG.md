@@ -6,6 +6,16 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-10-03
+
+### Fixed
+- **The search for where to send the summary suggested nothing in some homes.** It
+  only knew notify *services*, while integrations such as the Telegram bot or e-mail
+  now create notify *entities*: those are listed and reached too. The field is
+  rewritten: suggestions appear as you type, from any part of the name (`pixel`,
+  `telegram`), on computers and in the phone app alike, with arrow keys and Enter or a
+  tap; each destination shows its name; a save that fails says so.
+
 ## [0.10.0] - 2026-10-02
 
 ### Changed — read before updating

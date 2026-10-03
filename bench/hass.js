@@ -67,7 +67,7 @@ export function createHass() {
     auto_start: params.get("auto") === "true",
     show_in_sidebar: true,
     favourites: (params.get("fav") ?? "LEC").split(",").filter(Boolean),
-    notify_targets: ["mobile_app_pixel"],
+    notify_targets: params.get("notify") === "entities" ? [] : ["mobile_app_pixel_7"],
     summary_kinds: ["sprint", "race"],
     summary_format: "compact",
     admin_only: params.get("adminOnly") === "true",
@@ -89,8 +89,21 @@ export function createHass() {
     language: params.get("lang") ?? "en",
     locale: { language: params.get("lang") ?? "en" },
     config: { time_zone: "Europe/Rome" },
-    states: {},
-    services: { notify: { mobile_app_pixel: {}, mobile_app_tablet: {}, persistent_notification: {} } },
+    // `notify=entities`: a house whose integrations give notify entities and no
+    // phone app (Telegram bot, e-mail), only the built-in services.
+    states:
+      params.get("notify") === "entities"
+        ? {
+            "notify.telegram_bot_123456": { state: "unknown", attributes: { friendly_name: "Telegram Luca" } },
+            "notify.smtp_casa": { state: "unknown", attributes: { friendly_name: "E-mail di casa" } },
+          }
+        : {},
+    services: {
+      notify:
+        params.get("notify") === "entities"
+          ? { send_message: {}, persistent_notification: {} }
+          : { send_message: {}, mobile_app_pixel_7: {}, mobile_app_ipad_di_luca: {}, persistent_notification: {} },
+    },
     user: { is_admin: admin },
     // Home Assistant's own formatting of a state, roughly: enough for the bench.
     formatEntityState(state) {

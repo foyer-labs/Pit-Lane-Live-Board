@@ -1122,6 +1122,17 @@ Decisions taken in chat with the owner.
   long text when a picture is attached, and away from home the phone needs an external
   URL to fetch it.
 
+60. **Notify targets are services or notify entities, and the panel searches them
+  itself** (a user's search never suggested anything). Integrations now create notify
+  entities (Telegram bot, e-mail, ntfy…) instead of `notify.<name>` services, so a
+  house without the phone app had nothing to pick. A target is stored as a service
+  name (`mobile_app_pixel`) or an entity id (`notify.telegram_bot_1`); at delivery a
+  `notify.x` is the entity when it exists (sent through `notify.send_message`, title
+  and message only), else the service `x`. The search field is the panel's own element
+  (`plb-notify-picker`), not a `<datalist>` (absent or patchy in the Companion apps'
+  web views): suggestions in the page flow, matched on every typed word against the
+  name and the id, keyboard and touch. Saving that fails says so.
+
 ---
 
 ## 18. Choices awaiting confirmation

@@ -418,7 +418,7 @@
     "help": "When a session ends, a headline with the result, your drivers, the fastest lap, the biggest mover, retirements and penalties, sent to the notify services you choose. On a phone, a tap opens the board and each summary replaces the last. It is also the “Session summary” event, for your own automations.",
     "where": "Send to",
     "which": "After",
-    "noServices": "No notify service in this Home Assistant (the mobile app adds one per phone).",
+    "noServices": "No notification target in this Home Assistant: the phone app adds one per phone, and integrations such as Telegram or e-mail add theirs.",
     "test": "Send a test",
     "testSent": "Sent: the summary of what the Live page shows.",
     "testNothing": "Nothing to summarise yet: it needs a session on the Live page.",
@@ -432,9 +432,15 @@
     "fullHelp": "The same, then the whole classification: medals, gaps and best laps in a race with retirements at the end; qualifying in its parts (Q3, out in Q2, out in Q1).",
     "add": "Add",
     "remove": "Remove",
-    "placeholder": "Type a notify service…",
-    "none": "No service chosen yet.",
-    "missing": "not found"
+    "placeholder": "Search a phone or a service…",
+    "none": "No destination chosen yet.",
+    "missing": "not found",
+    "noMatch": "Nothing matches: try part of the name, such as “pixel” or “telegram”.",
+    "pickOne": "Pick one of the suggestions below.",
+    "saveFailed": "Not saved: only administrators can change this.",
+    "haNotifications": "Home Assistant notifications",
+    "app": "phone app",
+    "allChosen": "Every notification target is chosen."
   },
   "kiosk": {
     "enter": "Full screen",
