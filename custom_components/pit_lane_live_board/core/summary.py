@@ -245,6 +245,23 @@ def render(
     return _title(summary, fill), "\n".join(lines)
 
 
+def resolve_target(
+    target: str, is_entity: Callable[[str], bool], has_service: Callable[[str], bool]
+) -> tuple[str, str] | None:
+    """`("entity", "notify.x")`, `("service", "x")`, or None when neither exists.
+
+    A bare name is a service. `notify.x` is the notify entity when there is one,
+    else the service `x` written with its domain (how older settings named it).
+    """
+    if target.startswith("notify."):
+        if is_entity(target):
+            return ("entity", target)
+        target = target.removeprefix("notify.")
+    if target and target != "send_message" and has_service(target):
+        return ("service", target)
+    return None
+
+
 def delivery_data(target: str, panel_path: str) -> dict[str, Any] | None:
     """The `data` of the notify call for one service, or None for none.
 
