@@ -1249,19 +1249,33 @@ class Hub:
         if event:
             async_dispatcher_send(self.hass, SIGNAL_SUMMARY, record)
         for target in self.settings.notify_targets:
-            if not self.hass.services.has_service("notify", target):
-                _LOGGER.warning("Summary not sent: notify.%s does not exist", target)
+            resolved = session_summary.resolve_target(
+                target,
+                lambda entity_id: self.hass.states.get(entity_id) is not None,
+                lambda name: self.hass.services.has_service("notify", name),
+            )
+            if resolved is None:
+                _LOGGER.warning("Summary not sent: %s does not exist", target)
                 continue
-            call = {"title": record["title"], "message": record["message"]}
-            data = session_summary.delivery_data(target, PANEL_PATH)
-            if data:
-                call["data"] = data
+            how, name = resolved
+            call: dict[str, Any] = {
+                "title": record["title"],
+                "message": record["message"],
+            }
+            if how == "entity":
+                # A notify entity takes title and message only.
+                service, call["entity_id"] = "send_message", name
+            else:
+                service = name
+                data = session_summary.delivery_data(name, PANEL_PATH)
+                if data:
+                    call["data"] = data
             try:
                 await self.hass.services.async_call(
-                    "notify", target, call, blocking=True
+                    "notify", service, call, blocking=True
                 )
             except Exception as err:  # a phone offline must not stop the others
-                _LOGGER.warning("Summary not sent to notify.%s: %s", target, err)
+                _LOGGER.warning("Summary not sent to %s: %s", target, err)
 
     async def async_send_test_summary(self) -> str:
         """From Settings: the summary of what the Live page shows, sent now to

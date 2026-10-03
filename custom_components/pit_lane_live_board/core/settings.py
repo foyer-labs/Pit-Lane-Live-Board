@@ -11,6 +11,7 @@ SD card. `auto_start` turns live timing on by itself when a session window opens
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
+import re
 from typing import Any
 
 from .favourites import normalise
@@ -26,14 +27,22 @@ def _kinds(value: Any) -> tuple[str, ...]:
     return tuple(k for k in SESSION_KINDS if k in {str(v) for v in value})
 
 
+_SERVICE = re.compile(r"^[a-z0-9_]{1,100}$")
+_ENTITY = re.compile(r"^notify\.[a-z0-9_]{1,100}$")
+
+
 def _targets(value: Any) -> tuple[str, ...]:
-    """Notify services by name (`mobile_app_pixel`), without the domain."""
+    """Where the summary goes: a notify service by name (`mobile_app_pixel`), or a
+    notify entity by id (`notify.telegram_bot_123`), which integrations create
+    instead of services nowadays. Which one a `notify.x` is, entity or a service
+    written with its domain, is settled at delivery: it depends on what exists then.
+    """
     if not isinstance(value, (list, tuple)):
         return ()
     out: list[str] = []
     for item in value:
-        name = str(item).strip().removeprefix("notify.")
-        if name and name.replace("_", "").isalnum() and name not in out:
+        name = str(item).strip().lower()
+        if (_SERVICE.match(name) or _ENTITY.match(name)) and name not in out:
             out.append(name)
     return tuple(out[:10])
 
