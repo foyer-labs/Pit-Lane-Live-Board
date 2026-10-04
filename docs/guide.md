@@ -169,7 +169,8 @@ wins, the gap to the leader and places gained or lost since the round before.
 
 Colours follow F1's convention: **purple** is the fastest of the session, **green** is
 the driver's personal best. Badges: `PIT` in the pit lane, `OUT` leaving it, `RET`
-retired, `STOP` stopped on track, `KO` knocked out of qualifying.
+retired, `STOP` stopped on track, `KO` knocked out of qualifying. A car retired or
+stopped shows, where its gap was, the lap it happened on (`lap 7`).
 
 A red `+5s` after a driver's number is a time penalty not served yet.
 
