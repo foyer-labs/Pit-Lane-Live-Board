@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from . import stints as stints_core
 from .session import (
     QUALIFYING_LIKE,
     RACE_LIKE,
@@ -56,46 +57,14 @@ def _sectors(line: dict[str, Any]) -> list[dict[str, Any] | None]:
     return [_timed(sectors[i]) if i < len(sectors) else None for i in range(3)]
 
 
-def _raw_stints(app_line: Any) -> list[dict[str, Any]]:
+def _stints(
+    app_line: Any, pits: list[int] | None, done: int | None
+) -> list[dict[str, Any]]:
+    """The driver's stints, rebuilt from the pit stops (core/stints.py), with
+    the laps each set had before its stint (`start_age`)."""
     if not isinstance(app_line, dict):
         return []
-    stints = app_line.get("Stints")
-    if isinstance(stints, dict):
-        stints = [stints[k] for k in sorted(stints, key=lambda k: to_int(k) or 0)]
-    if not isinstance(stints, list):
-        return []
-    return [s for s in stints if isinstance(s, dict)]
-
-
-def _stints(app_line: Any) -> list[dict[str, Any]]:
-    """The driver's stints so far, with the laps each covered and its best lap.
-
-    F1 sends, per stint, the laps on the set (`TotalLaps`, counting those it had
-    before when used: `StartLaps`) and the best lap of the stint (`LapTime`,
-    `LapNumber`). The laps driven in a stint are their difference; the ranges
-    follow one another from lap 1.
-    """
-    out: list[dict[str, Any]] = []
-    first = 1
-    for stint in _raw_stints(app_line):
-        total = to_int(stint.get("TotalLaps")) or 0
-        start = to_int(stint.get("StartLaps")) or 0
-        driven = max(0, total - start)
-        best = text(stint.get("LapTime"))
-        out.append(
-            {
-                "compound": _compound(stint.get("Compound")),
-                "new": to_bool(stint.get("New")),
-                "from_lap": first,
-                "to_lap": first + driven - 1 if driven else None,
-                "laps": driven,
-                "best": {"time": best, "lap": to_int(stint.get("LapNumber"))}
-                if best
-                else None,
-            }
-        )
-        first += driven
-    return out
+    return stints_core.build(app_line.get("Stints"), pits, done)
 
 
 # Mini-sector (segment) statuses in TimingData: F1's colours of each segment.
@@ -130,17 +99,16 @@ def _segments(line: dict[str, Any]) -> list[list[str]]:
     return out
 
 
-def _tyre(app_line: Any) -> dict[str, Any] | None:
-    stints = _raw_stints(app_line)
+def _tyre(stints: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """The tyre on the car now: the last stint, with the laps the set has done."""
     if not stints:
         return None
     current = stints[-1]
     return {
-        "compound": _compound(current.get("Compound")),
-        "new": to_bool(current.get("New")),
-        # TotalLaps counts the laps on this set, including those it had before
-        # the stint (a used set starts above zero).
-        "age": to_int(current.get("TotalLaps")) or 0,
+        "compound": current["compound"],
+        "new": current["new"],
+        # The laps on this set: those it had before the stint, and the stint's.
+        "age": current["start_age"] + current["laps"],
         "stint": len(stints),
     }
 
@@ -246,8 +214,12 @@ def _qualifying(
     }
 
 
-def build_tower(topics: dict[str, Any]) -> list[dict[str, Any]]:
-    """One row per driver, ordered by position (drivers without one go last)."""
+def build_tower(
+    topics: dict[str, Any], pits: dict[str, list[int]] | None = None
+) -> list[dict[str, Any]]:
+    """One row per driver, ordered by position (drivers without one go last).
+
+    `pits`: racing number → the laps of its pit stops, which place the stints."""
     timing = topics.get("TimingData")
     lines = timing.get("Lines") if isinstance(timing, dict) else None
     if not isinstance(lines, dict):
@@ -276,6 +248,8 @@ def build_tower(topics: dict[str, Any]) -> list[dict[str, Any]]:
         app_line = app_lines.get(number)
         grid = to_int(app_line.get("GridPos")) if isinstance(app_line, dict) else None
         best = line.get("BestLapTime")
+        laps = to_int(line.get("NumberOfLaps"))
+        stints = _stints(app_line, (pits or {}).get(str(number)), laps)
         row: dict[str, Any] = {
             "number": str(number),
             "tla": text(driver.get("Tla")) or str(number),
@@ -299,13 +273,15 @@ def build_tower(topics: dict[str, Any]) -> list[dict[str, Any]]:
                 else None
             ),
             "sectors": _sectors(line),
-            "tyre": _tyre(app_line),
-            "stints": _stints(app_line),
+            "tyre": _tyre(stints),
+            "stints": [
+                {k: v for k, v in stint.items() if k != "start_age"} for stint in stints
+            ],
             "segments": _segments(line),
             "pit_stops": to_int(line.get("NumberOfPitStops")) or 0,
             "in_pit": to_bool(line.get("InPit")),
             "pit_out": to_bool(line.get("PitOut")),
-            "laps": to_int(line.get("NumberOfLaps")),
+            "laps": laps,
             "grid": grid if grid else None,
             "gained": (
                 grid - position if kind in RACE_LIKE and grid and position else None

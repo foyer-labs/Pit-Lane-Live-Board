@@ -20,6 +20,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
+from . import stints as stints_core
 from .live_state import PITS, LiveState
 from .panels import header, race_control, team_radio, weather
 from .session import RACE_LIKE, session_kind, session_status, track_status
@@ -102,7 +103,7 @@ class LiveViewBuilder:
             return cached
         topics = state.topics
         if name == "tower":
-            value = build_tower(topics)
+            value = build_tower(topics, stints_core.pit_laps(state.pit_log))
             track = self._track(topics)
             penalties = penalty_seconds(self.book.summary(track))
             rejoin = self._rejoin(state, value, track)

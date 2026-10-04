@@ -14,9 +14,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
+from . import stints as stints_core
 from .merge import merge
 from .panels import race_control
-from .timing import COMPOUNDS
 from .values import colour, lap_ms, text, to_bool, to_float, to_int
 
 
@@ -169,8 +169,13 @@ def _indexed(value: Any) -> list[tuple[int, Any]]:
     return []
 
 
-def stints(app_keyframe: Any) -> dict[str, list[dict[str, Any]]]:
-    """Each driver's stints with the laps they cover, from `TimingAppData`."""
+def stints(
+    app_keyframe: Any,
+    pits: dict[str, list[int]] | None = None,
+    laps_done: dict[str, int] | None = None,
+) -> dict[str, list[dict[str, Any]]]:
+    """Each driver's stints with the laps they cover, from `TimingAppData`, placed
+    by the pit stops (core/stints.py)."""
     lines = app_keyframe.get("Lines") if isinstance(app_keyframe, dict) else None
     out: dict[str, list[dict[str, Any]]] = {}
     if not isinstance(lines, dict):
@@ -178,26 +183,23 @@ def stints(app_keyframe: Any) -> dict[str, list[dict[str, Any]]]:
     for number, line in lines.items():
         if not isinstance(line, dict):
             continue
-        first_lap = 1
-        driver_stints = []
-        for stint in _items(line.get("Stints")):
-            if not isinstance(stint, dict):
-                continue
-            total = to_int(stint.get("TotalLaps")) or 0
-            start = to_int(stint.get("StartLaps")) or 0
-            laps = max(total - start, 0)
-            compound = str(stint.get("Compound") or "").lower()
-            driver_stints.append(
-                {
-                    "compound": compound if compound in COMPOUNDS else "unknown",
-                    "new": to_bool(stint.get("New")),
-                    "start_lap": first_lap,
-                    "end_lap": first_lap + laps - 1,
-                    "start_age": start,
-                }
-            )
-            first_lap += laps
-        out[str(number)] = driver_stints
+        built = stints_core.build(
+            line.get("Stints"),
+            (pits or {}).get(str(number)),
+            (laps_done or {}).get(str(number)),
+        )
+        out[str(number)] = [
+            {
+                "compound": stint["compound"],
+                "new": stint["new"],
+                "start_lap": stint["from_lap"],
+                "end_lap": stint["to_lap"]
+                if stint["to_lap"] is not None
+                else stint["from_lap"] - 1,
+                "start_age": stint["start_age"],
+            }
+            for stint in built
+        ]
     return out
 
 
@@ -343,7 +345,17 @@ def build_detail(
     collector = LapCollector()
     for payload in timing_stream:
         collector.feed(payload)
-    strategy = stints(app_keyframe)
+    pit_lane = pit_lane_times(pit_stream)
+    pits: dict[str, list[int]] = {}
+    for stop in pit_lane:
+        if stop["lap"] is not None:
+            pits.setdefault(stop["number"], []).append(stop["lap"])
+    laps_done = {
+        number: max(lap["lap"] for lap in driver_laps)
+        for number, driver_laps in collector.laps.items()
+        if driver_laps
+    }
+    strategy = stints(app_keyframe, pits, laps_done)
     for number, driver_laps in collector.laps.items():
         for lap in driver_laps:
             compound, age = _tyre_on(strategy.get(number, []), lap["lap"])
@@ -356,6 +368,6 @@ def build_detail(
         "stints": strategy,
         "race_control": race_control({"RaceControlMessages": rcm_keyframe}),
         "weather": weather_summary(weather_stream),
-        "pit_lane": pit_lane_times(pit_stream),
+        "pit_lane": pit_lane,
         "lap_positions": lap_positions(lap_series, collector.laps),
     }
