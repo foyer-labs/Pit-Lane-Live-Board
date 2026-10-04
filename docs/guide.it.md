@@ -180,7 +180,8 @@ precedente.
 
 I colori seguono la convenzione della F1: **viola** è il più veloce della sessione,
 **verde** è il miglior personale del pilota. Etichette: `BOX` in corsia box, `USCITA`
-mentre ne esce, `RIT` ritirato, `FERMO` fermo in pista, `FUORI` eliminato in qualifica.
+mentre ne esce, `RIT` ritirato, `FERMO` fermo in pista, `FUORI` eliminato in qualifica. Un'auto ritirata
+o ferma mostra, al posto del distacco, il giro in cui è successo (`giro 7`).
 
 Un `+5s` rosso dopo il numero di un pilota è una penalità in tempo non ancora scontata.
 
