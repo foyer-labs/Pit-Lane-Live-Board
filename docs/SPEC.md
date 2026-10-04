@@ -1133,6 +1133,21 @@ Decisions taken in chat with the owner.
   web views): suggestions in the page flow, matched on every typed word against the
   name and the id, keyboard and touch. Saving that fails says so.
 
+61. **Stints are placed by the pit stops** (a user's report from the 2026 Bahrain
+  race: Leclerc's last stint "41–52" with a best lap on lap 54, Piastri on hards
+  "from lap 56"). F1's `TimingAppData.Stints` shifts its entries by sending only
+  the changed fields, so best laps stay on the wrong entry; it adds `UNKNOWN`
+  placeholders and 0–1-lap phantoms, and its lap counts need not add up to the race
+  (52 of 55). What is right: the lap of each pit stop (`PitLaneTimeCollection`, the
+  in-lap) and the race lap of a best lap (`LapNumber`). `core/stints.py` makes the
+  stops the boundaries, matches F1's entries to them in order by lap count (fit
+  first, laps dropped second, so phantoms go and a stop that changed no tyre is
+  ignored), counts back from the current lap when the stops do not fit (a feed
+  joined halfway), and gives each best lap to the stint that contains it — none
+  rather than a wrong one. The tower, the current tyre, the driver sensors and the
+  Results strategy tab all read it; cached details and final views are rebuilt
+  (`detail/v3`, `final/v3`).
+
 ---
 
 ## 18. Choices awaiting confirmation

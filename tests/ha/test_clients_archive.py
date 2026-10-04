@@ -102,7 +102,7 @@ async def test_a_past_session_without_an_index_is_read_by_file_names(
     calls = aioclient_mock.call_count
     assert await archive_client.detail(meetings, meetings[0].race) == detail
     assert aioclient_mock.call_count == calls
-    assert list(cache.root.glob("detail_v2_*"))
+    assert list(cache.root.glob("detail_v3_*"))
 
 
 async def test_a_missing_season_is_remembered(hass, aioclient_mock, cache):
@@ -166,6 +166,7 @@ async def test_old_formats_are_retired(hass, cache):
     for key in (
         f"detail/{PATH}",
         f"detail/v2/{PATH}",
+        f"detail/v3/{PATH}",
         "outline/12",
         "path/2018-5-race",
     ):
@@ -176,4 +177,4 @@ async def test_old_formats_are_retired(hass, cache):
     cache._tidied = time.monotonic() - cache_module.TIDY_EVERY - 1
     await hass.async_add_executor_job(cache.write_json, "trigger", {})
     names = sorted(p.name.split("-")[0] for p in cache.root.iterdir())
-    assert names == ["detail_v2_2018_2018", "trigger"]
+    assert names == ["detail_v3_2018_2018", "trigger"]

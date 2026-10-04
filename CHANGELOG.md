@@ -6,6 +6,17 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.10.3] - 2026-10-04
+
+### Fixed
+- **Tyre stints in the right place.** A driver's row on the Live page could show
+  stints off by a few laps, a best lap outside its stint, a tyre fitted "from lap 56"
+  of a 55-lap race, or the wrong tyre on the car: F1's feed shifts its stint list
+  and keeps phantom entries, as it did all through the Bahrain race. Stints are now
+  placed by the pit stops, which F1 reports exactly, and each best lap goes to the
+  stint it was set in. The same fix applies to the tyre in the tower and the driver
+  sensors, and to the tyre strategy in Results (races already opened are rebuilt).
+
 ## [0.10.2] - 2026-10-04
 
 ### Added
