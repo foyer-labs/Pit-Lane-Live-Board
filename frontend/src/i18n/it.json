@@ -231,7 +231,8 @@
     "leader": "Leader",
     "lappedOne": "+{n} giro",
     "lapped": "+{n} giri",
-    "pausedHelp": "Niente si collega a F1 e niente di live viene scritto su disco."
+    "pausedHelp": "Niente si collega a F1 e niente di live viene scritto su disco.",
+    "onLap": "giro {lap}"
   },
   "f1tv": {
     "active": "F1TV attivo",

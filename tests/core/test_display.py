@@ -66,3 +66,17 @@ def test_nothing_shown_when_hidden_or_paused():
         a = build(view(state), ("ANT",))["attributes"]
         assert a["p1"] == "" and a["meeting"] is None and a["track"] is None
         assert a["flag_colour"] == "#000000"
+
+
+def test_a_car_out_says_the_lap_it_stopped_on():
+    """`laps` counts the laps completed: out after 6 is out on lap 7."""
+    v = view()
+    v["tower"] += [
+        {"position": 4, "tla": "HAM", "gap": None, "status": "retired", "laps": 6},
+        {"position": 5, "tla": "STR", "gap": "+1L", "status": "stopped", "laps": 12},
+        {"position": 6, "tla": "ALB", "gap": None, "status": "retired", "laps": None},
+    ]
+    a = build(v, ())["attributes"]
+    assert a["p4"] == " 4 HAM   OUT L7"
+    assert a["p5"] == " 5 STR STOP L13"
+    assert a["p6"] == " 6 ALB      OUT"

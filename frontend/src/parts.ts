@@ -25,6 +25,14 @@ export function gapText(t: Translate, value: string | null | undefined, interval
   return value;
 }
 
+/** Where a retired or stopped car's gap was: the lap it happened on ("lap 7").
+ *  `laps` counts the laps completed, so the car stopped on the next one. Empty
+ *  for a car still running, or when the feed has no lap count. */
+export function outLap(t: Translate, status: string | null | undefined, laps: number | null | undefined): string {
+  if ((status !== "retired" && status !== "stopped") || typeof laps !== "number") return "";
+  return t("live.onLap", { lap: laps + 1 });
+}
+
 /** The session's name in the page's language: F1 names it in English. */
 export function sessionName(t: Translate, kind: string | null | undefined, name: string | null | undefined): string {
   const number = /(\d)\s*$/.exec(name ?? "")?.[1];

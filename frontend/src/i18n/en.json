@@ -231,7 +231,8 @@
     "leader": "Leader",
     "lappedOne": "+{n} lap",
     "lapped": "+{n} laps",
-    "pausedHelp": "Nothing connects to F1 and nothing live is written to disk."
+    "pausedHelp": "Nothing connects to F1 and nothing live is written to disk.",
+    "onLap": "lap {lap}"
   },
   "f1tv": {
     "active": "F1TV active",

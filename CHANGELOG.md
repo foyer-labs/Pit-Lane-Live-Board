@@ -6,6 +6,13 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-10-04
+
+### Added
+- **The lap a car retired or stopped on.** In the Live page's timing tower and the
+  timing-tower card, a car marked `RET` or `STOP` shows `lap 7` where its gap was;
+  the small-screen sensor writes `OUT L7` and `STOP L7`.
+
 ## [0.10.1] - 2026-10-03
 
 ### Fixed

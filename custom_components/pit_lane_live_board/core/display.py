@@ -42,8 +42,13 @@ def _row(row: dict[str, Any], qualifying: bool) -> str:
         gap = ""
     if row.get("in_pit"):
         gap = "PIT"
-    elif row.get("status") == "retired":
-        gap = "OUT"
+    elif row.get("status") in ("retired", "stopped"):
+        # The lap it happened on: `laps` counts the laps completed.
+        word = "OUT" if row["status"] == "retired" else "STOP"
+        laps = row.get("laps")
+        gap = (
+            f"{word} L{laps + 1}" if isinstance(laps, int) and not qualifying else word
+        )
     tyre_text = f"{letter}{age}" if tyre and age is not None else ""
     return (
         f"{row.get('position') or '-':>2} {row['tla']:<3} {gap:>8} {tyre_text}".rstrip()

@@ -6,7 +6,7 @@ import { api } from "../api";
 import { clockTime, number, sessionClock, sessionTime, shortTime } from "../format";
 import type { Translate } from "../i18n";
 import { ICON, icon } from "../icons";
-import { alsoTime, gained, gapText, segmentStrip, sessionName, spoilerKey, tyre } from "../parts";
+import { alsoTime, gained, gapText, segmentStrip, sessionName, spoilerKey, tyre, outLap } from "../parts";
 import { teamColour } from "../teams";
 import { stewardsCard, stewardsStyles, trackClass } from "../pages/stewards";
 import type { LiveView, Row, Settings, StandingsPage, Timed } from "../types";
@@ -108,8 +108,10 @@ export class PitLaneTowerCard extends LiveCard {
             <span class="tla" title=${r.name ?? ""}>${r.tla}</span>
             ${r.penalty ? html`<span class="badge pen">+${r.penalty}s</span>` : nothing}
             ${r.in_pit ? html`<span class="badge pit">${t("live.pit")}</span>` : nothing}
+            ${r.status === "retired" ? html`<span class="badge ret">${t("live.ret")}</span>` : nothing}
+            ${r.status === "stopped" ? html`<span class="badge ret">${t("live.stop")}</span>` : nothing}
             ${gained(r.gained, false)}</span></td>
-          ${columns.has("gap") ? html`<td class="t">${r.qualifying?.gap ?? gapText(t, r.gap)}</td>` : nothing}
+          ${columns.has("gap") ? html`<td class="t">${r.qualifying?.gap ?? (outLap(t, r.status, r.laps) || gapText(t, r.gap))}</td>` : nothing}
           ${columns.has("interval") ? html`<td class="t">${gapText(t, r.interval, true)}</td>` : nothing}
           ${columns.has("last") ? html`<td>${timed(r.last_lap)}</td>` : nothing}
           ${columns.has("best") ? html`<td class="t">${r.qualifying?.best ?? r.best_lap?.time ?? ""}</td>` : nothing}

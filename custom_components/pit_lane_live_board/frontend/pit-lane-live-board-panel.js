@@ -257,34 +257,34 @@ var g = class extends HTMLElement {
 g.elementStyles = [], g.shadowRootOptions = { mode: "open" }, g[re("elementProperties")] = /* @__PURE__ */ new Map(), g[re("finalized")] = /* @__PURE__ */ new Map(), ne?.({ ReactiveElement: g }), (h.reactiveElementVersions ??= []).push("2.1.2");
 //#endregion
 //#region node_modules/lit-html/lit-html.js
-var se = globalThis, ce = (e) => e, le = se.trustedTypes, ue = le ? le.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, de = "$lit$", _ = `lit$${Math.random().toFixed(9).slice(2)}$`, fe = "?" + _, pe = `<${fe}>`, v = document, me = () => v.createComment(""), y = (e) => e === null || typeof e != "object" && typeof e != "function", he = Array.isArray, ge = (e) => he(e) || typeof e?.[Symbol.iterator] == "function", _e = "[ 	\n\f\r]", b = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ve = /-->/g, ye = />/g, x = RegExp(`>|${_e}(?:([^\\s"'>=/]+)(${_e}*=${_e}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), be = /'/g, xe = /"/g, Se = /^(?:script|style|textarea|title)$/i, Ce = (e) => (t, ...n) => ({
+var se = globalThis, ce = (e) => e, le = se.trustedTypes, ue = le ? le.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, de = "$lit$", _ = `lit$${Math.random().toFixed(9).slice(2)}$`, fe = "?" + _, pe = `<${fe}>`, v = document, me = () => v.createComment(""), he = (e) => e === null || typeof e != "object" && typeof e != "function", ge = Array.isArray, _e = (e) => ge(e) || typeof e?.[Symbol.iterator] == "function", ve = "[ 	\n\f\r]", y = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ye = /-->/g, be = />/g, b = RegExp(`>|${ve}(?:([^\\s"'>=/]+)(${ve}*=${ve}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), xe = /'/g, Se = /"/g, Ce = /^(?:script|style|textarea|title)$/i, we = (e) => (t, ...n) => ({
 	_$litType$: e,
 	strings: t,
 	values: n
-}), S = Ce(1), C = Ce(2), w = Symbol.for("lit-noChange"), T = Symbol.for("lit-nothing"), we = /* @__PURE__ */ new WeakMap(), E = v.createTreeWalker(v, 129);
-function Te(e, t) {
-	if (!he(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+}), x = we(1), S = we(2), C = Symbol.for("lit-noChange"), w = Symbol.for("lit-nothing"), Te = /* @__PURE__ */ new WeakMap(), T = v.createTreeWalker(v, 129);
+function Ee(e, t) {
+	if (!ge(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
 	return ue === void 0 ? t : ue.createHTML(t);
 }
-var Ee = (e, t) => {
-	let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = b;
+var De = (e, t) => {
+	let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = y;
 	for (let t = 0; t < n; t++) {
 		let n = e[t], s, c, l = -1, u = 0;
-		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === b ? c[1] === "!--" ? o = ve : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = x) : (Se.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = x) : o = ye : o === x ? c[0] === ">" ? (o = i ?? b, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? x : c[3] === "\"" ? xe : be) : o === xe || o === be ? o = x : o === ve || o === ye ? o = b : (o = x, i = void 0);
-		let d = o === x && e[t + 1].startsWith("/>") ? " " : "";
-		a += o === b ? n + pe : l >= 0 ? (r.push(s), n.slice(0, l) + de + n.slice(l) + _ + d) : n + _ + (l === -2 ? t : d);
+		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === y ? c[1] === "!--" ? o = ye : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = b) : (Ce.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = b) : o = be : o === b ? c[0] === ">" ? (o = i ?? y, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? b : c[3] === "\"" ? Se : xe) : o === Se || o === xe ? o = b : o === ye || o === be ? o = y : (o = b, i = void 0);
+		let d = o === b && e[t + 1].startsWith("/>") ? " " : "";
+		a += o === y ? n + pe : l >= 0 ? (r.push(s), n.slice(0, l) + de + n.slice(l) + _ + d) : n + _ + (l === -2 ? t : d);
 	}
-	return [Te(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
-}, De = class e {
+	return [Ee(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
+}, Oe = class e {
 	constructor({ strings: t, _$litType$: n }, r) {
 		let i;
 		this.parts = [];
-		let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = Ee(t, n);
-		if (this.el = e.createElement(l, r), E.currentNode = this.el.content, n === 2 || n === 3) {
+		let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = De(t, n);
+		if (this.el = e.createElement(l, r), T.currentNode = this.el.content, n === 2 || n === 3) {
 			let e = this.el.content.firstChild;
 			e.replaceWith(...e.childNodes);
 		}
-		for (; (i = E.nextNode()) !== null && c.length < s;) {
+		for (; (i = T.nextNode()) !== null && c.length < s;) {
 			if (i.nodeType === 1) {
 				if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(de)) {
 					let t = u[o++], n = i.getAttribute(e).split(_), r = /([.?@])?(.*)/.exec(t);
@@ -293,17 +293,17 @@ var Ee = (e, t) => {
 						index: a,
 						name: r[2],
 						strings: n,
-						ctor: r[1] === "." ? Ae : r[1] === "?" ? je : r[1] === "@" ? Me : O
+						ctor: r[1] === "." ? je : r[1] === "?" ? Me : r[1] === "@" ? Ne : D
 					}), i.removeAttribute(e);
 				} else e.startsWith(_) && (c.push({
 					type: 6,
 					index: a
 				}), i.removeAttribute(e));
-				if (Se.test(i.tagName)) {
+				if (Ce.test(i.tagName)) {
 					let e = i.textContent.split(_), t = e.length - 1;
 					if (t > 0) {
 						i.textContent = le ? le.emptyScript : "";
-						for (let n = 0; n < t; n++) i.append(e[n], me()), E.nextNode(), c.push({
+						for (let n = 0; n < t; n++) i.append(e[n], me()), T.nextNode(), c.push({
 							type: 2,
 							index: ++a
 						});
@@ -331,12 +331,12 @@ var Ee = (e, t) => {
 		return n.innerHTML = e, n;
 	}
 };
-function D(e, t, n = e, r) {
-	if (t === w) return t;
-	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = y(t) ? void 0 : t._$litDirective$;
-	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ??= [])[r] = i), i !== void 0 && (t = D(e, i._$AS(e, t.values), i, r)), t;
+function E(e, t, n = e, r) {
+	if (t === C) return t;
+	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = he(t) ? void 0 : t._$litDirective$;
+	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ??= [])[r] = i), i !== void 0 && (t = E(e, i._$AS(e, t.values), i, r)), t;
 }
-var Oe = class {
+var ke = class {
 	constructor(e, t) {
 		this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
 	}
@@ -348,27 +348,27 @@ var Oe = class {
 	}
 	u(e) {
 		let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? v).importNode(t, !0);
-		E.currentNode = r;
-		let i = E.nextNode(), a = 0, o = 0, s = n[0];
+		T.currentNode = r;
+		let i = T.nextNode(), a = 0, o = 0, s = n[0];
 		for (; s !== void 0;) {
 			if (a === s.index) {
 				let t;
-				s.type === 2 ? t = new ke(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new Ne(i, this, e)), this._$AV.push(t), s = n[++o];
+				s.type === 2 ? t = new Ae(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new Pe(i, this, e)), this._$AV.push(t), s = n[++o];
 			}
-			a !== s?.index && (i = E.nextNode(), a++);
+			a !== s?.index && (i = T.nextNode(), a++);
 		}
-		return E.currentNode = v, r;
+		return T.currentNode = v, r;
 	}
 	p(e) {
 		let t = 0;
 		for (let n of this._$AV) n !== void 0 && (n.strings === void 0 ? n._$AI(e[t]) : (n._$AI(e, n, t), t += n.strings.length - 2)), t++;
 	}
-}, ke = class e {
+}, Ae = class e {
 	get _$AU() {
 		return this._$AM?._$AU ?? this._$Cv;
 	}
 	constructor(e, t, n, r) {
-		this.type = 2, this._$AH = T, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
+		this.type = 2, this._$AH = w, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
 	}
 	get parentNode() {
 		let e = this._$AA.parentNode, t = this._$AM;
@@ -381,7 +381,7 @@ var Oe = class {
 		return this._$AB;
 	}
 	_$AI(e, t = this) {
-		e = D(this, e, t), y(e) ? e === T || e == null || e === "" ? (this._$AH !== T && this._$AR(), this._$AH = T) : e !== this._$AH && e !== w && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? ge(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
+		e = E(this, e, t), he(e) ? e === w || e == null || e === "" ? (this._$AH !== w && this._$AR(), this._$AH = w) : e !== this._$AH && e !== C && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? _e(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
 	}
 	O(e) {
 		return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -390,22 +390,22 @@ var Oe = class {
 		this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
 	}
 	_(e) {
-		this._$AH !== T && y(this._$AH) ? this._$AA.nextSibling.data = e : this.T(v.createTextNode(e)), this._$AH = e;
+		this._$AH !== w && he(this._$AH) ? this._$AA.nextSibling.data = e : this.T(v.createTextNode(e)), this._$AH = e;
 	}
 	$(e) {
-		let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = De.createElement(Te(n.h, n.h[0]), this.options)), n);
+		let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = Oe.createElement(Ee(n.h, n.h[0]), this.options)), n);
 		if (this._$AH?._$AD === r) this._$AH.p(t);
 		else {
-			let e = new Oe(r, this), n = e.u(this.options);
+			let e = new ke(r, this), n = e.u(this.options);
 			e.p(t), this.T(n), this._$AH = e;
 		}
 	}
 	_$AC(e) {
-		let t = we.get(e.strings);
-		return t === void 0 && we.set(e.strings, t = new De(e)), t;
+		let t = Te.get(e.strings);
+		return t === void 0 && Te.set(e.strings, t = new Oe(e)), t;
 	}
 	k(t) {
-		he(this._$AH) || (this._$AH = [], this._$AR());
+		ge(this._$AH) || (this._$AH = [], this._$AR());
 		let n = this._$AH, r, i = 0;
 		for (let a of t) i === n.length ? n.push(r = new e(this.O(me()), this.O(me()), this, this.options)) : r = n[i], r._$AI(a), i++;
 		i < n.length && (this._$AR(r && r._$AB.nextSibling, i), n.length = i);
@@ -419,7 +419,7 @@ var Oe = class {
 	setConnected(e) {
 		this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
 	}
-}, O = class {
+}, D = class {
 	get tagName() {
 		return this.element.tagName;
 	}
@@ -427,47 +427,47 @@ var Oe = class {
 		return this._$AM._$AU;
 	}
 	constructor(e, t, n, r, i) {
-		this.type = 1, this._$AH = T, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = T;
+		this.type = 1, this._$AH = w, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = w;
 	}
 	_$AI(e, t = this, n, r) {
 		let i = this.strings, a = !1;
-		if (i === void 0) e = D(this, e, t, 0), a = !y(e) || e !== this._$AH && e !== w, a && (this._$AH = e);
+		if (i === void 0) e = E(this, e, t, 0), a = !he(e) || e !== this._$AH && e !== C, a && (this._$AH = e);
 		else {
 			let r = e, o, s;
-			for (e = i[0], o = 0; o < i.length - 1; o++) s = D(this, r[n + o], t, o), s === w && (s = this._$AH[o]), a ||= !y(s) || s !== this._$AH[o], s === T ? e = T : e !== T && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
+			for (e = i[0], o = 0; o < i.length - 1; o++) s = E(this, r[n + o], t, o), s === C && (s = this._$AH[o]), a ||= !he(s) || s !== this._$AH[o], s === w ? e = w : e !== w && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
 		}
 		a && !r && this.j(e);
 	}
 	j(e) {
-		e === T ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
+		e === w ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
 	}
-}, Ae = class extends O {
+}, je = class extends D {
 	constructor() {
 		super(...arguments), this.type = 3;
 	}
 	j(e) {
-		this.element[this.name] = e === T ? void 0 : e;
+		this.element[this.name] = e === w ? void 0 : e;
 	}
-}, je = class extends O {
+}, Me = class extends D {
 	constructor() {
 		super(...arguments), this.type = 4;
 	}
 	j(e) {
-		this.element.toggleAttribute(this.name, !!e && e !== T);
+		this.element.toggleAttribute(this.name, !!e && e !== w);
 	}
-}, Me = class extends O {
+}, Ne = class extends D {
 	constructor(e, t, n, r, i) {
 		super(e, t, n, r, i), this.type = 5;
 	}
 	_$AI(e, t = this) {
-		if ((e = D(this, e, t, 0) ?? T) === w) return;
-		let n = this._$AH, r = e === T && n !== T || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== T && (n === T || r);
+		if ((e = E(this, e, t, 0) ?? w) === C) return;
+		let n = this._$AH, r = e === w && n !== w || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== w && (n === w || r);
 		r && this.element.removeEventListener(this.name, this, n), i && this.element.addEventListener(this.name, this, e), this._$AH = e;
 	}
 	handleEvent(e) {
 		typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
 	}
-}, Ne = class {
+}, Pe = class {
 	constructor(e, t, n) {
 		this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = n;
 	}
@@ -475,33 +475,33 @@ var Oe = class {
 		return this._$AM._$AU;
 	}
 	_$AI(e) {
-		D(this, e);
+		E(this, e);
 	}
-}, Pe = {
+}, Fe = {
 	M: de,
 	P: _,
 	A: fe,
 	C: 1,
-	L: Ee,
-	R: Oe,
-	D: ge,
-	V: D,
-	I: ke,
-	H: O,
-	N: je,
-	U: Me,
-	B: Ae,
-	F: Ne
-}, Fe = se.litHtmlPolyfillSupport;
-Fe?.(De, ke), (se.litHtmlVersions ??= []).push("3.3.3");
-var Ie = (e, t, n) => {
+	L: De,
+	R: ke,
+	D: _e,
+	V: E,
+	I: Ae,
+	H: D,
+	N: Me,
+	U: Ne,
+	B: je,
+	F: Pe
+}, Ie = se.litHtmlPolyfillSupport;
+Ie?.(Oe, Ae), (se.litHtmlVersions ??= []).push("3.3.3");
+var Le = (e, t, n) => {
 	let r = n?.renderBefore ?? t, i = r._$litPart$;
 	if (i === void 0) {
 		let e = n?.renderBefore ?? null;
-		r._$litPart$ = i = new ke(t.insertBefore(me(), e), e, void 0, n ?? {});
+		r._$litPart$ = i = new Ae(t.insertBefore(me(), e), e, void 0, n ?? {});
 	}
 	return i._$AI(e), i;
-}, Le = globalThis, k = class extends g {
+}, Re = globalThis, O = class extends g {
 	constructor() {
 		super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
 	}
@@ -511,7 +511,7 @@ var Ie = (e, t, n) => {
 	}
 	update(e) {
 		let t = this.render();
-		this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Ie(t, this.renderRoot, this.renderOptions);
+		this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Le(t, this.renderRoot, this.renderOptions);
 	}
 	connectedCallback() {
 		super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -520,25 +520,25 @@ var Ie = (e, t, n) => {
 		super.disconnectedCallback(), this._$Do?.setConnected(!1);
 	}
 	render() {
-		return w;
+		return C;
 	}
 };
-k._$litElement$ = !0, k.finalized = !0, Le.litElementHydrateSupport?.({ LitElement: k });
-var Re = Le.litElementPolyfillSupport;
-Re?.({ LitElement: k }), (Le.litElementVersions ??= []).push("4.2.2");
+O._$litElement$ = !0, O.finalized = !0, Re.litElementHydrateSupport?.({ LitElement: O });
+var ze = Re.litElementPolyfillSupport;
+ze?.({ LitElement: O }), (Re.litElementVersions ??= []).push("4.2.2");
 //#endregion
 //#region node_modules/lit-html/directive.js
-var ze = {
+var Be = {
 	ATTRIBUTE: 1,
 	CHILD: 2,
 	PROPERTY: 3,
 	BOOLEAN_ATTRIBUTE: 4,
 	EVENT: 5,
 	ELEMENT: 6
-}, Be = (e) => (...t) => ({
+}, Ve = (e) => (...t) => ({
 	_$litDirective$: e,
 	values: t
-}), Ve = class {
+}), He = class {
 	constructor(e) {}
 	get _$AU() {
 		return this._$AM._$AU;
@@ -552,9 +552,9 @@ var ze = {
 	update(e, t) {
 		return this.render(...t);
 	}
-}, { I: He } = Pe, Ue = (e) => e, We = (e, t) => t === void 0 ? e?._$litType$ !== void 0 : e?._$litType$ === t, Ge = (e) => e?._$litType$?.h != null, Ke = () => document.createComment(""), A = (e, t, n) => {
+}, { I: Ue } = Fe, We = (e) => e, Ge = (e, t) => t === void 0 ? e?._$litType$ !== void 0 : e?._$litType$ === t, Ke = (e) => e?._$litType$?.h != null, qe = () => document.createComment(""), k = (e, t, n) => {
 	let r = e._$AA.parentNode, i = t === void 0 ? e._$AB : t._$AA;
-	if (n === void 0) n = new He(r.insertBefore(Ke(), i), r.insertBefore(Ke(), i), e, e.options);
+	if (n === void 0) n = new Ue(r.insertBefore(qe(), i), r.insertBefore(qe(), i), e, e.options);
 	else {
 		let t = n._$AB.nextSibling, a = n._$AM, o = a !== e;
 		if (o) {
@@ -564,17 +564,17 @@ var ze = {
 		if (t !== i || o) {
 			let e = n._$AA;
 			for (; e !== t;) {
-				let t = Ue(e).nextSibling;
-				Ue(r).insertBefore(e, i), e = t;
+				let t = We(e).nextSibling;
+				We(r).insertBefore(e, i), e = t;
 			}
 		}
 	}
 	return n;
-}, j = (e, t, n = e) => (e._$AI(t, n), e), qe = {}, Je = (e, t = qe) => e._$AH = t, Ye = (e) => e._$AH, Xe = (e) => {
+}, A = (e, t, n = e) => (e._$AI(t, n), e), Je = {}, Ye = (e, t = Je) => e._$AH = t, Xe = (e) => e._$AH, Ze = (e) => {
 	e._$AR(), e._$AA.remove();
-}, Ze = (e) => {
+}, Qe = (e) => {
 	e._$AR();
-}, Qe = (e) => Ge(e) ? e._$litType$.h : e.strings, $e = Be(class extends Ve {
+}, $e = (e) => Ke(e) ? e._$litType$.h : e.strings, et = Ve(class extends He {
 	constructor(e) {
 		super(e), this.et = /* @__PURE__ */ new WeakMap();
 	}
@@ -582,25 +582,25 @@ var ze = {
 		return [e];
 	}
 	update(e, [t]) {
-		let n = We(this.it) ? Qe(this.it) : null, r = We(t) ? Qe(t) : null;
+		let n = Ge(this.it) ? $e(this.it) : null, r = Ge(t) ? $e(t) : null;
 		if (n !== null && (r === null || n !== r)) {
-			let t = Ye(e).pop(), r = this.et.get(n);
-			r === void 0 && (r = Ie(T, document.createDocumentFragment()), r.setConnected(!1), this.et.set(n, r)), Je(r, [t]), A(r, void 0, t);
+			let t = Xe(e).pop(), r = this.et.get(n);
+			r === void 0 && (r = Le(w, document.createDocumentFragment()), r.setConnected(!1), this.et.set(n, r)), Ye(r, [t]), k(r, void 0, t);
 		}
 		if (r !== null) {
 			if (n === null || n !== r) {
 				let t = this.et.get(r);
 				if (t !== void 0) {
-					let n = Ye(t).pop();
-					Ze(e), A(e, void 0, n), Je(e, [n]);
+					let n = Xe(t).pop();
+					Qe(e), k(e, void 0, n), Ye(e, [n]);
 				}
 			}
 			this.it = t;
 		} else this.it = void 0;
 		return this.render(t);
 	}
-}), M = "pit_lane_live_board", et = 1e4, tt = 3e3;
-async function nt(e, t, n) {
+}), j = "pit_lane_live_board", tt = 1e4, nt = 3e3;
+async function rt(e, t, n) {
 	let r = e.connection, i, a = !1, o, s = 0, c = (e) => {
 		if (r.connected !== !1) try {
 			Promise.resolve(e?.()).catch(() => void 0);
@@ -618,80 +618,80 @@ async function nt(e, t, n) {
 		if (window.clearTimeout(o), o = void 0, a || r.connected === !1) return;
 		let e = s + 1;
 		l().catch(() => {
-			!a && e === s && (o = window.setTimeout(u, et));
+			!a && e === s && (o = window.setTimeout(u, tt));
 		});
 	}, d = () => {
-		i = void 0, s++, window.clearTimeout(o), a || (o = window.setTimeout(u, tt));
+		i = void 0, s++, window.clearTimeout(o), a || (o = window.setTimeout(u, nt));
 	};
 	return await l(), r.addEventListener?.("ready", d), () => {
 		a = !0, s++, window.clearTimeout(o), r.removeEventListener?.("ready", d), c(i), i = void 0;
 	};
 }
-var N = {
-	settings: (e) => e.callWS({ type: `${M}/settings/get` }),
+var M = {
+	settings: (e) => e.callWS({ type: `${j}/settings/get` }),
 	setSettings: (e, t) => e.callWS({
-		type: `${M}/settings/set`,
+		type: `${j}/settings/set`,
 		...t
 	}),
 	setToken: (e, t) => e.callWS({
-		type: `${M}/f1tv/set`,
+		type: `${j}/f1tv/set`,
 		token: t
 	}),
-	removeToken: (e) => e.callWS({ type: `${M}/f1tv/remove` }),
+	removeToken: (e) => e.callWS({ type: `${j}/f1tv/remove` }),
 	setPanel: (e, t) => e.callWS({
-		type: `${M}/panel/set`,
+		type: `${j}/panel/set`,
 		...t
 	}),
 	setHousehold: (e, t) => e.callWS({
-		type: `${M}/settings/set`,
+		type: `${j}/settings/set`,
 		...t
 	}),
-	testSummary: (e) => e.callWS({ type: `${M}/summary/test` }),
-	entities: (e) => e.callWS({ type: `${M}/entities` }),
+	testSummary: (e) => e.callWS({ type: `${j}/summary/test` }),
+	entities: (e) => e.callWS({ type: `${j}/entities` }),
 	reveal: (e, t) => e.callWS({
-		type: `${M}/spoiler/reveal`,
+		type: `${j}/spoiler/reveal`,
 		session: t
 	}),
-	seasons: (e) => e.callWS({ type: `${M}/seasons` }),
+	seasons: (e) => e.callWS({ type: `${j}/seasons` }),
 	calendar: (e, t) => e.callWS({
-		type: `${M}/calendar/get`,
+		type: `${j}/calendar/get`,
 		season: t
 	}),
 	rounds: (e, t) => e.callWS({
-		type: `${M}/results/season`,
+		type: `${j}/results/season`,
 		season: t
 	}),
 	detail: (e, t, n, r) => e.callWS({
-		type: `${M}/results/detail`,
+		type: `${j}/results/detail`,
 		season: t,
 		round: n,
 		tab: r
 	}),
 	standings: (e, t, n, r) => e.callWS({
-		type: `${M}/standings/get`,
+		type: `${j}/standings/get`,
 		season: t,
 		round: n,
 		kind: r
 	}),
 	circuitHistory: (e, t) => e.callWS({
-		type: `${M}/circuit/history`,
+		type: `${j}/circuit/history`,
 		circuit_id: t
 	}),
 	circuitDriver: (e, t, n) => e.callWS({
-		type: `${M}/circuit/driver`,
+		type: `${j}/circuit/driver`,
 		circuit_id: t,
 		driver_id: n
 	}),
-	subscribeSettings: (e, t) => nt(e, { type: `${M}/settings/subscribe` }, t),
-	subscribeLive: (e, t) => nt(e, { type: `${M}/live/subscribe` }, t),
-	subscribeMap: (e, t) => nt(e, { type: `${M}/map/subscribe` }, t)
-}, rt = document.querySelector("home-assistant") && !customElements.get("home-assistant") ? customElements.whenDefined("home-assistant") : Promise.resolve();
-function P(e, t) {
-	rt.then(() => {
+	subscribeSettings: (e, t) => rt(e, { type: `${j}/settings/subscribe` }, t),
+	subscribeLive: (e, t) => rt(e, { type: `${j}/live/subscribe` }, t),
+	subscribeMap: (e, t) => rt(e, { type: `${j}/map/subscribe` }, t)
+}, it = document.querySelector("home-assistant") && !customElements.get("home-assistant") ? customElements.whenDefined("home-assistant") : Promise.resolve();
+function N(e, t) {
+	it.then(() => {
 		customElements.get(e) || customElements.define(e, t);
 	});
 }
-var it = {
+var at = {
 	tabs: {
 		live: "Live",
 		calendar: "Calendar",
@@ -924,7 +924,8 @@ var it = {
 		leader: "Leader",
 		lappedOne: "+{n} lap",
 		lapped: "+{n} laps",
-		pausedHelp: "Nothing connects to F1 and nothing live is written to disk."
+		pausedHelp: "Nothing connects to F1 and nothing live is written to disk.",
+		onLap: "lap {lap}"
 	},
 	f1tv: {
 		active: "F1TV active",
@@ -1189,8 +1190,8 @@ var it = {
 		q: "Q",
 		pitLane: "Pit lane"
 	}
-}, at = {
-	en: it,
+}, ot = {
+	en: at,
 	it: {
 		tabs: {
 			live: "Live",
@@ -1424,7 +1425,8 @@ var it = {
 			leader: "Leader",
 			lappedOne: "+{n} giro",
 			lapped: "+{n} giri",
-			pausedHelp: "Niente si collega a F1 e niente di live viene scritto su disco."
+			pausedHelp: "Niente si collega a F1 e niente di live viene scritto su disco.",
+			onLap: "giro {lap}"
 		},
 		f1tv: {
 			active: "F1TV attivo",
@@ -1691,10 +1693,10 @@ var it = {
 		}
 	}
 };
-function ot(e) {
+function st(e) {
 	return (e?.locale?.language ?? e?.language ?? "en").toLowerCase().startsWith("it") ? "it" : "en";
 }
-function st(e, t) {
+function ct(e, t) {
 	let n = e;
 	for (let e of t.split(".")) {
 		if (typeof n != "object" || !n) return;
@@ -1702,22 +1704,22 @@ function st(e, t) {
 	}
 	return typeof n == "string" ? n : void 0;
 }
-var ct = {
+var lt = {
 	en: /* @__PURE__ */ new Map(),
 	it: /* @__PURE__ */ new Map()
 };
-function F(e) {
-	let t = ot(e), n = at[t], r = ct[t];
+function P(e) {
+	let t = st(e), n = ot[t], r = lt[t];
 	return (e, t) => {
 		let i = r.get(e);
-		i === void 0 && (i = st(n, e) ?? st(it, e) ?? e, r.set(e, i));
+		i === void 0 && (i = ct(n, e) ?? ct(at, e) ?? e, r.set(e, i));
 		for (let [e, n] of Object.entries(t ?? {})) i = i.replaceAll(`{${e}}`, String(n));
 		return i;
 	};
 }
 //#endregion
 //#region src/icons.ts
-var I = {
+var F = {
 	clock: "M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16m0-18a10 10 0 1 1 0 20 10 10 0 0 1 0-20m.5 5v5.25l4.5 2.67-.75 1.23L11 13V7z",
 	eyeOff: "M11.83 9 15 12.16V12a3 3 0 0 0-3-3zm-4.3.8 1.55 1.55A3 3 0 0 0 12 15c.22 0 .44-.03.65-.08l1.55 1.55A5 5 0 0 1 7 12c0-.79.2-1.53.53-2.2M2 4.27l2.28 2.28.45.45A11.8 11.8 0 0 0 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.43.42L19.73 22 21 20.73 3.27 3zM12 7a5 5 0 0 1 5 5c0 .64-.13 1.26-.36 1.82l2.93 2.93c1.5-1.25 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-4 .7l2.17 2.15C10.74 7.13 11.35 7 12 7",
 	eye: "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6m0 8a5 5 0 1 1 0-10 5 5 0 0 1 0 10m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5",
@@ -1733,7 +1735,7 @@ var I = {
 	fullscreen: "M5 5h5v2H7v3H5zm9 0h5v5h-2V7h-3zm3 9h2v5h-5v-2h3zm-7 3v2H5v-5h2v3z",
 	exitFullscreen: "M14 14h5v2h-3v3h-2zm-9 0h5v5H8v-3H5zm3-9h2v5H5V8h3zm6 0h2v3h3v2h-5z",
 	cog: "M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.51.51 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64z"
-}, L = (e, t = 20) => C`<svg viewBox="0 0 24 24" width=${t} height=${t} fill="currentColor" aria-hidden="true"><path d=${e}></path></svg>`, R = o`
+}, I = (e, t = 20) => S`<svg viewBox="0 0 24 24" width=${t} height=${t} fill="currentColor" aria-hidden="true"><path d=${e}></path></svg>`, L = o`
   :host {
     --plb-purple: #a24bdb;
     --plb-green: #1fa855;
@@ -1885,7 +1887,7 @@ var I = {
     .link { min-height: 40px; }
     select { height: 40px; }
   }
-`, lt = o`
+`, ut = o`
   @supports (animation-timeline: scroll()) {
     .feed { animation: plb-more-y linear both; animation-timeline: scroll(self block); }
   }
@@ -1893,14 +1895,14 @@ var I = {
     0%, 97% { mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent); }
     100% { mask-image: none; }
   }
-`, z = {
+`, R = {
 	soft: "--plb-soft",
 	medium: "--plb-medium",
 	hard: "--plb-hard",
 	intermediate: "--plb-intermediate",
 	wet: "--plb-wet",
 	unknown: "--plb-unknown"
-}, ut = {
+}, dt = {
 	mercedes: "#27F4D2",
 	ferrari: "#E8002D",
 	mclaren: "#F47600",
@@ -1913,7 +1915,7 @@ var I = {
 	sauber: "#52E252",
 	audi: "#BB0A30",
 	cadillac: "#909090"
-}, dt = [
+}, ft = [
 	"#5c6bc0",
 	"#26a69a",
 	"#ef6c00",
@@ -1925,57 +1927,57 @@ var I = {
 	"#3949ab",
 	"#c0ca33"
 ];
-function B(e, t) {
+function z(e, t) {
 	if (t) return t;
-	if (e && ut[e]) return ut[e];
+	if (e && dt[e]) return dt[e];
 	let n = 0;
 	for (let t of e ?? "") n = n * 31 + t.charCodeAt(0) >>> 0;
-	return dt[n % dt.length];
+	return ft[n % ft.length];
 }
 //#endregion
 //#region src/timeprefs.ts
-var ft = "pit_lane_live_board_time", V = "plb-time-prefs", H = {
+var pt = "pit_lane_live_board_time", B = "plb-time-prefs", V = {
 	zone: "home_assistant",
 	both: !1
-}, pt;
-function mt() {
-	return H;
+}, mt;
+function ht() {
+	return V;
 }
-function ht(e) {
-	return pt ??= e.callWS({
+function gt(e) {
+	return mt ??= e.callWS({
 		type: "frontend/get_user_data",
-		key: ft
+		key: pt
 	}).then((e) => {
 		let t = e?.value ?? {};
-		return H = {
+		return V = {
 			zone: [
 				"home_assistant",
 				"device",
 				"circuit"
 			].includes(String(t.zone)) ? t.zone : "home_assistant",
 			both: t.both === !0
-		}, window.dispatchEvent(new Event(V)), H;
-	}).catch(() => H), pt;
+		}, window.dispatchEvent(new Event(B)), V;
+	}).catch(() => V), mt;
 }
-async function gt(e, t) {
-	let n = H;
-	H = t, window.dispatchEvent(new Event(V));
+async function _t(e, t) {
+	let n = V;
+	V = t, window.dispatchEvent(new Event(B));
 	try {
 		await e.callWS({
 			type: "frontend/set_user_data",
-			key: ft,
+			key: pt,
 			value: t
 		});
 	} catch (e) {
-		throw H = n, window.dispatchEvent(new Event(V)), e;
+		throw V = n, window.dispatchEvent(new Event(B)), e;
 	}
 }
 //#endregion
 //#region src/format.ts
-function U(e) {
-	return ot(e) === "it" ? "it-IT" : "en-GB";
+function H(e) {
+	return st(e) === "it" ? "it-IT" : "en-GB";
 }
-var _t = /* @__PURE__ */ new Map(), vt = /* @__PURE__ */ new Map(), yt = {
+var vt = /* @__PURE__ */ new Map(), yt = /* @__PURE__ */ new Map(), bt = {
 	day: {
 		weekday: "short",
 		day: "numeric",
@@ -2005,139 +2007,142 @@ var _t = /* @__PURE__ */ new Map(), vt = /* @__PURE__ */ new Map(), yt = {
 		minute: "2-digit"
 	}
 };
-function W(e, t, n) {
-	let r = `${U(e)}|${t}|${n}`, i = _t.get(r);
-	return i || (i = new Intl.DateTimeFormat(U(e), {
-		...yt[t],
+function U(e, t, n) {
+	let r = `${H(e)}|${t}|${n}`, i = vt.get(r);
+	return i || (i = new Intl.DateTimeFormat(H(e), {
+		...bt[t],
 		timeZone: n
-	}), _t.set(r, i)), i;
-}
-function bt(e, t, n = !1) {
-	let r = `${U(e)}|${t}|${n}`, i = vt.get(r);
-	return i || (i = new Intl.NumberFormat(U(e), {
-		maximumFractionDigits: t,
-		...n ? { minimumFractionDigits: t } : {}
 	}), vt.set(r, i)), i;
 }
-function xt() {
+function xt(e, t, n = !1) {
+	let r = `${H(e)}|${t}|${n}`, i = yt.get(r);
+	return i || (i = new Intl.NumberFormat(H(e), {
+		maximumFractionDigits: t,
+		...n ? { minimumFractionDigits: t } : {}
+	}), yt.set(r, i)), i;
+}
+function St() {
 	return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 }
-function St(e) {
-	return e.locale?.time_zone === "local" ? xt() : e.config.time_zone;
+function Ct(e) {
+	return e.locale?.time_zone === "local" ? St() : e.config.time_zone;
 }
-function G(e, t) {
-	let n = mt().zone;
-	return n === "circuit" && t ? t : n === "device" ? xt() : St(e);
+function W(e, t) {
+	let n = ht().zone;
+	return n === "circuit" && t ? t : n === "device" ? St() : Ct(e);
 }
-function Ct(e, t, n, r) {
-	return t ? W(e, "weekdayTime", G(e, r)).format(new Date(t)) : W(e, "day", "UTC").format(/* @__PURE__ */ new Date(`${n}T12:00:00Z`));
+function wt(e, t, n, r) {
+	return t ? U(e, "weekdayTime", W(e, r)).format(new Date(t)) : U(e, "day", "UTC").format(/* @__PURE__ */ new Date(`${n}T12:00:00Z`));
 }
-function wt(e, t, n) {
-	if (!t || !n || !mt().both) return null;
-	let r = G(e, n), i = r === n ? St(e) : n;
+function Tt(e, t, n) {
+	if (!t || !n || !ht().both) return null;
+	let r = W(e, n), i = r === n ? Ct(e) : n;
 	if (i === r) return null;
-	let a = (n) => W(e, "weekdayTime", n).format(new Date(t)), o = a(i);
+	let a = (n) => U(e, "weekdayTime", n).format(new Date(t)), o = a(i);
 	return o === a(r) ? null : {
 		time: o,
 		local: i === n
 	};
 }
-function Tt(e, t) {
+function Et(e, t) {
 	if (!t) return "";
 	let n = t.length === 10, r = n ? /* @__PURE__ */ new Date(`${t}T12:00:00Z`) : new Date(t);
-	return W(e, "date", n ? "UTC" : G(e)).format(r);
+	return U(e, "date", n ? "UTC" : W(e)).format(r);
 }
-function Et(e, t, n) {
-	let r = W(e, "dayMonth", "UTC"), i = /* @__PURE__ */ new Date(`${t}T12:00:00Z`), a = /* @__PURE__ */ new Date(`${n}T12:00:00Z`);
+function Dt(e, t, n) {
+	let r = U(e, "dayMonth", "UTC"), i = /* @__PURE__ */ new Date(`${t}T12:00:00Z`), a = /* @__PURE__ */ new Date(`${n}T12:00:00Z`);
 	return i.getUTCMonth() === a.getUTCMonth() ? `${i.getUTCDate()}–${r.format(a)}` : `${r.format(i)} – ${r.format(a)}`;
 }
-function Dt(e) {
+function Ot(e) {
 	return new Date(/[zZ]|[+-]\d\d:\d\d$/.test(e) ? e : `${e}Z`);
 }
-var Ot = /* @__PURE__ */ new Map(), kt = "";
-function K(e, t, n = !1) {
+var kt = /* @__PURE__ */ new Map(), At = "";
+function G(e, t, n = !1) {
 	if (!t) return "";
-	let r = G(e), i = `${U(e)}|${r}`;
-	(i !== kt || Ot.size > 2e3) && (Ot.clear(), kt = i);
-	let a = n ? `s${t}` : t, o = Ot.get(a);
-	return o === void 0 && (o = W(e, n ? "clockShort" : "clock", r).format(Dt(t)), Ot.set(a, o)), o;
+	let r = W(e), i = `${H(e)}|${r}`;
+	(i !== At || kt.size > 2e3) && (kt.clear(), At = i);
+	let a = n ? `s${t}` : t, o = kt.get(a);
+	return o === void 0 && (o = U(e, n ? "clockShort" : "clock", r).format(Ot(t)), kt.set(a, o)), o;
 }
-function At(e, t) {
-	return t ? W(e, "weekdayTime", G(e)).format(Dt(t)) : "";
+function jt(e, t) {
+	return t ? U(e, "weekdayTime", W(e)).format(Ot(t)) : "";
 }
-function jt(e) {
+function Mt(e) {
 	let t = Math.max(0, Math.floor(e / 1e3)), n = Math.floor(t / 86400), r = Math.floor(t % 86400 / 3600), i = Math.floor(t % 3600 / 60), a = t % 60, o = (e) => String(e).padStart(2, "0");
 	return n ? `${n} d ${o(r)} h ${o(i)} m` : r ? `${r} h ${o(i)} m` : `${o(i)} m ${o(a)} s`;
 }
-function Mt(e) {
+function Nt(e) {
 	if (e === null) return "";
 	let t = Math.max(0, Math.round(e)), n = Math.floor(t / 3600), r = Math.floor(t % 3600 / 60), i = t % 60, a = (e) => String(e).padStart(2, "0");
 	return n ? `${n}:${a(r)}:${a(i)}` : `${a(r)}:${a(i)}`;
 }
+function K(e, t, n = 1) {
+	return t == null ? "—" : xt(e, n).format(t);
+}
 function q(e, t, n = 1) {
-	return t == null ? "—" : bt(e, n).format(t);
+	return t == null ? "—" : xt(e, n, !0).format(t);
 }
-function J(e, t, n = 1) {
-	return t == null ? "—" : bt(e, n, !0).format(t);
-}
-function Nt(e, t) {
+function Pt(e, t) {
 	return !t || !e || e.language !== t.language || e.locale?.language !== t.locale?.language || e.config?.time_zone !== t.config?.time_zone || e.user?.is_admin !== t.user?.is_admin;
 }
 //#endregion
 //#region src/parts.ts
-function Pt(e) {
+function Ft(e) {
 	return e ? `${e.no_spoiler}|${e.revealed.join(",")}` : "";
 }
-function Ft(e, t, n = !1) {
+function It(e, t, n = !1) {
 	if (!t) return "";
 	if (/^LAP\s*\d+$/i.test(t)) return n ? "" : e("live.leader");
 	let r = /^\+?(\d+)\s*L(?:APS?)?$/i.exec(t);
 	return r ? e(r[1] === "1" ? "live.lappedOne" : "live.lapped", { n: r[1] }) : t;
 }
-function It(e, t, n) {
+function Lt(e, t, n) {
+	return t !== "retired" && t !== "stopped" || typeof n != "number" ? "" : e("live.onLap", { lap: n + 1 });
+}
+function Rt(e, t, n) {
 	let r = /(\d)\s*$/.exec(n ?? "")?.[1], i = t === "practice" && r ? `sessions.practice_${r}` : t ? `sessions.${t}` : "", a = i && e(i);
 	return a && a !== i ? a : n ?? "";
 }
-function Lt(e) {
+function zt(e) {
 	return (t) => {
 		(t.key === "Enter" || t.key === " ") && (t.preventDefault(), e());
 	};
 }
-function Rt(e, t, n, r) {
+function Bt(e, t, n, r) {
 	let i = t === "unknown" ? "?" : t[0].toUpperCase();
-	return S`<span class="tyre" title=${e(`tyres.${t}`)}>
-    <span class="tyre-dot" style="--c:var(${z[t] ?? z.unknown})">${i}</span>
-    ${r === null ? T : S`<small class="num">${r}</small>`}
-    ${n === !1 ? S`<span class="used">${e("live.used")}</span>` : T}
+	return x`<span class="tyre" title=${e(`tyres.${t}`)}>
+    <span class="tyre-dot" style="--c:var(${R[t] ?? R.unknown})">${i}</span>
+    ${r === null ? w : x`<small class="num">${r}</small>`}
+    ${n === !1 ? x`<span class="used">${e("live.used")}</span>` : w}
   </span>`;
 }
-function zt(e, t = !0) {
-	return e == null ? T : e > 0 ? S`<span class="gained up">▲${e}</span>` : e < 0 ? S`<span class="gained down">▼${-e}</span>` : t ? S`<span class="gained muted">–</span>` : T;
+function Vt(e, t = !0) {
+	return e == null ? w : e > 0 ? x`<span class="gained up">▲${e}</span>` : e < 0 ? x`<span class="gained down">▼${-e}</span>` : t ? x`<span class="gained muted">–</span>` : w;
 }
-function Y(e, t, n) {
-	return S`<span class="drv"
-    ><span class="bar" style="background:${B(t, n)}"></span>${e ?? "—"}</span
+function J(e, t, n) {
+	return x`<span class="drv"
+    ><span class="bar" style="background:${z(t, n)}"></span>${e ?? "—"}</span
   >`;
 }
-function Bt(e, t, n, r) {
-	let i = wt(t, n, r);
-	return i ? S`<small class="also">${e(i.local ? "time.atTrack" : "time.yours", { time: i.time })}</small>` : T;
+function Ht(e, t, n, r) {
+	let i = Tt(t, n, r);
+	return i ? x`<small class="also">${e(i.local ? "time.atTrack" : "time.yours", { time: i.time })}</small>` : w;
 }
-function Vt(e) {
-	return !e?.length || e.every((e) => !e) ? T : S`<span class="seg" aria-hidden="true">${e.map((e) => S`<i class=${e}></i>`)}</span>`;
+function Ut(e) {
+	return !e?.length || e.every((e) => !e) ? w : x`<span class="seg" aria-hidden="true">${e.map((e) => x`<i class=${e}></i>`)}</span>`;
 }
-function Ht(e) {
-	return S`<div class="card loading">${e("common.loading")}</div>`;
+function Wt(e) {
+	return x`<div class="card loading">${e("common.loading")}</div>`;
 }
-function X(e, t) {
-	return S`<div class="card error">
+function Y(e, t) {
+	return x`<div class="card error">
     <div>${e("common.unavailable")}</div>
     <button class="btn flat" @click=${t}>${e("common.retry")}</button>
   </div>`;
 }
 //#endregion
 //#region src/clock.ts
-var Ut = class extends k {
+var Gt = class extends O {
 	constructor(...e) {
 		super(...e), this.to = "", this.now = Date.now();
 	}
@@ -2161,14 +2166,14 @@ var Ut = class extends k {
 	}
 	render() {
 		let e = Date.parse(this.to);
-		return Number.isFinite(e) ? jt(e - this.now) : "";
+		return Number.isFinite(e) ? Mt(e - this.now) : "";
 	}
 	static {
 		this.styles = o`
     :host { font-variant-numeric: tabular-nums; }
   `;
 	}
-}, Wt = class extends k {
+}, Kt = class extends O {
 	constructor(...e) {
 		super(...e), this.age = 0, this.at = Date.now(), this.precise = !0, this.now = Date.now();
 	}
@@ -2176,7 +2181,7 @@ var Ut = class extends k {
 		this.properties = {
 			hass: {
 				attribute: !1,
-				hasChanged: Nt
+				hasChanged: Pt
 			},
 			age: { type: Number },
 			at: { type: Number },
@@ -2193,7 +2198,7 @@ var Ut = class extends k {
 	render() {
 		if (!this.hass) return "";
 		let e = this.age + Math.max(0, this.now - this.at) / 1e3;
-		return F(this.hass)("live.updated", { n: q(this.hass, e, +!!this.precise) });
+		return P(this.hass)("live.updated", { n: K(this.hass, e, +!!this.precise) });
 	}
 	static {
 		this.styles = o`
@@ -2201,12 +2206,12 @@ var Ut = class extends k {
   `;
 	}
 };
-function Gt(e, t, n, r) {
-	return S`<plb-age .hass=${e} .age=${t} .at=${n} ?precise=${r}></plb-age>`;
+function qt(e, t, n, r) {
+	return x`<plb-age .hass=${e} .age=${t} .at=${n} ?precise=${r}></plb-age>`;
 }
 //#endregion
 //#region src/pages/calendar.ts
-var Kt = 6e5, qt = class extends k {
+var Jt = 6e5, Yt = class extends O {
 	constructor(...e) {
 		super(...e), this.seasons = [], this.failed = !1, this.now = Date.now(), this.clock = 0, this.request = 0, this.spoilers = "", this.loadedAt = 0, this.scrolled = !1, this.visibility = () => {
 			document.visibilityState === "visible" && this.tick();
@@ -2234,11 +2239,11 @@ var Kt = 6e5, qt = class extends k {
 		this.now = Date.now(), this.data && document.visibilityState !== "hidden" && (this.data.meetings.some((e) => e.sessions.some((e) => {
 			let t = e.start ? Date.parse(e.start) : NaN;
 			return t > this.loadedAt && t <= this.now;
-		})) || this.now - this.loadedAt > Kt) && this.load();
+		})) || this.now - this.loadedAt > Jt) && this.load();
 	}
 	willUpdate(e) {
 		this.season === void 0 && this.settings && (this.season = this.settings.season);
-		let t = Pt(this.settings);
+		let t = Ft(this.settings);
 		(e.has("season") || t !== this.spoilers) && (this.spoilers = t, this.load());
 	}
 	async load() {
@@ -2246,27 +2251,27 @@ var Kt = 6e5, qt = class extends k {
 		let e = ++this.request, t = !!this.data && this.data.season === this.season;
 		t || (this.failed = !1);
 		try {
-			let t = await N.calendar(this.hass, this.season);
+			let t = await M.calendar(this.hass, this.season);
 			e === this.request && (this.data = t, this.failed = !1, this.loadedAt = Date.now());
 		} catch {
-			e === this.request && !t ? this.failed = !0 : e === this.request && (this.loadedAt = Date.now() - Kt + 6e4);
+			e === this.request && !t ? this.failed = !0 : e === this.request && (this.loadedAt = Date.now() - Jt + 6e4);
 		}
 	}
 	updated() {
 		!this.scrolled && this.data && this.data.season === this.settings?.season && (this.scrolled = !0, !(this.getBoundingClientRect().width > 640) && this.renderRoot.querySelector(".meet.live, .meet.next")?.scrollIntoView({ block: "start" }));
 	}
 	render() {
-		let e = F(this.hass), t = this.seasons.length ? this.seasons : [this.season ?? 0];
-		return S`
+		let e = P(this.hass), t = this.seasons.length ? this.seasons : [this.season ?? 0];
+		return x`
       <div class="toolbar">
         <h1>${e("calendar.title")}</h1>
         <select aria-label=${e("common.season")} @change=${(e) => {
 			this.data = void 0, this.season = Number(e.target.value);
 		}}>
-          ${t.map((e) => S`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
+          ${t.map((e) => x`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
         </select>
       </div>
-      ${this.failed ? X(e, () => this.load()) : !this.data || this.data.season !== this.season ? Ht(e) : this.data.meetings.length ? S`<div class="cal">${this.data.meetings.map((e) => this.renderMeeting(e))}</div>` : S`<div class="card state">${e("calendar.empty")}</div>`}
+      ${this.failed ? Y(e, () => this.load()) : !this.data || this.data.season !== this.season ? Wt(e) : this.data.meetings.length ? x`<div class="cal">${this.data.meetings.map((e) => this.renderMeeting(e))}</div>` : x`<div class="card state">${e("calendar.empty")}</div>`}
     `;
 	}
 	go(e) {
@@ -2277,42 +2282,42 @@ var Kt = 6e5, qt = class extends k {
 		}));
 	}
 	renderMeeting(e) {
-		let t = F(this.hass), n = e.sessions[0]?.date, r = e.sessions[e.sessions.length - 1]?.date, i = e.state === "next" ? e.sessions.find((e) => e.start && Date.parse(e.start) > this.now) : void 0;
-		return S`<div class="card meet ${e.state}">
+		let t = P(this.hass), n = e.sessions[0]?.date, r = e.sessions[e.sessions.length - 1]?.date, i = e.state === "next" ? e.sessions.find((e) => e.start && Date.parse(e.start) > this.now) : void 0;
+		return x`<div class="card meet ${e.state}">
       <div class="meet-head"><span class="round">${t("calendar.round", { n: e.round })}</span><h3>${e.name}</h3></div>
-      <div class="where">${[e.locality, e.country].filter(Boolean).join(" · ")}${n && r ? ` · ${Et(this.hass, n, r)}` : ""}</div>
-      ${e.sprint || e.state === "next" || e.state === "live" ? S`<div class="flagline">
-            ${e.sprint ? S`<span class="pill sprint">${t("common.sprint")}</span>` : T}
-            ${e.state === "next" ? S`<span class="pill">${t("calendar.next")}</span>` : T}
-            ${e.state === "live" ? S`<span class="pill live">${t("calendar.live")}</span>` : T}
-          </div>` : T}
-      ${e.state === "done" ? S`<div class="podium">
-              ${e.podium_hidden ? S`<div class="hidden-cell">${t("spoiler.hiddenRound")}</div>` : (e.podium ?? []).map((e, t) => S`<div><b>${t + 1}</b>${Y(e.name, e.team_id)}</div>`)}
-            </div>` : S`<ul>
-            ${e.sessions.map((n) => S`<li><span>${t(`sessions.${n.kind}`)}</span><span class="num">${Ct(this.hass, n.start, n.date, e.timezone)}${Bt(t, this.hass, n.start, e.timezone)}</span></li>`)}
+      <div class="where">${[e.locality, e.country].filter(Boolean).join(" · ")}${n && r ? ` · ${Dt(this.hass, n, r)}` : ""}</div>
+      ${e.sprint || e.state === "next" || e.state === "live" ? x`<div class="flagline">
+            ${e.sprint ? x`<span class="pill sprint">${t("common.sprint")}</span>` : w}
+            ${e.state === "next" ? x`<span class="pill">${t("calendar.next")}</span>` : w}
+            ${e.state === "live" ? x`<span class="pill live">${t("calendar.live")}</span>` : w}
+          </div>` : w}
+      ${e.state === "done" ? x`<div class="podium">
+              ${e.podium_hidden ? x`<div class="hidden-cell">${t("spoiler.hiddenRound")}</div>` : (e.podium ?? []).map((e, t) => x`<div><b>${t + 1}</b>${J(e.name, e.team_id)}</div>`)}
+            </div>` : x`<ul>
+            ${e.sessions.map((n) => x`<li><span>${t(`sessions.${n.kind}`)}</span><span class="num">${wt(this.hass, n.start, n.date, e.timezone)}${Ht(t, this.hass, n.start, e.timezone)}</span></li>`)}
           </ul>`}
-      ${i?.start ? S`<div class="countdown">${t(`sessions.${i.kind}`)} · ${t("calendar.startsIn")}
-            <b class="num">${jt(Date.parse(i.start) - this.now)}</b></div>` : T}
+      ${i?.start ? x`<div class="countdown">${t(`sessions.${i.kind}`)} · ${t("calendar.startsIn")}
+            <b class="num">${Mt(Date.parse(i.start) - this.now)}</b></div>` : w}
       <div class="actions">
-        ${e.state === "done" ? S`<button class="link" @click=${() => this.go({
+        ${e.state === "done" ? x`<button class="link" @click=${() => this.go({
 			page: "results",
 			season: e.season,
 			round: e.round
 		})}>
-              ${t("calendar.results")} →</button>` : T}
-        ${e.state === "live" ? S`<button class="link" @click=${() => this.go({ page: "live" })}>${t("calendar.watch")} →</button>` : T}
-        ${e.circuit_id ? S`<button class="link history" @click=${() => this.go({
+              ${t("calendar.results")} →</button>` : w}
+        ${e.state === "live" ? x`<button class="link" @click=${() => this.go({ page: "live" })}>${t("calendar.watch")} →</button>` : w}
+        ${e.circuit_id ? x`<button class="link history" @click=${() => this.go({
 			page: "circuit",
 			circuit_id: e.circuit_id,
 			circuit: e.circuit ?? e.name,
 			from: "calendar"
 		})}>
-              ${L(I.history, 16)}${t("circuit.link")}</button>` : T}
+              ${I(F.history, 16)}${t("circuit.link")}</button>` : w}
       </div>
     </div>`;
 	}
 	static {
-		this.styles = [R, o`
+		this.styles = [L, o`
       :host { display: block; }
       :host { container-type: inline-size; }
       .cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--plb-gap); align-items: stretch; }
@@ -2347,12 +2352,12 @@ var Kt = 6e5, qt = class extends k {
       }
     `];
 	}
-}, Jt = /* @__PURE__ */ new Set([
+}, Xt = /* @__PURE__ */ new Set([
 	"strategy",
 	"lap_times",
 	"race_control",
 	"weather"
-]), Yt = {
+]), Zt = {
 	finished: "finished",
 	lapped: "lapped",
 	retired: "retired",
@@ -2385,14 +2390,14 @@ var Kt = 6e5, qt = class extends k {
 	mechanical: "mechanical",
 	illness: "illness"
 };
-function Xt(e, t) {
+function Qt(e, t) {
 	if (!t) return "";
 	let n = /^\+(\d+) Laps?$/i.exec(t);
 	if (n) return e(n[1] === "1" ? "results.lapsDownOne" : "results.lapsDown", { n: n[1] });
-	let r = Yt[t.toLowerCase()];
+	let r = Zt[t.toLowerCase()];
 	return r ? e(`results.status.${r}`) : t;
 }
-var Zt = class extends k {
+var $t = class extends O {
 	constructor(...e) {
 		super(...e), this.seasons = [], this.clock = 0, this.failed = !1, this.tab = "race", this.tabFailed = !1, this.driver = "", this.filter = "all", this.highlight = "", this.request = 0, this.roundsRequest = 0, this.spoilers = "", this.roundsBySeason = /* @__PURE__ */ new Map(), this.tabs = /* @__PURE__ */ new Map();
 	}
@@ -2417,7 +2422,7 @@ var Zt = class extends k {
 	}
 	willUpdate(e) {
 		e.has("target") && this.target?.page === "results" && this.target.season && (this.selected = void 0, this.rounds = void 0, this.season = this.target.season, this.wanted = this.target.round), this.season === void 0 && this.settings && (this.season = this.settings.season);
-		let t = Pt(this.settings), n = t !== this.spoilers;
+		let t = Ft(this.settings), n = t !== this.spoilers;
 		this.spoilers = t, n && (this.roundsBySeason.clear(), this.tabs.clear()), (e.has("season") || n || e.has("target") && this.wanted !== void 0) && this.loadRounds(), this.selected && (n || e.has("tab") || e.has("selected")) && this.loadTab();
 	}
 	async loadRounds() {
@@ -2425,7 +2430,7 @@ var Zt = class extends k {
 		let e = ++this.roundsRequest;
 		this.failed = !1;
 		try {
-			let t = this.season, n = this.roundsBySeason.get(t) ?? (await N.rounds(this.hass, t)).rounds;
+			let t = this.season, n = this.roundsBySeason.get(t) ?? (await M.rounds(this.hass, t)).rounds;
 			if (e !== this.roundsRequest) return;
 			this.roundsBySeason.set(t, n), this.rounds = n;
 			let r = this.wanted === void 0 ? void 0 : n.find((e) => e.round === this.wanted);
@@ -2445,54 +2450,54 @@ var Zt = class extends k {
 		}
 		this.result?.tab !== this.tab && (this.result = void 0);
 		try {
-			let n = await N.detail(this.hass, this.season, this.selected.round, this.tab);
+			let n = await M.detail(this.hass, this.season, this.selected.round, this.tab);
 			n.hidden || this.tabs.set(t, n), e === this.request && (this.result = n);
 		} catch {
 			e === this.request && (this.tabFailed = !0);
 		}
 	}
 	get gridLabel() {
-		return F(this.hass)("results.gridShort");
+		return P(this.hass)("results.gridShort");
 	}
 	tyreName(e) {
-		return F(this.hass)(`tyres.${e}`);
+		return P(this.hass)(`tyres.${e}`);
 	}
 	open(e) {
 		this.tab = "race", this.result = void 0, this.driver = "", this.highlight = "", this.selected = e;
 	}
 	render() {
-		let e = F(this.hass);
+		let e = P(this.hass);
 		if (this.selected) return this.renderDetail(e, this.selected);
 		let t = this.seasons.length ? this.seasons : [this.season ?? 0];
-		return S`
+		return x`
       <div class="toolbar">
         <h1>${e("results.title")}</h1>
         <select aria-label=${e("common.season")} @change=${(e) => {
 			this.rounds = void 0, this.season = Number(e.target.value);
 		}}>
-          ${t.map((e) => S`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
+          ${t.map((e) => x`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
         </select>
       </div>
-      ${this.failed ? X(e, () => this.loadRounds()) : this.rounds ? this.rounds.length ? S`<div class="card"><div class="scroll"><table class="tbl">
+      ${this.failed ? Y(e, () => this.loadRounds()) : this.rounds ? this.rounds.length ? x`<div class="card"><div class="scroll"><table class="tbl">
                 <tr><th>${e("common.round")}</th><th>${e("results.grandPrix")}</th><th class="phone-hide">${e("results.date")}</th><th>${e("results.winner")}</th><th></th></tr>
-                ${[...this.rounds].reverse().map((t) => S`<tr class="click" tabindex="0" aria-label=${`${e("results.open")}: ${t.name ?? ""}`}
-                      @click=${() => this.open(t)} @keydown=${Lt(() => this.open(t))}>
+                ${[...this.rounds].reverse().map((t) => x`<tr class="click" tabindex="0" aria-label=${`${e("results.open")}: ${t.name ?? ""}`}
+                      @click=${() => this.open(t)} @keydown=${zt(() => this.open(t))}>
                     <td class="num">${t.round}</td>
-                    <td class="gp wrap">${t.name}${t.sprint ? S`<span class="pill sprint">${e("common.sprint")}</span>` : T}
-                      <small class="phone-only">${Tt(this.hass, t.date)}</small></td>
-                    <td class="num phone-hide">${Tt(this.hass, t.date)}</td>
-                    <td class="wrap">${t.hidden ? S`<span class="hidden-cell">${e("spoiler.hiddenRound")}</span>` : t.winner ? Y(t.winner.name, t.winner.team_id) : "—"}</td>
+                    <td class="gp wrap">${t.name}${t.sprint ? x`<span class="pill sprint">${e("common.sprint")}</span>` : w}
+                      <small class="phone-only">${Et(this.hass, t.date)}</small></td>
+                    <td class="num phone-hide">${Et(this.hass, t.date)}</td>
+                    <td class="wrap">${t.hidden ? x`<span class="hidden-cell">${e("spoiler.hiddenRound")}</span>` : t.winner ? J(t.winner.name, t.winner.team_id) : "—"}</td>
                     <td class="chev" aria-hidden="true">›</td>
                   </tr>`)}
-              </table></div></div>` : S`<div class="card state">${e("results.empty")}</div>` : Ht(e)}
+              </table></div></div>` : x`<div class="card state">${e("results.empty")}</div>` : Wt(e)}
     `;
 	}
 	renderDetail(e, t) {
-		return S`
+		return x`
       <div class="toolbar">
-        <button class="link back" @click=${() => this.selected = void 0}>${L(I.back, 18)} ${e("common.back")}</button>
+        <button class="link back" @click=${() => this.selected = void 0}>${I(F.back, 18)} ${e("common.back")}</button>
         <h1>${t.name} ${this.season}</h1>
-        ${t.circuit_id ? S`<button class="link history" @click=${() => this.dispatchEvent(new CustomEvent("plb-go", {
+        ${t.circuit_id ? x`<button class="link history" @click=${() => this.dispatchEvent(new CustomEvent("plb-go", {
 			detail: {
 				page: "circuit",
 				circuit_id: t.circuit_id,
@@ -2501,11 +2506,11 @@ var Zt = class extends k {
 			},
 			bubbles: !0,
 			composed: !0
-		}))}>${L(I.history, 16)} ${e("circuit.link")}</button>` : T}
+		}))}>${I(F.history, 16)} ${e("circuit.link")}</button>` : w}
       </div>
       <div class="card">
         <div class="subtabs">
-          ${t.tabs.map((t) => S`<button class="tab ${this.tab === t ? "active" : ""}" aria-pressed=${this.tab === t ? "true" : "false"}
+          ${t.tabs.map((t) => x`<button class="tab ${this.tab === t ? "active" : ""}" aria-pressed=${this.tab === t ? "true" : "false"}
               @click=${() => this.tab = t}>${e(`results.tabs.${t}`)}</button>`)}
         </div>
         ${this.renderTab(e)}
@@ -2513,16 +2518,16 @@ var Zt = class extends k {
     `;
 	}
 	renderTab(e) {
-		if (this.tabFailed) return X(e, () => this.loadTab());
+		if (this.tabFailed) return Y(e, () => this.loadTab());
 		let t = this.result;
-		if (!t || t.tab !== this.tab) return S`<div class="loading">${e("common.loading")}${Jt.has(this.tab) ? S`<br /><small>${e("results.archive")}</small>` : T}</div>`;
-		if (t.hidden) return S`<div class="state">${L(I.eyeOff, 56)}<div>${e("spoiler.revealNote")}</div>
+		if (!t || t.tab !== this.tab) return x`<div class="loading">${e("common.loading")}${Xt.has(this.tab) ? x`<br /><small>${e("results.archive")}</small>` : w}</div>`;
+		if (t.hidden) return x`<div class="state">${I(F.eyeOff, 56)}<div>${e("spoiler.revealNote")}</div>
         <button class="btn" @click=${() => this.dispatchEvent(new CustomEvent("plb-reveal", {
 			detail: t.session,
 			bubbles: !0,
 			composed: !0
 		}))}>${e("spoiler.reveal")}</button></div>`;
-		if (!t.available || !t.data) return S`<div class="state">${Jt.has(this.tab) ? e("results.notArchived") : e("common.noData")}</div>`;
+		if (!t.available || !t.data) return x`<div class="state">${Xt.has(this.tab) ? e("results.notArchived") : e("common.noData")}</div>`;
 		let n = t.data;
 		switch (this.tab) {
 			case "race":
@@ -2541,24 +2546,24 @@ var Zt = class extends k {
 			let r = n - t.laps;
 			return e(r === 1 ? "results.lapsDownOne" : "results.lapsDown", { n: r });
 		}
-		return t.time ?? Xt(e, t.status);
+		return t.time ?? Qt(e, t.status);
 	}
 	classification(e, t, n) {
 		let r = t.find((e) => e.position === 1)?.laps ?? null;
-		return S`<div class="scroll"><table class="tbl">
+		return x`<div class="scroll"><table class="tbl">
       <tr><th>${e("common.pos")}</th><th>${e("common.driver")}</th><th class="phone-hide"></th><th class="wide">${e("common.team")}</th>
         <th class="r phone-hide">${e("results.grid")}</th><th class="r phone-hide">${e("common.laps")}</th><th>${e("results.time")}</th>
-        <th class="r">${e("common.points")}</th>${n ? S`<th class="wide">${e("results.fastest")}</th>` : T}</tr>
-      ${t.map((t) => S`<tr>
+        <th class="r">${e("common.points")}</th>${n ? x`<th class="wide">${e("results.fastest")}</th>` : w}</tr>
+      ${t.map((t) => x`<tr>
           <td class="num">${t.position_text && !/^\d+$/.test(t.position_text) ? t.position_text : t.position}</td>
-          <td>${Y(t.name, t.team_id)}</td>
-          <td class="phone-hide">${zt(t.gained)}</td>
+          <td>${J(t.name, t.team_id)}</td>
+          <td class="phone-hide">${Vt(t.gained)}</td>
           <td class="wide muted">${t.team ?? ""}</td>
           <td class="r num phone-hide">${t.grid ?? "—"}</td>
           <td class="r num phone-hide">${t.laps ?? ""}</td>
           <td class="num">${this.finish(e, t, r)}</td>
-          <td class="r num">${t.points ? q(this.hass, t.points) : ""}</td>
-          ${n ? S`<td class="wide t ${t.fastest_lap?.rank === 1 ? "ob" : ""}">${t.fastest_lap?.time ?? ""}</td>` : T}
+          <td class="r num">${t.points ? K(this.hass, t.points) : ""}</td>
+          ${n ? x`<td class="wide t ${t.fastest_lap?.rank === 1 ? "ob" : ""}">${t.fastest_lap?.time ?? ""}</td>` : w}
         </tr>`)}
     </table></div>`;
 	}
@@ -2568,19 +2573,19 @@ var Zt = class extends k {
 			q2: n("q2"),
 			q3: n("q3")
 		}, i = (e) => e.q3 ? "q3" : e.q2 ? "q2" : e.q1 ? "q1" : null;
-		return S`<div class="scroll"><table class="tbl">
+		return x`<div class="scroll"><table class="tbl">
       <tr><th>${e("common.pos")}</th><th>${e("common.driver")}</th><th class="wide">${e("common.team")}</th>
         <th class="phone-hide">Q1</th><th class="phone-hide">Q2</th><th class="phone-hide">Q3</th><th class="phone-only">${e("results.best")}</th></tr>
       ${t.map((e) => {
 			let t = i(e);
-			return S`<tr>
-          <td class="num">${e.position}</td><td>${Y(e.name, e.team_id)}</td><td class="wide muted">${e.team ?? ""}</td>
+			return x`<tr>
+          <td class="num">${e.position}</td><td>${J(e.name, e.team_id)}</td><td class="wide muted">${e.team ?? ""}</td>
           ${[
 				"q1",
 				"q2",
 				"q3"
-			].map((t) => S`<td class="t phone-hide ${e[t] && e[t] === r[t] ? "ob" : ""}">${e[t] ?? ""}</td>`)}
-          <td class="t phone-only">${t ? S`<small class="muted">${t.toUpperCase()}</small> <span class=${e[t] === r[t] ? "t ob" : "t"}>${e[t]}</span>` : ""}</td>
+			].map((t) => x`<td class="t phone-hide ${e[t] && e[t] === r[t] ? "ob" : ""}">${e[t] ?? ""}</td>`)}
+          <td class="t phone-only">${t ? x`<small class="muted">${t.toUpperCase()}</small> <span class=${e[t] === r[t] ? "t ob" : "t"}>${e[t]}</span>` : ""}</td>
         </tr>`;
 		})}
     </table></div>`;
@@ -2595,70 +2600,70 @@ var Zt = class extends k {
 				}
 				t += `${n ? "L" : "M"}${a(r).toFixed(1)} ${o(e).toFixed(1)}`, n = !0;
 			});
-			let r = e.positions.map((e) => e !== null).lastIndexOf(!0), i = r >= 0 ? e.positions[r] : null, c = !this.highlight || this.highlight === e.driver_id, l = B(e.team_id), u = e.team_id ?? e.driver_id ?? "", d = s.has(u);
+			let r = e.positions.map((e) => e !== null).lastIndexOf(!0), i = r >= 0 ? e.positions[r] : null, c = !this.highlight || this.highlight === e.driver_id, l = z(e.team_id), u = e.team_id ?? e.driver_id ?? "", d = s.has(u);
 			s.add(u);
 			let f = () => this.highlight = this.highlight === e.driver_id ? "" : e.driver_id ?? "";
-			return C`<g class="line" @click=${f} @keydown=${Lt(f)} tabindex="0" role="button"
+			return S`<g class="line" @click=${f} @keydown=${zt(f)} tabindex="0" role="button"
           aria-label=${e.name ?? e.code ?? ""} aria-pressed=${this.highlight === e.driver_id ? "true" : "false"}
           style="opacity:${c ? 1 : .15}">
         <path d=${t} fill="none" stroke=${l} stroke-width=${this.highlight === e.driver_id ? 4 : 2}
           stroke-dasharray=${d ? "7 4" : "none"}></path>
-        ${i === null ? T : C`<text class="end" x=${a(r) + 6} y=${o(i) + 4}>${e.code ?? e.name?.slice(0, 3).toUpperCase()}</text>`}
+        ${i === null ? w : S`<text class="end" x=${a(r) + 6} y=${o(i) + 4}>${e.code ?? e.name?.slice(0, 3).toUpperCase()}</text>`}
       </g>`;
-		}), l = Array.from({ length: n }, (e, t) => C`<line class="axis" x1="36" x2=${886} y1=${o(t + 1)} y2=${o(t + 1)}></line><text x="8" y=${o(t + 1) + 4}>${t + 1}</text>`), u = Array.from({ length: Math.floor(i / 10) + 1 }, (e, t) => t * 10).map((e) => C`<text x=${a(e)} y=${r} text-anchor="middle">${e || this.gridLabel}</text>`);
-		return S`<div class="legend muted">${e("results.teammateDashed")}</div>
+		}), l = Array.from({ length: n }, (e, t) => S`<line class="axis" x1="36" x2=${886} y1=${o(t + 1)} y2=${o(t + 1)}></line><text x="8" y=${o(t + 1) + 4}>${t + 1}</text>`), u = Array.from({ length: Math.floor(i / 10) + 1 }, (e, t) => t * 10).map((e) => S`<text x=${a(e)} y=${r} text-anchor="middle">${e || this.gridLabel}</text>`);
+		return x`<div class="legend muted">${e("results.teammateDashed")}</div>
       <div class="chart"><svg viewBox="0 0 ${960} ${r + 6}">${l}${c}${u}</svg></div>`;
 	}
 	strategy(e, t) {
-		let n = Math.max(t.laps, 1), r = (e) => 60 + e / n * 880, i = 10 + t.drivers.length * 26 + 24, a = [...new Set(t.drivers.flatMap((e) => e.stints.map((e) => e.compound)))].sort((e, t) => Object.keys(z).indexOf(e) - Object.keys(z).indexOf(t)), o = t.drivers.map((e, t) => C`
+		let n = Math.max(t.laps, 1), r = (e) => 60 + e / n * 880, i = 10 + t.drivers.length * 26 + 24, a = [...new Set(t.drivers.flatMap((e) => e.stints.map((e) => e.compound)))].sort((e, t) => Object.keys(R).indexOf(e) - Object.keys(R).indexOf(t)), o = t.drivers.map((e, t) => S`
       <text x="8" y=${10 + t * 26 + 13} style="font-weight:600;fill:var(--primary-text-color)">${e.tla}</text>
       ${e.stints.map((e) => {
 			let n = Math.max(2, r(e.end_lap) - r(e.start_lap - 1) - 2), i = r(e.start_lap - 1) + 1;
-			return C`<rect x=${i} y=${10 + t * 26} width=${n}
-          height=${18} rx="4" style="fill:var(${z[e.compound] ?? z.unknown});stroke:color-mix(in srgb, var(--primary-text-color) 30%, transparent)"
+			return S`<rect x=${i} y=${10 + t * 26} width=${n}
+          height=${18} rx="4" style="fill:var(${R[e.compound] ?? R.unknown});stroke:color-mix(in srgb, var(--primary-text-color) 30%, transparent)"
           opacity=${e.new ? 1 : .7}><title>${this.tyreName(e.compound)} ${e.start_lap}–${e.end_lap}</title></rect>
-          ${n > 34 ? C`<text class="laps-in" x=${i + n / 2} y=${10 + t * 26 + 13} text-anchor="middle">${e.end_lap - e.start_lap + 1}</text>` : T}`;
+          ${n > 34 ? S`<text class="laps-in" x=${i + n / 2} y=${10 + t * 26 + 13} text-anchor="middle">${e.end_lap - e.start_lap + 1}</text>` : w}`;
 		})}`), s = [
 			1,
 			...Array.from({ length: Math.floor(n / 10) }, (e, t) => (t + 1) * 10),
 			n
-		].filter((e, t, n) => n.indexOf(e) === t).map((e) => C`<text x=${r(e)} y=${i - 4} text-anchor="middle">${e}</text>`);
-		return S`<div class="legend">${a.map((t) => S`<span class="key">${Rt(e, t, null, null)}${this.tyreName(t)}</span>`)}
+		].filter((e, t, n) => n.indexOf(e) === t).map((e) => S`<text x=${r(e)} y=${i - 4} text-anchor="middle">${e}</text>`);
+		return x`<div class="legend">${a.map((t) => x`<span class="key">${Bt(e, t, null, null)}${this.tyreName(t)}</span>`)}
         <span class="muted">${e("results.usedFaded")}</span></div>
       <div class="chart"><svg viewBox="0 0 ${960} ${i}">${o}${s}</svg></div>`;
 	}
 	lapTimes(e, t) {
-		if (!t.drivers.length) return S`<div class="state">${e("common.noData")}</div>`;
+		if (!t.drivers.length) return x`<div class="state">${e("common.noData")}</div>`;
 		let n = t.drivers.find((e) => e.number === this.driver) ?? t.drivers[0], r = (e) => e === "overall" ? "ob" : e === "personal" ? "pb" : "";
-		return S`
+		return x`
       <div class="pick">
         <label>${e("results.chooseDriver")}
           <select @change=${(e) => this.driver = e.target.value}>
-            ${t.drivers.map((e) => S`<option .selected=${e === n} value=${e.number}>${e.tla} — ${e.name}</option>`)}
+            ${t.drivers.map((e) => x`<option .selected=${e === n} value=${e.number}>${e.tla} — ${e.name}</option>`)}
           </select>
         </label>
       </div>
       <div class="scroll tall"><table class="tbl sticky">
         <tr><th>${e("common.lap")}</th><th>${e("live.last")}</th><th>S1</th><th>S2</th><th>S3</th><th>${e("results.tyre")}</th><th>${e("results.pit")}</th></tr>
-        ${n.laps.map((t) => S`<tr>
+        ${n.laps.map((t) => x`<tr>
             <td class="num">${t.lap}</td>
             <td class="t ${r(t.best)}">${t.time ?? "—"}</td>
             ${[
 			0,
 			1,
 			2
-		].map((e) => S`<td class="t ${r(t.sector_bests?.[e])}">${t.sectors[e] ?? "—"}</td>`)}
-            <td>${t.compound ? Rt(e, t.compound, null, t.tyre_age) : ""}</td>
-            <td>${t.pit_in ? S`<span class="badge pit">${e("results.pitIn")}</span>` : T}${t.pit_out ? S`<span class="badge out">${e("results.pitOut")}</span>` : T}</td>
+		].map((e) => x`<td class="t ${r(t.sector_bests?.[e])}">${t.sectors[e] ?? "—"}</td>`)}
+            <td>${t.compound ? Bt(e, t.compound, null, t.tyre_age) : ""}</td>
+            <td>${t.pit_in ? x`<span class="badge pit">${e("results.pitIn")}</span>` : w}${t.pit_out ? x`<span class="badge out">${e("results.pitOut")}</span>` : w}</td>
           </tr>`)}
       </table></div>`;
 	}
 	pitStops(e, t) {
-		if (!t.stops.length) return S`<div class="state">${e("common.noData")}</div>`;
+		if (!t.stops.length) return x`<div class="state">${e("common.noData")}</div>`;
 		let n = [...t.stops].sort((e, t) => e.lap - t.lap || e.stop - t.stop);
-		return S`<div class="scroll"><table class="tbl fit">
+		return x`<div class="scroll"><table class="tbl fit">
       <tr><th>${e("common.driver")}</th><th class="r">${e("common.lap")}</th><th class="r">${e("results.stop")}</th><th class="r">${e("results.duration")}</th></tr>
-      ${n.map((t) => S`<tr><td>${Y(t.name, t.team_id)}</td><td class="r num">${t.lap}</td><td class="r num">${t.stop}</td>
+      ${n.map((t) => x`<tr><td>${J(t.name, t.team_id)}</td><td class="r num">${t.lap}</td><td class="r num">${t.stop}</td>
           <td class="r num">${t.duration ? e("delay.seconds", { n: t.duration }) : ""}</td></tr>`)}
     </table></div>`;
 	}
@@ -2674,14 +2679,14 @@ var Zt = class extends k {
 			penalties: "penalty",
 			other: "other"
 		}[this.filter] ?? null, i = t.filter((e) => !r || e.kind === r);
-		return S`<div class="filters">${n.map((t) => S`<button class="chip small ${this.filter === t ? "on" : ""}" aria-pressed=${this.filter === t ? "true" : "false"}
+		return x`<div class="filters">${n.map((t) => x`<button class="chip small ${this.filter === t ? "on" : ""}" aria-pressed=${this.filter === t ? "true" : "false"}
           @click=${() => this.filter = t}>${e(`live.${t}`)}</button>`)}</div>
-      <div class="feed">${i.map((t) => S`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : K(this.hass, t.utc, !0)}</span>
-          <span>${t.message}${t.lap ? S`<time>${K(this.hass, t.utc)}</time>` : T}</span></div>`)}</div>`;
+      <div class="feed">${i.map((t) => x`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : G(this.hass, t.utc, !0)}</span>
+          <span>${t.message}${t.lap ? x`<time>${G(this.hass, t.utc)}</time>` : w}</span></div>`)}</div>`;
 	}
 	weather(e, t) {
-		if (!t) return S`<div class="state">${e("common.noData")}</div>`;
-		let n = (e) => `${q(this.hass, e)}°`, r = (t, r) => r ? S`<div class="tile"><small>${t}</small>
+		if (!t) return x`<div class="state">${e("common.noData")}</div>`;
+		let n = (e) => `${K(this.hass, e)}°`, r = (t, r) => r ? x`<div class="tile"><small>${t}</small>
             <b class="num">${e("results.startEnd", {
 			start: n(r.start),
 			end: n(r.end)
@@ -2689,16 +2694,16 @@ var Zt = class extends k {
             <span class="muted num">${e("results.range", {
 			min: n(r.min),
 			max: n(r.max)
-		})}</span></div>` : T;
-		return S`<div class="tiles">
+		})}</span></div>` : w;
+		return x`<div class="tiles">
       ${r(e("results.air"), t.air)}${r(e("results.track"), t.track)}
       <div class="tile"><small>${e("results.rain")}</small><b>${t.rain ? e("results.wet") : e("results.dry")}</b></div>
     </div>`;
 	}
 	static {
 		this.styles = [
-			R,
-			lt,
+			L,
+			ut,
 			o`
       :host { display: block; container-type: inline-size; }
       .back { display: inline-flex; align-items: center; gap: 4px; }
@@ -2745,7 +2750,7 @@ var Zt = class extends k {
     `
 		];
 	}
-}, Qt = 4, $t = {
+}, en = 4, tn = {
 	clear: "st-clear",
 	yellow: "st-yellow",
 	safety_car: "st-sc",
@@ -2754,16 +2759,16 @@ var Zt = class extends k {
 	red_flag: "st-red",
 	chequered: "st-chequered"
 };
-function en(e) {
-	return e ? $t[e] ?? "" : "";
-}
-function tn(e, t) {
-	return (!t || t === "clear" || t === "chequered") && !e.yellow && !e.red_flag && !e.safety_car && !e.virtual_safety_car && !e.penalties.length && !e.investigations.length && !e.track_limits.length;
-}
 function nn(e) {
-	return !e.penalties.length && !e.investigations.length && !e.track_limits.length;
+	return e ? tn[e] ?? "" : "";
 }
 function rn(e, t) {
+	return (!t || t === "clear" || t === "chequered") && !e.yellow && !e.red_flag && !e.safety_car && !e.virtual_safety_car && !e.penalties.length && !e.investigations.length && !e.track_limits.length;
+}
+function an(e) {
+	return !e.penalties.length && !e.investigations.length && !e.track_limits.length;
+}
+function on(e, t) {
 	switch (t.kind) {
 		case "time_penalty": return `+${t.seconds ?? "?"}s`;
 		case "drive_through": return e("stewards.short.drive_through");
@@ -2773,79 +2778,79 @@ function rn(e, t) {
 		default: return e(`stewards.kind.${t.kind}`);
 	}
 }
-function an(e) {
+function sn(e) {
 	return e.cars.map((e) => e.tla).join(" · ");
 }
-function on(e) {
-	return e.reason ? `${an(e)} ${e.reason}` : an(e);
+function cn(e) {
+	return e.reason ? `${sn(e)} ${e.reason}` : sn(e);
 }
-function sn(e, t, n) {
-	return e.length <= Qt ? e.map(t) : S`${e.slice(0, Qt).map(t)}
-    <details><summary>${n("stewards.showAll", { n: e.length - Qt })}</summary>${e.slice(Qt).map(t)}</details>`;
+function ln(e, t, n) {
+	return e.length <= en ? e.map(t) : x`${e.slice(0, en).map(t)}
+    <details><summary>${n("stewards.showAll", { n: e.length - en })}</summary>${e.slice(en).map(t)}</details>`;
 }
-function cn(e, t) {
-	return S`<li class=${t.served ? "served" : ""}>
-    <span class="pen">${rn(e, t)}</span>
-    <span class="what" title=${on(t)}><b>${an(t)}</b>${t.reason ? S` <span class="why">${t.reason}</span>` : T}</span>
-    <span class="when">${t.served ? S`✓ ${e("stewards.served")}` : t.lap ? `${e("common.lap")} ${t.lap}` : ""}</span>
+function un(e, t) {
+	return x`<li class=${t.served ? "served" : ""}>
+    <span class="pen">${on(e, t)}</span>
+    <span class="what" title=${cn(t)}><b>${sn(t)}</b>${t.reason ? x` <span class="why">${t.reason}</span>` : w}</span>
+    <span class="when">${t.served ? x`✓ ${e("stewards.served")}` : t.lap ? `${e("common.lap")} ${t.lap}` : ""}</span>
   </li>`;
 }
-function ln(e, t) {
-	return S`<li>
+function dn(e, t) {
+	return x`<li>
     <span class="tag">${e(`stewards.kind.${t.status ?? t.kind}`)}</span>
-    <span class="what two" title=${on(t)}><b>${an(t)}</b>${t.reason ? S` <span class="why">${t.reason}</span>` : T}</span>
+    <span class="what two" title=${cn(t)}><b>${sn(t)}</b>${t.reason ? x` <span class="why">${t.reason}</span>` : w}</span>
     <span class="when">${t.turn ? e("stewards.turn", { n: t.turn }) : t.lap ? `${e("common.lap")} ${t.lap}` : ""}</span>
   </li>`;
 }
-function un(e, t, n, r) {
+function fn(e, t, n, r) {
 	let i = t.safety_car ?? t.virtual_safety_car, a = t.safety_car ? "sc" : "vsc";
-	return S`<div class="col">
+	return x`<div class="col">
     <h4>${e("stewards.track")}</h4>
-    ${n ? S`<span class="status-pill ${en(n)}">${e(`live.status.${n}`)}</span>` : S`<span class="muted">—</span>`}
-    ${i ? S`<div class="phase">${e(`stewards.${a}.${i}`)}</div>` : T}
-    ${r.length ? S`<div class="sectors">${r.map((t) => S`<span class="sector-chip ${t.flag}" title=${e(`stewards.${t.flag}`)}
-            >S${t.sector}${t.flag === "double_yellow" ? S`<small>×2</small>` : T}</span>`)}</div>` : T}
+    ${n ? x`<span class="status-pill ${nn(n)}">${e(`live.status.${n}`)}</span>` : x`<span class="muted">—</span>`}
+    ${i ? x`<div class="phase">${e(`stewards.${a}.${i}`)}</div>` : w}
+    ${r.length ? x`<div class="sectors">${r.map((t) => x`<span class="sector-chip ${t.flag}" title=${e(`stewards.${t.flag}`)}
+            >S${t.sector}${t.flag === "double_yellow" ? x`<small>×2</small>` : w}</span>`)}</div>` : w}
   </div>`;
 }
-function dn(e, t, n, r, i, a) {
+function pn(e, t, n, r, i, a) {
 	let o = t.penalties.filter((e) => !e.served).length;
-	return S`<button class="compact" @click=${i} aria-expanded=${r ? "true" : "false"}>
-    ${n ? S`<span class="status-pill ${en(n)}">${e(`live.status.${n}`)}</span>` : T}
-    ${a.map((e) => S`<span class="sector-chip ${e.flag}">S${e.sector}</span>`)}
-    ${t.penalties.length ? S`<span class="count ${o ? "hot" : ""}">${e("stewards.penalties")} ${t.penalties.length}</span>` : T}
-    ${t.investigations.length ? S`<span class="count">${e("stewards.investigations")} ${t.investigations.length}</span>` : T}
-    ${t.track_limits.length ? S`<span class="count">${e("stewards.trackLimits")} ${t.track_limits.length}</span>` : T}
+	return x`<button class="compact" @click=${i} aria-expanded=${r ? "true" : "false"}>
+    ${n ? x`<span class="status-pill ${nn(n)}">${e(`live.status.${n}`)}</span>` : w}
+    ${a.map((e) => x`<span class="sector-chip ${e.flag}">S${e.sector}</span>`)}
+    ${t.penalties.length ? x`<span class="count ${o ? "hot" : ""}">${e("stewards.penalties")} ${t.penalties.length}</span>` : w}
+    ${t.investigations.length ? x`<span class="count">${e("stewards.investigations")} ${t.investigations.length}</span>` : w}
+    ${t.track_limits.length ? x`<span class="count">${e("stewards.trackLimits")} ${t.track_limits.length}</span>` : w}
     <span class="chevron">${r ? "▴" : "▾"}</span>
   </button>`;
 }
-function fn(e, t, n, r = !1, i = () => void 0, a = !1) {
-	if (!t) return T;
+function mn(e, t, n, r = !1, i = () => void 0, a = !1) {
+	if (!t) return w;
 	let o = a || n === "chequered", s = o ? [] : t.yellow_sectors;
-	return tn(t, n) || o && nn(t) ? S`<div class="card stewards calm">
-      <span class="status-pill ${en(n ?? "clear")}">${e(`live.status.${n ?? "clear"}`)}</span>
+	return rn(t, n) || o && an(t) ? x`<div class="card stewards calm">
+      <span class="status-pill ${nn(n ?? "clear")}">${e(`live.status.${n ?? "clear"}`)}</span>
       <span class="muted">${e("stewards.calm")}</span>
-    </div>` : S`<section class="card stewards ${t.red_flag ? "accent-red" : t.safety_car || t.virtual_safety_car ? "accent-sc" : ""} ${r ? "open" : ""}" aria-label=${e("stewards.title")}>
+    </div>` : x`<section class="card stewards ${t.red_flag ? "accent-red" : t.safety_car || t.virtual_safety_car ? "accent-sc" : ""} ${r ? "open" : ""}" aria-label=${e("stewards.title")}>
     <div class="card-head">${e("stewards.title")}</div>
-    ${dn(e, t, n, r, i, s)}
+    ${pn(e, t, n, r, i, s)}
     <div class="cols">
-      ${un(e, t, n, s)}
+      ${fn(e, t, n, s)}
       <div class="col">
         <h4>${e("stewards.penalties")} <small>${t.penalties.length || ""}</small></h4>
-        ${t.penalties.length ? S`<ul>${sn(t.penalties, (t) => cn(e, t), e)}</ul>` : S`<span class="muted">${e("stewards.none")}</span>`}
+        ${t.penalties.length ? x`<ul>${ln(t.penalties, (t) => un(e, t), e)}</ul>` : x`<span class="muted">${e("stewards.none")}</span>`}
       </div>
       <div class="col">
         <h4>${e("stewards.investigations")} <small>${t.investigations.length || ""}</small></h4>
-        ${t.investigations.length ? S`<ul>${sn(t.investigations, (t) => ln(e, t), e)}</ul>` : S`<span class="muted">${e("stewards.none")}</span>`}
+        ${t.investigations.length ? x`<ul>${ln(t.investigations, (t) => dn(e, t), e)}</ul>` : x`<span class="muted">${e("stewards.none")}</span>`}
       </div>
       <div class="col">
         <h4>${e("stewards.trackLimits")}</h4>
-        ${t.track_limits.length ? S`<ul>${sn(t.track_limits, (t) => S`<li><b>${t.tla}</b><span class="what">${e("stewards.deleted", { n: t.deleted })}</span>
-                ${t.black_and_white ? S`<span class="bw" title=${e("stewards.kind.black_and_white_flag")}>⚑</span>` : T}</li>`, e)}</ul>` : S`<span class="muted">${e("stewards.none")}</span>`}
+        ${t.track_limits.length ? x`<ul>${ln(t.track_limits, (t) => x`<li><b>${t.tla}</b><span class="what">${e("stewards.deleted", { n: t.deleted })}</span>
+                ${t.black_and_white ? x`<span class="bw" title=${e("stewards.kind.black_and_white_flag")}>⚑</span>` : w}</li>`, e)}</ul>` : x`<span class="muted">${e("stewards.none")}</span>`}
       </div>
     </div>
   </section>`;
 }
-var pn = o`
+var hn = o`
   /* Sized by its own width, not the window's: the same card sits in the panel
      and, narrower, on a dashboard. */
   .stewards { margin-bottom: var(--plb-gap); container-type: inline-size; }
@@ -2899,7 +2904,7 @@ var pn = o`
     .stewards.open .cols { display: grid; }
     .stewards .col + .col { border-left: 0; border-top: 1px solid var(--divider-color); }
   }
-`, mn = o`
+`, gn = o`
   .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; letter-spacing: 0.04em; }
   .status-pill::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
   .st-clear { background: color-mix(in srgb, var(--plb-green) 16%, transparent); color: var(--plb-green-text); }
@@ -2909,22 +2914,22 @@ var pn = o`
   .st-chequered { background: var(--secondary-background-color); color: var(--primary-text-color); }
   .st-chequered::before { border-radius: 2px; background: repeating-conic-gradient(#222 0 25%, #fff 0 50%) 0 0 / 5px 5px;
   box-shadow: 0 0 0 1px var(--divider-color); }
-`, hn = /* @__PURE__ */ new Set([
+`, _n = /* @__PURE__ */ new Set([
 	"time_penalty",
 	"drive_through",
 	"stop_go",
 	"grid_penalty",
 	"disqualified"
 ]);
-function gn(e) {
+function vn(e) {
 	return e >= 52.5 ? "up" : e <= 47.5 ? "down" : "even";
 }
-function _n(e) {
+function yn(e) {
 	if (!e) return "";
 	let t = e.toLowerCase();
 	return t.charAt(0).toUpperCase() + t.slice(1);
 }
-var vn = class extends k {
+var bn = class extends O {
 	constructor(...e) {
 		super(...e), this.circuitId = "", this.circuitName = "", this.failed = !1, this.open = "", this.years = /* @__PURE__ */ new Map(), this.request = 0, this.spoilers = "", this.histories = /* @__PURE__ */ new Map();
 	}
@@ -2941,7 +2946,7 @@ var vn = class extends k {
 		};
 	}
 	willUpdate(e) {
-		let t = Pt(this.settings), n = t !== this.spoilers;
+		let t = Ft(this.settings), n = t !== this.spoilers;
 		this.spoilers = t, n && (this.histories.clear(), this.years = /* @__PURE__ */ new Map()), (e.has("circuitId") || n) && (e.has("circuitId") && (this.open = "", this.years = /* @__PURE__ */ new Map()), this.load());
 	}
 	async load() {
@@ -2955,7 +2960,7 @@ var vn = class extends k {
 		}
 		this.data?.circuit_id !== t && (this.data = void 0);
 		try {
-			let n = await N.circuitHistory(this.hass, t);
+			let n = await M.circuitHistory(this.hass, t);
 			this.histories.set(t, n), e === this.request && (this.data = n);
 		} catch {
 			e === this.request && (this.failed = !0);
@@ -2970,7 +2975,7 @@ var vn = class extends k {
 		let t = this.circuitId;
 		this.years = new Map(this.years).set(e, "loading");
 		try {
-			let n = await N.circuitDriver(this.hass, t, e);
+			let n = await M.circuitDriver(this.hass, t, e);
 			t === this.circuitId && (this.years = new Map(this.years).set(e, n));
 		} catch {
 			t === this.circuitId && (this.years = new Map(this.years).set(e, "failed"));
@@ -2983,13 +2988,13 @@ var vn = class extends k {
 		}));
 	}
 	render() {
-		let e = F(this.hass), t = this.data?.circuit_id === this.circuitId ? this.data : void 0;
-		return S`
+		let e = P(this.hass), t = this.data?.circuit_id === this.circuitId ? this.data : void 0;
+		return x`
       <div class="toolbar">
-        <button class="link back" @click=${this.back}>${L(I.back, 18)} ${e("circuit.back")}</button>
+        <button class="link back" @click=${this.back}>${I(F.back, 18)} ${e("circuit.back")}</button>
         <h1>${t?.circuit ?? this.circuitName ?? e("circuit.title")}</h1>
       </div>
-      ${this.failed ? X(e, () => this.load()) : t ? S`${this.intro(e, t)}${t.drivers.length ? this.table(e, t.drivers) : S`<div class="card state">${e("circuit.empty")}</div>`}` : Ht(e)}
+      ${this.failed ? Y(e, () => this.load()) : t ? x`${this.intro(e, t)}${t.drivers.length ? this.table(e, t.drivers) : x`<div class="card state">${e("circuit.empty")}</div>`}` : Wt(e)}
     `;
 	}
 	intro(e, t) {
@@ -3001,9 +3006,9 @@ var vn = class extends k {
 			t.country,
 			i
 		].filter(Boolean).join(" · ");
-		return S`<div class="card intro">
+		return x`<div class="card intro">
       <div class="kicker">${e("circuit.title")}</div>
-      ${a ? S`<div class="where">${a}</div>` : T}
+      ${a ? x`<div class="where">${a}</div>` : w}
       <p class="explain">${this.scale()}<span>${e("circuit.explain")}</span></p>
       <details>
         <summary>${e("circuit.how")}</summary>
@@ -3012,11 +3017,11 @@ var vn = class extends k {
     </div>`;
 	}
 	scale() {
-		return S`<span class="scale" aria-hidden="true"><i class="down"></i><i class="even"></i><i class="up"></i></span>`;
+		return x`<span class="scale" aria-hidden="true"><i class="down"></i><i class="even"></i><i class="up"></i></span>`;
 	}
 	table(e, t) {
 		let n = [...t].sort((e, t) => (t.index ?? -1) - (e.index ?? -1)), r = 0;
-		return S`<div class="card"><div class="scroll"><table class="tbl drivers">
+		return x`<div class="card"><div class="scroll"><table class="tbl drivers">
       <thead><tr>
         <th class="pos">${e("common.pos")}</th><th>${e("common.driver")}</th><th>${e("circuit.index")}</th>
         <th class="r" title=${e("circuit.racesHelp")}>${e("circuit.races")}</th>
@@ -3027,46 +3032,46 @@ var vn = class extends k {
       </tr></thead>
       ${n.map((t, n) => {
 			let i = t.index !== null;
-			return i && r++, S`<tbody>${this.row(e, t, i ? r : null, n)}</tbody>`;
+			return i && r++, x`<tbody>${this.row(e, t, i ? r : null, n)}</tbody>`;
 		})}
     </table></div></div>`;
 	}
 	row(e, t, n, r) {
-		let i = t.races === 0, a = this.open === t.driver_id, o = t.name ?? t.code ?? t.driver_id, s = S`<div class="drv"><span class="bar" style="background:${B(t.team_id)}"></span>
+		let i = t.races === 0, a = this.open === t.driver_id, o = t.name ?? t.code ?? t.driver_id, s = x`<div class="drv"><span class="bar" style="background:${z(t.team_id)}"></span>
       <span class="tla">${t.code ?? o.slice(0, 3).toUpperCase()}</span><span class="name">${o}</span></div>`;
-		if (i) return S`<tr class="never ${r % 2 ? "" : "alt"}">
+		if (i) return x`<tr class="never ${r % 2 ? "" : "alt"}">
         <td class="pos num"></td><td>${s}</td>
         <td colspan="9" class="muted"><i>${e("circuit.never")}</i></td>
       </tr>`;
 		let c = () => this.toggle(t);
-		return S`<tr class="click ${a ? "sel" : ""} ${r % 2 ? "" : "alt"}" tabindex="0" aria-expanded=${a ? "true" : "false"}
-        aria-label=${e("circuit.open", { driver: o })} @click=${c} @keydown=${Lt(c)}>
+		return x`<tr class="click ${a ? "sel" : ""} ${r % 2 ? "" : "alt"}" tabindex="0" aria-expanded=${a ? "true" : "false"}
+        aria-label=${e("circuit.open", { driver: o })} @click=${c} @keydown=${zt(c)}>
       <td class="pos num">${n ?? "—"}</td>
       <td>${s}</td>
       <td>${this.index(e, t.index)}</td>
-      <td class="r num" title=${e("circuit.racesHelp")}>${t.counted === t.races ? t.races : S`${t.counted}<small class="muted">/${t.races}</small>`}</td>
-      <td class="r num col-stat">${t.wins || S`<span class="muted">0</span>`}</td>
-      <td class="r num col-stat">${t.podiums || S`<span class="muted">0</span>`}</td>
-      <td class="r num col-stat">${t.poles || S`<span class="muted">0</span>`}</td>
+      <td class="r num" title=${e("circuit.racesHelp")}>${t.counted === t.races ? t.races : x`${t.counted}<small class="muted">/${t.races}</small>`}</td>
+      <td class="r num col-stat">${t.wins || x`<span class="muted">0</span>`}</td>
+      <td class="r num col-stat">${t.podiums || x`<span class="muted">0</span>`}</td>
+      <td class="r num col-stat">${t.poles || x`<span class="muted">0</span>`}</td>
       <td class="r num col-stat">${t.best_finish === null ? "—" : `P${t.best_finish}`}</td>
-      <td class="r num col-avg">${J(this.hass, t.avg_finish, 1)}</td>
-      <td class="r num col-avg">${J(this.hass, t.avg_quali, 1)}</td>
+      <td class="r num col-avg">${q(this.hass, t.avg_finish, 1)}</td>
+      <td class="r num col-avg">${q(this.hass, t.avg_quali, 1)}</td>
       <td class="chev" aria-hidden="true">${a ? "▾" : "▸"}</td>
     </tr>
-    ${a ? this.details(e, t) : T}`;
+    ${a ? this.details(e, t) : w}`;
 	}
 	index(e, t) {
-		if (t === null) return S`<span class="muted small">${e("circuit.noIndex")}</span>`;
+		if (t === null) return x`<span class="muted small">${e("circuit.noIndex")}</span>`;
 		let n = Math.max(0, Math.min(100, t)), r = Math.min(n, 50), i = Math.abs(n - 50);
-		return S`<div class="index ${gn(n)}">
-      <b class="num">${J(this.hass, t, 1)}</b>
+		return x`<div class="index ${vn(n)}">
+      <b class="num">${q(this.hass, t, 1)}</b>
       <span class="track" aria-hidden="true"><i style="left:${r}%;width:${i}%"></i><span class="mid"></span></span>
     </div>`;
 	}
 	details(e, t) {
-		let n = this.years.get(t.driver_id), r = (e) => J(this.hass, e, 1);
-		return S`<tr class="details"><td colspan="11"><div class="dwrap">
-      <div class="dhead"><b>${t.name ?? t.code}</b>${t.team ? S` · <span class="muted">${t.team}</span>` : T}</div>
+		let n = this.years.get(t.driver_id), r = (e) => q(this.hass, e, 1);
+		return x`<tr class="details"><td colspan="11"><div class="dwrap">
+      <div class="dhead"><b>${t.name ?? t.code}</b>${t.team ? x` · <span class="muted">${t.team}</span>` : w}</div>
       <div class="facts narrow">
         <span>${e("circuit.wins")} <b class="num">${t.wins}</b></span>
         <span>${e("circuit.podiums")} <b class="num">${t.podiums}</b></span>
@@ -3075,11 +3080,11 @@ var vn = class extends k {
         <span>${e("circuit.avgFinish")} <b class="num">${r(t.avg_finish)}</b></span>
         <span>${e("circuit.avgQuali")} <b class="num">${r(t.avg_quali)}</b></span>
       </div>
-      ${!n || n === "loading" ? S`<div class="muted pad">${e("common.loading")}</div>` : n === "failed" ? X(e, () => this.loadYears(t.driver_id)) : n.years.length ? this.yearsTable(e, n.years) : S`<div class="muted pad">${e("circuit.noYears")}</div>`}
+      ${!n || n === "loading" ? x`<div class="muted pad">${e("common.loading")}</div>` : n === "failed" ? Y(e, () => this.loadYears(t.driver_id)) : n.years.length ? this.yearsTable(e, n.years) : x`<div class="muted pad">${e("circuit.noYears")}</div>`}
     </div></td></tr>`;
 	}
 	yearsTable(e, t) {
-		return S`<div class="scroll years-wrap"><table class="years">
+		return x`<div class="scroll years-wrap"><table class="years">
         <thead><tr>
           <th>${e("circuit.season")}</th><th class="col-team">${e("common.team")}</th>
           <th class="r">${e("circuit.quali")}</th><th class="r">${e("circuit.grid")}</th><th class="r">${e("circuit.finish")}</th>
@@ -3095,14 +3100,14 @@ var vn = class extends k {
 		return e.position_text && !/^\d+$/.test(e.position_text) ? e.position_text : e.finish === null ? "—" : `P${e.finish}`;
 	}
 	gridCell(e, t) {
-		return S`${t.grid !== null && t.grid !== void 0 ? t.grid === 0 ? e("circuit.pitLane") : t.grid : "—"}${t.grid_penalty ? S`<span class="gpen" title=${e("circuit.gridPenalty")} aria-label=${e("circuit.gridPenalty")}>▼</span>` : T}`;
+		return x`${t.grid !== null && t.grid !== void 0 ? t.grid === 0 ? e("circuit.pitLane") : t.grid : "—"}${t.grid_penalty ? x`<span class="gpen" title=${e("circuit.gridPenalty")} aria-label=${e("circuit.gridPenalty")}>▼</span>` : w}`;
 	}
 	yearCard(e, t) {
-		return S`<div class="ycard ${t.counted ? "" : "uncounted"}">
-      <div class="yline"><span class="bar" style="background:${B(t.team_id)}"></span>
+		return x`<div class="ycard ${t.counted ? "" : "uncounted"}">
+      <div class="yline"><span class="bar" style="background:${z(t.team_id)}"></span>
         <b class="num">${t.season}</b><span class="muted">${t.team ?? ""}</span>
         <span class="spacer"></span><b class="num fin">${this.finishText(t)}</b>
-        <span class="num muted">${t.points ? q(this.hass, t.points, 1) : 0} ${e("common.points")}</span></div>
+        <span class="num muted">${t.points ? K(this.hass, t.points, 1) : 0} ${e("common.points")}</span></div>
       <div class="yline facts">
         <span>${e("circuit.quali")} <b class="num">${t.quali === null ? "—" : `P${t.quali}`}</b></span>
         <span>${e("circuit.grid")} <b class="num">${this.gridCell(e, t)}</b></span>
@@ -3110,49 +3115,49 @@ var vn = class extends k {
       </div>
       <div class="yline facts">
         <span>${this.outcome(e, t)}</span>
-        ${t.fastest_lap ? S`<span>${e("circuit.fastest")} <span class="t ${t.fastest_lap_rank === 1 ? "ob" : ""}">${t.fastest_lap}</span>${t.fastest_lap_rank ? S` <small class="muted">${e("circuit.fastestRank", { n: t.fastest_lap_rank })}</small>` : T}</span>` : T}
+        ${t.fastest_lap ? x`<span>${e("circuit.fastest")} <span class="t ${t.fastest_lap_rank === 1 ? "ob" : ""}">${t.fastest_lap}</span>${t.fastest_lap_rank ? x` <small class="muted">${e("circuit.fastestRank", { n: t.fastest_lap_rank })}</small>` : w}</span>` : w}
       </div>
       <div class="yline facts pens"><span>${e("circuit.penalties")}</span><div>${this.penalties(e, t.penalties)}</div></div>
     </div>`;
 	}
 	year(e, t) {
-		let n = this.finishText(t), r = t.weight !== null && t.weight !== void 0 ? e("circuit.weight", { n: q(this.hass, t.weight, 2) }) : "";
-		return S`<tr class=${t.counted ? "" : "uncounted"}>
-      <td title=${r}><div class="drv"><span class="bar" style="background:${B(t.team_id)}"></span><span class="num">${t.season}</span></div></td>
+		let n = this.finishText(t), r = t.weight !== null && t.weight !== void 0 ? e("circuit.weight", { n: K(this.hass, t.weight, 2) }) : "";
+		return x`<tr class=${t.counted ? "" : "uncounted"}>
+      <td title=${r}><div class="drv"><span class="bar" style="background:${z(t.team_id)}"></span><span class="num">${t.season}</span></div></td>
       <td class="col-team muted">${t.team ?? ""}</td>
       <td class="r num">${t.quali === null ? "—" : `P${t.quali}`}</td>
       <td class="r num">${this.gridCell(e, t)}</td>
       <td class="r num"><b>${n}</b></td>
-      <td class="r num">${t.points ? q(this.hass, t.points, 1) : S`<span class="muted">0</span>`}</td>
+      <td class="r num">${t.points ? K(this.hass, t.points, 1) : x`<span class="muted">0</span>`}</td>
       <td class="vs">${this.versus(e, t)}</td>
       <td class="wrap">${this.outcome(e, t)}</td>
-      <td>${t.fastest_lap ? S`<span class="t ${t.fastest_lap_rank === 1 ? "ob" : ""}">${t.fastest_lap}</span>${t.fastest_lap_rank ? S` <small class="muted">${e("circuit.fastestRank", { n: t.fastest_lap_rank })}</small>` : T}` : "—"}</td>
+      <td>${t.fastest_lap ? x`<span class="t ${t.fastest_lap_rank === 1 ? "ob" : ""}">${t.fastest_lap}</span>${t.fastest_lap_rank ? x` <small class="muted">${e("circuit.fastestRank", { n: t.fastest_lap_rank })}</small>` : w}` : "—"}</td>
       <td class="wrap pens">${this.penalties(e, t.penalties)}</td>
     </tr>`;
 	}
 	versus(e, t) {
-		if (t.expected === null || t.expected === void 0) return S`<span class="muted">—</span>`;
+		if (t.expected === null || t.expected === void 0) return x`<span class="muted">—</span>`;
 		let n = (e) => {
-			if (e == null) return T;
-			let t = J(this.hass, Math.abs(e), 1);
-			return e > 0 ? S`<span class="gained up">▲${t}</span>` : e < 0 ? S`<span class="gained down">▼${t}</span>` : S`<span class="gained muted">=</span>`;
+			if (e == null) return w;
+			let t = q(this.hass, Math.abs(e), 1);
+			return e > 0 ? x`<span class="gained up">▲${t}</span>` : e < 0 ? x`<span class="gained down">▼${t}</span>` : x`<span class="gained muted">=</span>`;
 		};
-		return S`<span class="muted num">P${J(this.hass, t.expected, 1)}</span>
-      <span class="${t.counted ? "" : "faded"}">${n(t.delta_race)}</span>${t.delta_quali !== null && t.delta_quali !== void 0 ? S` <small class="q ${t.counted ? "" : "faded"}">${e("circuit.q")} ${n(t.delta_quali)}</small>` : T}`;
+		return x`<span class="muted num">P${q(this.hass, t.expected, 1)}</span>
+      <span class="${t.counted ? "" : "faded"}">${n(t.delta_race)}</span>${t.delta_quali !== null && t.delta_quali !== void 0 ? x` <small class="q ${t.counted ? "" : "faded"}">${e("circuit.q")} ${n(t.delta_quali)}</small>` : w}`;
 	}
 	outcome(e, t) {
-		let n = Xt(e, t.status);
-		return t.dnf ? S`<span class="badge ${t.dnf === "driver" ? "ret" : "mech"}">${e(t.dnf === "driver" ? "circuit.dnfDriver" : "circuit.dnfMechanical")}</span>
-        ${n ? S`<small class="muted">${n}</small>` : T}
-        ${t.counted ? T : S`<span class="pill nc">${e("circuit.notCounted")}</span>`}` : S`${n || "—"}${t.counted ? T : S` <span class="pill nc">${e("circuit.notCounted")}</span>`}`;
+		let n = Qt(e, t.status);
+		return t.dnf ? x`<span class="badge ${t.dnf === "driver" ? "ret" : "mech"}">${e(t.dnf === "driver" ? "circuit.dnfDriver" : "circuit.dnfMechanical")}</span>
+        ${n ? x`<small class="muted">${n}</small>` : w}
+        ${t.counted ? w : x`<span class="pill nc">${e("circuit.notCounted")}</span>`}` : x`${n || "—"}${t.counted ? w : x` <span class="pill nc">${e("circuit.notCounted")}</span>`}`;
 	}
 	penalties(e, t) {
-		return t == null ? S`<span class="muted" title=${e("circuit.penaltiesUnknown")} aria-label=${e("circuit.penaltiesUnknown")}>—</span>` : t.length ? t.map((t) => S`<div class="pen"><span class="badge ${hn.has(t.kind) ? "pen" : ""}">${rn(e, t)}</span>
-        ${t.reason ? S`<span>${_n(t.reason)}</span>` : T}
-        ${t.lap ? S`<small class="muted">${e("circuit.onLap", { n: t.lap })}</small>` : T}</div>`) : S`<span class="muted">${e("circuit.penaltiesNone")}</span>`;
+		return t == null ? x`<span class="muted" title=${e("circuit.penaltiesUnknown")} aria-label=${e("circuit.penaltiesUnknown")}>—</span>` : t.length ? t.map((t) => x`<div class="pen"><span class="badge ${_n.has(t.kind) ? "pen" : ""}">${on(e, t)}</span>
+        ${t.reason ? x`<span>${yn(t.reason)}</span>` : w}
+        ${t.lap ? x`<small class="muted">${e("circuit.onLap", { n: t.lap })}</small>` : w}</div>`) : x`<span class="muted">${e("circuit.penaltiesNone")}</span>`;
 	}
 	static {
-		this.styles = [R, o`
+		this.styles = [L, o`
       :host { display: block; container-type: inline-size; }
       .back { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; }
       .intro { padding: 14px 16px 4px; margin-bottom: var(--plb-gap); }
@@ -3250,26 +3255,26 @@ var vn = class extends k {
       }
     `];
 	}
-}, yn = {}, Z = Be(class extends Ve {
+}, xn = {}, X = Ve(class extends He {
 	constructor() {
-		super(...arguments), this.ot = yn;
+		super(...arguments), this.ot = xn;
 	}
 	render(e, t) {
 		return t();
 	}
 	update(e, [t, n]) {
 		if (Array.isArray(t)) {
-			if (Array.isArray(this.ot) && this.ot.length === t.length && t.every((e, t) => e === this.ot[t])) return w;
-		} else if (this.ot === t) return w;
+			if (Array.isArray(this.ot) && this.ot.length === t.length && t.every((e, t) => e === this.ot[t])) return C;
+		} else if (this.ot === t) return C;
 		return this.ot = Array.isArray(t) ? Array.from(t) : t, this.render(t, n);
 	}
-}), bn = (e, t, n) => {
+}), Sn = (e, t, n) => {
 	let r = /* @__PURE__ */ new Map();
 	for (let i = t; i <= n; i++) r.set(e[i], i);
 	return r;
-}, xn = Be(class extends Ve {
+}, Z = Ve(class extends He {
 	constructor(e) {
-		if (super(e), e.type !== ze.CHILD) throw Error("repeat() can only be used in text expressions");
+		if (super(e), e.type !== Be.CHILD) throw Error("repeat() can only be used in text expressions");
 	}
 	dt(e, t, n) {
 		let r;
@@ -3285,39 +3290,39 @@ var vn = class extends k {
 		return this.dt(e, t, n).values;
 	}
 	update(e, [t, n, r]) {
-		let i = Ye(e), { values: a, keys: o } = this.dt(t, n, r);
+		let i = Xe(e), { values: a, keys: o } = this.dt(t, n, r);
 		if (!Array.isArray(i)) return this.ut = o, a;
 		let s = this.ut ??= [], c = [], l, u, d = 0, f = i.length - 1, p = 0, m = a.length - 1;
 		for (; d <= f && p <= m;) if (i[d] === null) d++;
 		else if (i[f] === null) f--;
-		else if (s[d] === o[p]) c[p] = j(i[d], a[p]), d++, p++;
-		else if (s[f] === o[m]) c[m] = j(i[f], a[m]), f--, m--;
-		else if (s[d] === o[m]) c[m] = j(i[d], a[m]), A(e, c[m + 1], i[d]), d++, m--;
-		else if (s[f] === o[p]) c[p] = j(i[f], a[p]), A(e, i[d], i[f]), f--, p++;
-		else if (l === void 0 && (l = bn(o, p, m), u = bn(s, d, f)), l.has(s[d])) {
+		else if (s[d] === o[p]) c[p] = A(i[d], a[p]), d++, p++;
+		else if (s[f] === o[m]) c[m] = A(i[f], a[m]), f--, m--;
+		else if (s[d] === o[m]) c[m] = A(i[d], a[m]), k(e, c[m + 1], i[d]), d++, m--;
+		else if (s[f] === o[p]) c[p] = A(i[f], a[p]), k(e, i[d], i[f]), f--, p++;
+		else if (l === void 0 && (l = Sn(o, p, m), u = Sn(s, d, f)), l.has(s[d])) {
 			if (l.has(s[f])) {
 				let t = u.get(o[p]), n = t === void 0 ? null : i[t];
 				if (n === null) {
-					let t = A(e, i[d]);
-					j(t, a[p]), c[p] = t;
-				} else c[p] = j(n, a[p]), A(e, i[d], n), i[t] = null;
+					let t = k(e, i[d]);
+					A(t, a[p]), c[p] = t;
+				} else c[p] = A(n, a[p]), k(e, i[d], n), i[t] = null;
 				p++;
-			} else Xe(i[f]), f--;
-		} else Xe(i[d]), d++;
+			} else Ze(i[f]), f--;
+		} else Ze(i[d]), d++;
 		for (; p <= m;) {
-			let t = A(e, c[m + 1]);
-			j(t, a[p]), c[p++] = t;
+			let t = k(e, c[m + 1]);
+			A(t, a[p]), c[p++] = t;
 		}
 		for (; d <= f;) {
 			let e = i[d++];
-			e !== null && Xe(e);
+			e !== null && Ze(e);
 		}
-		return this.ut = o, Je(e, c), w;
+		return this.ut = o, Ye(e, c), C;
 	}
 });
 //#endregion
 //#region src/merge.ts
-function Sn(e, t) {
+function Cn(e, t) {
 	let n = new Map((e ?? []).map((e) => [e.number, e])), r = [];
 	for (let e of t.order) {
 		let i = String(e), a = t.rows[i] ?? n.get(i);
@@ -3325,34 +3330,34 @@ function Sn(e, t) {
 	}
 	return r;
 }
-function Cn(e, t) {
+function wn(e, t) {
 	if (t.full || !e) {
 		if (!t.tower_patch) return t;
 		let { tower_patch: e, ...n } = t;
 		return {
 			...n,
-			tower: Sn(void 0, e)
+			tower: Cn(void 0, e)
 		};
 	}
 	let { tower_patch: n, ...r } = t, i = {
 		...e,
 		...r
 	};
-	return n && (i.tower = Sn(e.tower, n)), i;
+	return n && (i.tower = Cn(e.tower, n)), i;
 }
 //#endregion
 //#region src/pages/live.ts
-var wn = {
+var Tn = {
 	all: null,
 	flags: "flag",
 	penalties: "penalty",
 	other: "other"
-}, Tn = /* @__PURE__ */ new Set([
+}, En = /* @__PURE__ */ new Set([
 	"live",
 	"stale",
 	"lost",
 	"final"
-]), En = /* @__PURE__ */ new Set(["race", "sprint"]), Dn = class extends k {
+]), Dn = /* @__PURE__ */ new Set(["race", "sprint"]), On = class extends O {
 	constructor(...e) {
 		super(...e), this.kiosk = !1, this.clock = 0, this.selected = "", this.filter = "all", this.playing = "", this.failed = !1, this.starting = !1, this.stewardsOpen = !1, this.subscribing = !1, this.receivedAt = Date.now(), this.byNumber = /* @__PURE__ */ new Map(), this.visibility = () => {
 			document.visibilityState === "visible" && this.requestUpdate();
@@ -3362,7 +3367,7 @@ var wn = {
 		this.properties = {
 			hass: {
 				attribute: !1,
-				hasChanged: Nt
+				hasChanged: Pt
 			},
 			settings: { attribute: !1 },
 			kiosk: {
@@ -3394,7 +3399,7 @@ var wn = {
 	async subscribe() {
 		this.subscribing = !0;
 		try {
-			let e = await N.subscribeLive(this.hass, (e) => this.receive(e));
+			let e = await M.subscribeLive(this.hass, (e) => this.receive(e));
 			if (!this.isConnected) {
 				e();
 				return;
@@ -3410,7 +3415,7 @@ var wn = {
 		}
 	}
 	receive(e) {
-		this.view = Cn(this.view, e), this.receivedAt = Date.now();
+		this.view = wn(this.view, e), this.receivedAt = Date.now();
 	}
 	select(e) {
 		this.selected = this.selected === e ? "" : e;
@@ -3418,7 +3423,7 @@ var wn = {
 	async start() {
 		this.starting = !0;
 		try {
-			await N.setSettings(this.hass, { live: !0 });
+			await M.setSettings(this.hass, { live: !0 });
 		} catch {} finally {
 			this.starting = !1;
 		}
@@ -3441,77 +3446,77 @@ var wn = {
 		this.audio = void 0, this.playing = "", e && (e.pause(), e.removeAttribute("src"), e.load());
 	}
 	render() {
-		let e = F(this.hass), t = this.view;
-		if (!t) return this.failed ? X(e, () => {
+		let e = P(this.hass), t = this.view;
+		if (!t) return this.failed ? Y(e, () => {
 			window.clearTimeout(this.retry), this.retry = void 0, this.subscribe();
-		}) : S`<div class="card loading">${e("common.loading")}</div>`;
-		if (Tn.has(t.state)) return this.renderBoard(e, t);
+		}) : x`<div class="card loading">${e("common.loading")}</div>`;
+		if (En.has(t.state)) return this.renderBoard(e, t);
 		switch (t.state) {
-			case "hidden": return S`<div class="card state">${L(I.eyeOff, 56)}<h2>${e("live.hidden")}</h2>
+			case "hidden": return x`<div class="card state">${I(F.eyeOff, 56)}<h2>${e("live.hidden")}</h2>
           <div>${e("live.hiddenHelp", {
 				meeting: t.header?.meeting ?? "",
-				session: It(e, t.header?.kind, t.header?.session)
+				session: Rt(e, t.header?.kind, t.header?.session)
 			})}</div>
           <button class="btn" @click=${() => this.dispatchEvent(new CustomEvent("plb-spoiler-off", {
 				bubbles: !0,
 				composed: !0
 			}))}>${e("live.showAll")}</button></div>`;
-			case "syncing": return S`<div class="card state">${L(I.clock, 56)}<h2>${e("live.syncing")}</h2>
+			case "syncing": return x`<div class="card state">${I(F.clock, 56)}<h2>${e("live.syncing")}</h2>
           <div>${e("live.syncingHelp", { n: t.delay })}</div></div>`;
-			case "connecting": return S`<div class="card state"><span class="spin">${L(I.timer, 56)}</span><h2>${e("live.connecting")}</h2></div>`;
+			case "connecting": return x`<div class="card state"><span class="spin">${I(F.timer, 56)}</span><h2>${e("live.connecting")}</h2></div>`;
 			case "paused": return this.renderPaused(e, t);
 			default: return this.renderIdle(e, t);
 		}
 	}
 	nextBlock(e, t) {
-		return t ? S`<div>${e("live.next", {
+		return t ? x`<div>${e("live.next", {
 			meeting: t.meeting,
 			session: e(`sessions.${t.kind}`)
 		})}</div>
-      ${t.start ? S`<div class="starts">${e("live.startsIn")}</div>
+      ${t.start ? x`<div class="starts">${e("live.startsIn")}</div>
             <div class="big num"><plb-countdown .to=${t.start}></plb-countdown></div>
-            <div>${Ct(this.hass, t.start, t.date, t.timezone)}
-              ${Bt(e, this.hass, t.start, t.timezone)}</div>` : T}` : S`<div>${e("live.noNext")}</div>`;
+            <div>${wt(this.hass, t.start, t.date, t.timezone)}
+              ${Ht(e, this.hass, t.start, t.timezone)}</div>` : w}` : x`<div>${e("live.noNext")}</div>`;
 	}
 	playButton(e) {
-		return S`<button class="btn play-live" ?disabled=${this.starting} @click=${() => this.start()}>
-      ${L(I.play, 18)}${e("settings.start")}</button>`;
+		return x`<button class="btn play-live" ?disabled=${this.starting} @click=${() => this.start()}>
+      ${I(F.play, 18)}${e("settings.start")}</button>`;
 	}
 	renderPaused(e, t) {
-		return S`<div class="card state">${L(I.pause, 56)}<h2>${e("live.paused")}</h2>
+		return x`<div class="card state">${I(F.pause, 56)}<h2>${e("live.paused")}</h2>
       <div>${e("live.pausedHelp")}</div>
       ${this.playButton(e)}
-      ${t.auto_start ? S`<div class="muted">${e("live.autoStart")}</div>` : T}
+      ${t.auto_start ? x`<div class="muted">${e("live.autoStart")}</div>` : w}
       <div class="next">${this.nextBlock(e, t.next_session)}</div>
     </div>`;
 	}
 	renderIdle(e, t) {
-		return S`<div class="card state">${L(I.timer, 56)}<h2>${e("live.idle")}</h2>
+		return x`<div class="card state">${I(F.timer, 56)}<h2>${e("live.idle")}</h2>
       ${this.nextBlock(e, t.next_session)}
     </div>`;
 	}
 	stripEnd(e, t) {
-		if (t.state !== "final") return S`<span class="age">${Gt(this.hass, t.data_age ?? 0, this.receivedAt, t.state === "live")}</span>`;
+		if (t.state !== "final") return x`<span class="age">${qt(this.hass, t.data_age ?? 0, this.receivedAt, t.state === "live")}</span>`;
 		let n = t.next_session;
-		return n ? S`<div class="next-slot">
+		return n ? x`<div class="next-slot">
       <small>${e("live.nextShort")}</small>
       <b>${n.meeting} · ${e(`sessions.${n.kind}`)}</b>
-      ${n.start ? S`<span class="num"><plb-countdown .to=${n.start}></plb-countdown></span>` : T}
-    </div>` : T;
+      ${n.start ? x`<span class="num"><plb-countdown .to=${n.start}></plb-countdown></span>` : w}
+    </div>` : w;
 	}
 	stripStart(e, t) {
 		let n = t.header, r = t.state === "final", i = n?.kind === "qualifying" || n?.kind === "sprint_qualifying";
-		return S`<div><h1>${n?.meeting ?? ""}</h1><div class="sub">${It(e, n?.kind, n?.session)}${n?.circuit ? ` · ${n.circuit}` : ""}</div></div>
-      ${i && n?.part ? S`<div class="laps num">Q${n.part}${!r && n.remaining !== null ? S`<small> · ${Mt(n.remaining)} ${e("live.remaining")}</small>` : T}</div>` : n?.lap ? S`<div class="laps num">${e("common.lap")} ${n.lap}${n.total_laps ? S`<small> / ${n.total_laps}</small>` : T}</div>` : !r && n?.remaining !== null && n?.remaining !== void 0 ? S`<div class="laps num">${Mt(n.remaining)} <small>${e("live.remaining")}</small></div>` : T}
-      ${r ? S`<span class="final-pill">${e("live.final")}</span>
-            <span class="sub">${e("live.ended", { time: At(this.hass, t.ended) })}</span>` : T}
-      ${r && t.paused ? S`<span class="paused-pill">${e("live.pausedShort")}</span>${this.playButton(e)}` : T}`;
+		return x`<div><h1>${n?.meeting ?? ""}</h1><div class="sub">${Rt(e, n?.kind, n?.session)}${n?.circuit ? ` · ${n.circuit}` : ""}</div></div>
+      ${i && n?.part ? x`<div class="laps num">Q${n.part}${!r && n.remaining !== null ? x`<small> · ${Nt(n.remaining)} ${e("live.remaining")}</small>` : w}</div>` : n?.lap ? x`<div class="laps num">${e("common.lap")} ${n.lap}${n.total_laps ? x`<small> / ${n.total_laps}</small>` : w}</div>` : !r && n?.remaining !== null && n?.remaining !== void 0 ? x`<div class="laps num">${Nt(n.remaining)} <small>${e("live.remaining")}</small></div>` : w}
+      ${r ? x`<span class="final-pill">${e("live.final")}</span>
+            <span class="sub">${e("live.ended", { time: jt(this.hass, t.ended) })}</span>` : w}
+      ${r && t.paused ? x`<span class="paused-pill">${e("live.pausedShort")}</span>${this.playButton(e)}` : w}`;
 	}
 	renderBoard(e, t) {
-		let n = t.header, r = t.state === "final", i = t.state === "stale" ? S`<div class="banner">${L(I.alert)}${e("live.stale", { n: Math.round(t.data_age ?? 0) })}</div>` : t.state === "lost" ? S`<div class="banner lost">${L(I.alert)}${e("live.lost")}</div>` : T, a = n?.kind === "qualifying" || n?.kind === "sprint_qualifying", o = t.state === "live" || t.state === "stale", s = this.hass, c = t.tower ?? [], l = this.settings?.favourites;
-		return S`${i}
+		let n = t.header, r = t.state === "final", i = t.state === "stale" ? x`<div class="banner">${I(F.alert)}${e("live.stale", { n: Math.round(t.data_age ?? 0) })}</div>` : t.state === "lost" ? x`<div class="banner lost">${I(F.alert)}${e("live.lost")}</div>` : w, a = n?.kind === "qualifying" || n?.kind === "sprint_qualifying", o = t.state === "live" || t.state === "stale", s = this.hass, c = t.tower ?? [], l = this.settings?.favourites;
+		return x`${i}
       <div class="card strip">
-        ${Z([
+        ${X([
 			s,
 			this.clock,
 			n,
@@ -3523,17 +3528,17 @@ var wn = {
         <span class="spacer"></span>
         ${this.stripEnd(e, t)}
       </div>
-      ${Z([
+      ${X([
 			s,
 			this.clock,
 			t.stewards,
 			n?.track_status,
 			this.stewardsOpen,
 			r
-		], () => fn(e, t.stewards, n?.track_status, this.stewardsOpen, () => this.stewardsOpen = !this.stewardsOpen, r))}
+		], () => mn(e, t.stewards, n?.track_status, this.stewardsOpen, () => this.stewardsOpen = !this.stewardsOpen, r))}
       <div class="grid ${t.state === "lost" ? "dim" : ""}">
         <div class="col">
-          <div class="card scroll">${Z([
+          <div class="card scroll">${X([
 			s,
 			this.clock,
 			c,
@@ -3542,17 +3547,17 @@ var wn = {
 			this.selected,
 			l
 		], () => this.renderTower(e, c, a))}</div>
-          ${Z([
+          ${X([
 			s,
 			this.clock,
 			t.weather,
 			t.pits,
 			c,
 			n?.kind
-		], () => S`<div class="pair">${this.renderWeather(e, t)}${this.renderPits(e, t)}</div>`)}
+		], () => x`<div class="pair">${this.renderWeather(e, t)}${this.renderPits(e, t)}</div>`)}
         </div>
         <div class="col">
-          ${r ? T : Z([
+          ${r ? w : X([
 			s,
 			this.clock,
 			t.map_available,
@@ -3562,13 +3567,13 @@ var wn = {
 			this.selected,
 			this.settings?.is_admin
 		], () => this.renderMap(e, t, o))}
-          ${Z([
+          ${X([
 			s,
 			this.clock,
 			t.race_control,
 			this.filter
 		], () => this.renderRaceControl(e, t.race_control ?? []))}
-          ${Z([
+          ${X([
 			s,
 			this.clock,
 			t.radio,
@@ -3580,25 +3585,25 @@ var wn = {
       </div>`;
 	}
 	timed(e, t = "") {
-		return e ? S`<span class="t ${e.overall_best ? "ob" : e.personal_best ? "pb" : e.previous ? "prev" : ""} ${t}">${e.time}</span>` : S`<span class="t prev ${t}">—</span>`;
+		return e ? x`<span class="t ${e.overall_best ? "ob" : e.personal_best ? "pb" : e.previous ? "prev" : ""} ${t}">${e.time}</span>` : x`<span class="t prev ${t}">—</span>`;
 	}
 	badge(e, t) {
-		return t.status === "retired" ? S`<span class="badge ret">${e("live.ret")}</span>` : t.status === "stopped" ? S`<span class="badge ret">${e("live.stop")}</span>` : t.in_pit ? S`<span class="badge pit">${e("live.pit")}</span>` : t.pit_out ? S`<span class="badge out">${e("live.out")}</span>` : T;
+		return t.status === "retired" ? x`<span class="badge ret">${e("live.ret")}</span>` : t.status === "stopped" ? x`<span class="badge ret">${e("live.stop")}</span>` : t.in_pit ? x`<span class="badge pit">${e("live.pit")}</span>` : t.pit_out ? x`<span class="badge out">${e("live.out")}</span>` : w;
 	}
 	renderTower(e, t, n) {
 		let r = this.view?.header?.part ?? 1, i = n ? t.findIndex((e) => e.qualifying?.cutoff) : -1;
-		return S`<table class="tower">
+		return x`<table class="tower">
       <thead><tr>
         <th class="pos">${e("common.pos")}</th><th>${e("common.driver")}</th>
-        ${n ? S`${[
+        ${n ? x`${[
 			1,
 			2,
 			3
-		].map((e) => S`<th class=${e === r ? "" : "col-s"}>Q${e}</th>`)}<th>${e("live.gap")}</th>` : S`<th class="col-gain"></th><th>${e("live.gap")}</th><th class="col-int">${e("live.int")}</th><th class="col-last">${e("live.last")}</th><th class="col-best">${e("live.best")}</th>`}
+		].map((e) => x`<th class=${e === r ? "" : "col-s"}>Q${e}</th>`)}<th>${e("live.gap")}</th>` : x`<th class="col-gain"></th><th>${e("live.gap")}</th><th class="col-int">${e("live.int")}</th><th class="col-last">${e("live.last")}</th><th class="col-best">${e("live.best")}</th>`}
         <th class="col-s">S1</th><th class="col-s">S2</th><th class="col-s">S3</th>
-        <th>${e("live.tyre")}</th>${n ? T : S`<th class="col-pits">${e("live.pits")}</th>`}
+        <th>${e("live.tyre")}</th>${n ? w : x`<th class="col-pits">${e("live.pits")}</th>`}
       </tr></thead>
-      ${xn(t, (e) => e.number, (t, a) => S`<tbody>${this.row(e, t, a, n, r, a === i - 1)}</tbody>`)}
+      ${Z(t, (e) => e.number, (t, a) => x`<tbody>${this.row(e, t, a, n, r, a === i - 1)}</tbody>`)}
     </table>`;
 	}
 	row(e, t, n, r, i, a) {
@@ -3608,61 +3613,61 @@ var wn = {
 			a ? "zone" : "",
 			n % 2 ? "" : "alt"
 		].join(" "), l = t.qualifying, u = () => this.select(t.number);
-		return S`<tr class=${c} tabindex="0" aria-selected=${s ? "true" : "false"}
-        @click=${u} @keydown=${Lt(u)}>
+		return x`<tr class=${c} tabindex="0" aria-selected=${s ? "true" : "false"}
+        @click=${u} @keydown=${zt(u)}>
       <td class="pos num">${t.position ?? "—"}</td>
       <td><div class="drv"><span class="bar" style="background:${t.colour ?? "var(--divider-color)"}"></span>
-        ${this.settings?.favourites?.includes(t.tla) ? S`<span class="fav" title=${e("drivers.followed")}>★</span>` : T}
+        ${this.settings?.favourites?.includes(t.tla) ? x`<span class="fav" title=${e("drivers.followed")}>★</span>` : w}
         <span class="tla" title=${t.name ?? ""}>${t.tla}</span><small>${t.number}</small>
-        ${t.penalty ? S`<span class="badge pen" title=${e("stewards.unserved")}>+${t.penalty}s</span>` : T}
+        ${t.penalty ? x`<span class="badge pen" title=${e("stewards.unserved")}>+${t.penalty}s</span>` : w}
         ${this.badge(e, t)}
-        ${t.status === "knocked_out" ? S`<span class="badge ko">${e("live.ko")}</span>` : T}</div></td>
-      ${r && l ? S`${[
+        ${t.status === "knocked_out" ? x`<span class="badge ko">${e("live.ko")}</span>` : w}</div></td>
+      ${r && l ? x`${[
 			0,
 			1,
 			2
-		].map((e) => S`<td class="t ${e + 1 === i ? "" : "col-s muted"}">${l.part_bests[e] ?? ""}</td>`)}<td class="t">${l.gap ?? ""}</td>` : S`<td class="col-gain">${zt(t.gained)}</td><td class="t">${Ft(e, t.gap)}</td><td class="t col-int">${Ft(e, t.interval, !0)}</td>
+		].map((e) => x`<td class="t ${e + 1 === i ? "" : "col-s muted"}">${l.part_bests[e] ?? ""}</td>`)}<td class="t">${l.gap ?? ""}</td>` : x`<td class="col-gain">${Vt(t.gained)}</td><td class="t">${Lt(e, t.status, t.laps) || It(e, t.gap)}</td><td class="t col-int">${It(e, t.interval, !0)}</td>
             <td class="col-last">${this.timed(t.last_lap)}</td>
-            <td class="col-best">${t.best_lap ? S`<span class="t">${t.best_lap.time}</span>` : ""}</td>`}
-      ${t.sectors.map((e, n) => S`<td class="col-s">${this.timed(e, "sector")}${Vt(t.segments?.[n])}</td>`)}
-      <td>${t.tyre ? Rt(e, t.tyre.compound, t.tyre.new, t.tyre.age) : ""}</td>
-      ${r ? T : S`<td class="num col-pits">${t.pit_stops}</td>`}
+            <td class="col-best">${t.best_lap ? x`<span class="t">${t.best_lap.time}</span>` : ""}</td>`}
+      ${t.sectors.map((e, n) => x`<td class="col-s">${this.timed(e, "sector")}${Ut(t.segments?.[n])}</td>`)}
+      <td>${t.tyre ? Bt(e, t.tyre.compound, t.tyre.new, t.tyre.age) : ""}</td>
+      ${r ? w : x`<td class="num col-pits">${t.pit_stops}</td>`}
     </tr>
-    ${s ? this.details(e, t, r ? 10 : 12) : T}`;
+    ${s ? this.details(e, t, r ? 10 : 12) : w}`;
 	}
 	details(e, t, n) {
-		let r = t.sectors.map((e, t) => S`<span>S${t + 1} ${this.timed(e)}</span>`), i = t.stints ?? [], a = t.pit_rejoin;
-		return S`<tr class="details"><td colspan=${n}><div class="dwrap">
-      <div class="dhead"><b>${t.name ?? t.tla}</b>${t.team ? S` · ${t.team}` : T}</div>
+		let r = t.sectors.map((e, t) => x`<span>S${t + 1} ${this.timed(e)}</span>`), i = t.stints ?? [], a = t.pit_rejoin;
+		return x`<tr class="details"><td colspan=${n}><div class="dwrap">
+      <div class="dhead"><b>${t.name ?? t.tla}</b>${t.team ? x` · ${t.team}` : w}</div>
       <div class="facts narrow">
-        ${t.interval ? S`<span>${e("live.int")} <span class="t">${Ft(e, t.interval, !0) || "—"}</span></span>` : T}
-        ${t.best_lap ? S`<span>${e("live.best")} <span class="t">${t.best_lap.time}</span></span>` : T}
+        ${t.interval ? x`<span>${e("live.int")} <span class="t">${It(e, t.interval, !0) || "—"}</span></span>` : w}
+        ${t.best_lap ? x`<span>${e("live.best")} <span class="t">${t.best_lap.time}</span></span>` : w}
         ${r}
         <span>${e("live.pits")} ${t.pit_stops}</span>
       </div>
-      ${i.length ? S`<table class="stints">
+      ${i.length ? x`<table class="stints">
             <tr><th>${e("drivers.stint")}</th><th>${e("live.tyre")}</th><th>${e("drivers.laps")}</th><th>${e("drivers.bestInStint")}</th></tr>
-            ${i.map((t, n) => S`<tr>
+            ${i.map((t, n) => x`<tr>
                 <td class="num">${n + 1}</td>
-                <td>${Rt(e, t.compound, t.new, null)}</td>
+                <td>${Bt(e, t.compound, t.new, null)}</td>
                 <td class="num">${t.to_lap && t.to_lap !== t.from_lap ? e("drivers.lapRange", {
 			from: t.from_lap,
 			to: t.to_lap
 		}) : e("drivers.fromLap", { from: t.from_lap })}
                   <small class="muted">(${t.laps})</small></td>
-                <td>${t.best ? S`<span class="t">${t.best.time}</span>${t.best.lap ? S` <small class="muted">${e("drivers.onLap", { lap: t.best.lap })}</small>` : T}` : "—"}</td>
+                <td>${t.best ? x`<span class="t">${t.best.time}</span>${t.best.lap ? x` <small class="muted">${e("drivers.onLap", { lap: t.best.lap })}</small>` : w}` : "—"}</td>
               </tr>`)}
-          </table>` : T}
-      ${a ? S`<div class="rejoin">${L(I.timer, 16)}
-            <span>${e("drivers.rejoin", { position: a.position })}${a.ahead ? S` · ${e("drivers.behindOf", {
+          </table>` : w}
+      ${a ? x`<div class="rejoin">${I(F.timer, 16)}
+            <span>${e("drivers.rejoin", { position: a.position })}${a.ahead ? x` · ${e("drivers.behindOf", {
 			driver: a.ahead,
-			gap: q(this.hass, a.ahead_gap, 1)
-		})}` : T}${a.behind ? S` · ${e("drivers.aheadOf", {
+			gap: K(this.hass, a.ahead_gap, 1)
+		})}` : w}${a.behind ? x` · ${e("drivers.aheadOf", {
 			driver: a.behind,
-			gap: q(this.hass, a.behind_gap, 1)
-		})}` : T}
-              <small class="muted">${e(a.known ? "drivers.lossCircuit" : "drivers.lossGeneric", { loss: q(this.hass, a.loss, 1) })}${a.pitting ? ` ${e("drivers.pitting", { n: a.pitting })}` : ""}</small></span>
-          </div>` : T}
+			gap: K(this.hass, a.behind_gap, 1)
+		})}` : w}
+              <small class="muted">${e(a.known ? "drivers.lossCircuit" : "drivers.lossGeneric", { loss: K(this.hass, a.loss, 1) })}${a.pitting ? ` ${e("drivers.pitting", { n: a.pitting })}` : ""}</small></span>
+          </div>` : w}
     </div></td></tr>`;
 	}
 	driver(e) {
@@ -3670,77 +3675,77 @@ var wn = {
 		return t !== this.byNumberOf && (this.byNumberOf = t, this.byNumber = new Map((t ?? []).map((e) => [e.number, e]))), e === null ? void 0 : this.byNumber.get(e);
 	}
 	renderMap(e, t, n) {
-		let r = S`<div class="card-head">${e("live.map")}</div>`;
+		let r = x`<div class="card-head">${e("live.map")}</div>`;
 		if (!t.map_available || !n) {
 			let n = this.settings?.is_admin, i = t.map_reason ?? "not_configured", a = e(i === "no_data" ? "live.mapNoData" : n ? i === "token_problem" ? "live.mapToken" : "live.mapLocked" : "live.mapNotEnabled");
-			return S`<div class="card">${r}<div class="locked">${L(I.lock, 36)}<div>${a}</div></div></div>`;
+			return x`<div class="card">${r}<div class="locked">${I(F.lock, 36)}<div>${a}</div></div></div>`;
 		}
-		return S`<div class="card">${r}
+		return x`<div class="card">${r}
       <plb-live-map .hass=${this.hass} .tower=${t.tower ?? []} .selected=${this.selected}
         .favourites=${this.settings?.favourites ?? []}
         @plb-select=${(e) => this.select(e.detail)}></plb-live-map></div>`;
 	}
 	renderRaceControl(e, t) {
-		let n = wn[this.filter], r = t.filter((e) => !n || e.kind === n);
-		return S`<div class="card">
+		let n = Tn[this.filter], r = t.filter((e) => !n || e.kind === n);
+		return x`<div class="card">
       <div class="card-head">${e("live.raceControl")}</div>
-      <div class="filters">${Object.keys(wn).map((t) => S`<button class="chip small ${this.filter === t ? "on" : ""}" aria-pressed=${this.filter === t ? "true" : "false"}
+      <div class="filters">${Object.keys(Tn).map((t) => x`<button class="chip small ${this.filter === t ? "on" : ""}" aria-pressed=${this.filter === t ? "true" : "false"}
           @click=${() => this.filter = t}>${e(`live.${t}`)}</button>`)}</div>
-      <div class="feed">${xn(r, (e) => `${e.utc}|${e.message}`, (t) => S`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : K(this.hass, t.utc, !0)}</span>
-          <span>${t.message}${t.lap ? S`<time>${K(this.hass, t.utc)}</time>` : T}</span></div>`)}</div>
+      <div class="feed">${Z(r, (e) => `${e.utc}|${e.message}`, (t) => x`<div class="msg ${t.kind}"><span class="lap num">${t.lap ? `${e("common.lap")} ${t.lap}` : G(this.hass, t.utc, !0)}</span>
+          <span>${t.message}${t.lap ? x`<time>${G(this.hass, t.utc)}</time>` : w}</span></div>`)}</div>
     </div>`;
 	}
 	renderRadio(e, t) {
 		let n = t.radio ?? [];
-		return S`<div class="card">
+		return x`<div class="card">
       <div class="card-head">${e("live.radio")}</div>
-      ${n.length ? S`<div class="feed short">${xn(n, (e) => e.url, (t) => {
-			let n = this.driver(t.number), r = this.playing === t.url, i = K(this.hass, t.utc);
-			return S`<div class="radio ${t.number === this.selected ? "sel" : ""}">
+      ${n.length ? x`<div class="feed short">${Z(n, (e) => e.url, (t) => {
+			let n = this.driver(t.number), r = this.playing === t.url, i = G(this.hass, t.utc);
+			return x`<div class="radio ${t.number === this.selected ? "sel" : ""}">
                 <button class="play" @click=${() => this.play(t.url)}
                   aria-label=${e(r ? "live.pause" : "live.play", {
 				driver: n?.tla ?? t.number ?? "",
 				time: i
-			})}>${L(r ? I.pause : I.play, 18)}</button>
+			})}>${I(r ? F.pause : F.play, 18)}</button>
                 <span class="bar" style="background:${n?.colour ?? "var(--divider-color)"}"></span><b>${n?.tla ?? t.number}</b>
                 <time>${i}</time></div>`;
-		})}</div>` : S`<div class="empty">${e("live.noRadio")}</div>`}
+		})}</div>` : x`<div class="empty">${e("live.noRadio")}</div>`}
     </div>`;
 	}
 	renderWeather(e, t) {
 		let n = t.weather;
-		if (!n) return T;
-		let r = n.wind_direction === null ? "" : S`<span class="wind" style="transform:rotate(${n.wind_direction + 180}deg)">↑</span>`;
-		return S`<div class="card">
+		if (!n) return w;
+		let r = n.wind_direction === null ? "" : x`<span class="wind" style="transform:rotate(${n.wind_direction + 180}deg)">↑</span>`;
+		return x`<div class="card">
       <div class="card-head">${e("live.weather")}</div>
       <div class="weather">
-        <div><small>${e("live.air")}</small><b class="num">${q(this.hass, n.air)}°</b></div>
-        <div><small>${e("live.track")}</small><b class="num">${q(this.hass, n.track)}°</b></div>
+        <div><small>${e("live.air")}</small><b class="num">${K(this.hass, n.air)}°</b></div>
+        <div><small>${e("live.track")}</small><b class="num">${K(this.hass, n.track)}°</b></div>
         <div><small>${e("live.rain")}</small><b>${n.rain ? e("live.wet") : e("live.dry")}</b></div>
-        <div><small>${e("live.humidity")}</small><b class="num">${q(this.hass, n.humidity, 0)}%</b></div>
-        <div><small>${e("live.wind")}</small><b class="num">${e("live.windSpeed", { n: q(this.hass, n.wind_speed) })} ${r}</b></div>
-        <div><small>${e("live.pressure")}</small><b class="num">${q(this.hass, n.pressure, 0)}</b></div>
+        <div><small>${e("live.humidity")}</small><b class="num">${K(this.hass, n.humidity, 0)}%</b></div>
+        <div><small>${e("live.wind")}</small><b class="num">${e("live.windSpeed", { n: K(this.hass, n.wind_speed) })} ${r}</b></div>
+        <div><small>${e("live.pressure")}</small><b class="num">${K(this.hass, n.pressure, 0)}</b></div>
       </div>
     </div>`;
 	}
 	renderPits(e, t) {
-		if (!En.has(t.header?.kind ?? "")) return T;
+		if (!Dn.has(t.header?.kind ?? "")) return w;
 		let n = t.pits ?? [];
-		return S`<div class="card">
+		return x`<div class="card">
       <div class="card-head">${e("live.pitStops")}<span class="spacer"></span><small>${e("live.pitLane")}</small></div>
-      ${n.length ? S`<div class="feed short pits">${xn(n, (e) => `${e.number}|${e.lap}`, (t) => {
+      ${n.length ? x`<div class="feed short pits">${Z(n, (e) => `${e.number}|${e.lap}`, (t) => {
 			let n = this.driver(t.number);
-			return S`<div><span class="bar" style="background:${n?.colour ?? "var(--divider-color)"}"></span><b>${n?.tla ?? t.number}</b>
+			return x`<div><span class="bar" style="background:${n?.colour ?? "var(--divider-color)"}"></span><b>${n?.tla ?? t.number}</b>
                 <span>${e("common.lap")} ${t.lap}</span><span class="num end">${e("delay.seconds", { n: t.duration })}</span></div>`;
-		})}</div>` : S`<div class="empty">${e("live.noPits")}</div>`}
+		})}</div>` : x`<div class="empty">${e("live.noPits")}</div>`}
     </div>`;
 	}
 	static {
 		this.styles = [
-			R,
-			mn,
-			pn,
-			lt,
+			L,
+			gn,
+			hn,
+			ut,
 			o`
       /* Sized by the panel's own width, not the window's: Home Assistant's sidebar
          takes a varying part of the window. */
@@ -3870,7 +3875,7 @@ var wn = {
     `
 		];
 	}
-}, On = 5e3, kn = 6e4, An = .05, jn = 30, Mn = 15, Nn = [
+}, kn = 5e3, An = 6e4, jn = .05, Mn = 30, Nn = 15, Pn = [
 	"r",
 	"l",
 	"t",
@@ -3880,15 +3885,15 @@ var wn = {
 	l: [-39, -15 / 2],
 	t: [-15, -23],
 	b: [-15, 8]
-}, Pn = class extends k {
+}, Fn = class extends O {
 	constructor(...e) {
-		super(...e), this.tower = [], this.selected = "", this.favourites = [], this.cars = [], this.width = 0, this.path = "", this.subscribing = !1, this.backoff = On, this.onScreen = !1, this.sides = /* @__PURE__ */ new Map(), this.focusNumber = "", this.visibility = () => this.sync();
+		super(...e), this.tower = [], this.selected = "", this.favourites = [], this.cars = [], this.width = 0, this.path = "", this.subscribing = !1, this.backoff = kn, this.onScreen = !1, this.sides = /* @__PURE__ */ new Map(), this.focusNumber = "", this.visibility = () => this.sync();
 	}
 	static {
 		this.properties = {
 			hass: {
 				attribute: !1,
-				hasChanged: Nt
+				hasChanged: Pt
 			},
 			tower: { attribute: !1 },
 			selected: { type: String },
@@ -3920,8 +3925,8 @@ var wn = {
 		this.subscribing = !0;
 		let e = !1;
 		try {
-			let e = await N.subscribeMap(this.hass, (e) => this.receive(e));
-			this.unsubscribe = e, this.backoff = On;
+			let e = await M.subscribeMap(this.hass, (e) => this.receive(e));
+			this.unsubscribe = e, this.backoff = kn;
 		} catch {
 			e = !0;
 		} finally {
@@ -3930,7 +3935,7 @@ var wn = {
 		if (e) {
 			this.isConnected && (this.retry = window.setTimeout(() => {
 				this.retry = void 0, this.sync();
-			}, this.backoff), this.backoff = Math.min(this.backoff * 2, kn));
+			}, this.backoff), this.backoff = Math.min(this.backoff * 2, An));
 			return;
 		}
 		this.sync();
@@ -3973,13 +3978,13 @@ var wn = {
 			e.y + 7
 		]), i = /* @__PURE__ */ new Map(), a = (e) => r.some((t) => e[0] < t[2] && e[2] > t[0] && e[1] < t[3] && e[3] > t[1]);
 		for (let o of e) {
-			let e = this.sides.get(o.number), s = e ? [e, ...Nn.filter((t) => t !== e)] : [...Nn], c = null, l = null;
+			let e = this.sides.get(o.number), s = e ? [e, ...Pn.filter((t) => t !== e)] : [...Pn], c = null, l = null;
 			for (let e of s) {
 				let [i, s] = Q[e], u = [
 					o.x + i,
 					o.y + s,
-					o.x + i + jn,
-					o.y + s + Mn
+					o.x + i + Mn,
+					o.y + s + Nn
 				], d = u[0] >= 0 && u[2] <= t && u[1] >= 0 && u[3] <= n;
 				if (d && !l && (l = u), d && !a(u)) {
 					c = e, r.push(u);
@@ -3988,15 +3993,15 @@ var wn = {
 			}
 			!c && o.important && l && (c = s.find((e) => {
 				let [r, i] = Q[e];
-				return o.x + r >= 0 && o.x + r + jn <= t && o.y + i >= 0 && o.y + i + Mn <= n;
+				return o.x + r >= 0 && o.x + r + Mn <= t && o.y + i >= 0 && o.y + i + Nn <= n;
 			}) ?? null, r.push(l)), i.set(o.number, c), c && this.sides.set(o.number, c);
 		}
 		return i;
 	}
 	render() {
-		let e = F(this.hass), t = this.outline;
-		if (!t) return S`<div class="locked">${e("live.mapDrawing")}</div>`;
-		let n = Math.max(t.width, t.height) * An, r = t.width + 2 * n, i = t.height + 2 * n, a = new Map(this.tower.map((e) => [e.number, e])), o = new Set(this.favourites), s = this.selected.toUpperCase(), c = this.cars.filter((e) => {
+		let e = P(this.hass), t = this.outline;
+		if (!t) return x`<div class="locked">${e("live.mapDrawing")}</div>`;
+		let n = Math.max(t.width, t.height) * jn, r = t.width + 2 * n, i = t.height + 2 * n, a = new Map(this.tower.map((e) => [e.number, e])), o = new Set(this.favourites), s = this.selected.toUpperCase(), c = this.cars.filter((e) => {
 			let t = a.get(e.number);
 			return t ? t.status !== "retired" : !this.tower.length;
 		}), l = (e) => {
@@ -4012,13 +4017,13 @@ var wn = {
 				position: t?.position ?? 99
 			};
 		}).sort((e, t) => Number(t.important) - Number(e.important) || e.position - t.position), f = this.placeLabels(d, r * u, i * u), p = c.map((e) => e.number), m = p.includes(this.focusNumber) ? this.focusNumber : p.find(l) ?? p[0], h = 100 / r;
-		return S`<div class="map" role="group" aria-label=${e("live.map")} style="aspect-ratio:${r} / ${i}">
+		return x`<div class="map" role="group" aria-label=${e("live.map")} style="aspect-ratio:${r} / ${i}">
       <svg viewBox="${-n} ${-n} ${r} ${i}" aria-hidden="true">
-        ${this.path ? C`<path class="track" d=${this.path}></path><path class="track-line" d=${this.path}></path>` : T}
+        ${this.path ? S`<path class="track" d=${this.path}></path><path class="track-line" d=${this.path}></path>` : w}
       </svg>
-      ${xn(c, (e) => e.number, (e) => {
+      ${Z(c, (e) => e.number, (e) => {
 			let t = a.get(e.number), r = l(e.number), i = f.get(e.number);
-			return S`<div class=${[
+			return x`<div class=${[
 				"car",
 				r ? "sel" : "",
 				t?.position === 1 ? "leader" : "",
@@ -4029,7 +4034,7 @@ var wn = {
             style="transform:translate(${((e.x + n) * h).toFixed(3)}cqw,${((e.y + n) * h).toFixed(3)}cqw);--c:${t?.colour ?? "var(--divider-color)"}"
             @click=${() => this.select(e.number)} @keydown=${(t) => this.key(t, p, e.number)}
             @focus=${() => this.focusNumber = e.number}>
-          <span class="dot"></span>${i ? S`<span class="label ${i}">${t?.tla ?? e.number}</span>` : T}</div>`;
+          <span class="dot"></span>${i ? x`<span class="label ${i}">${t?.tla ?? e.number}</span>` : w}</div>`;
 		})}
     </div>`;
 	}
@@ -4052,7 +4057,7 @@ var wn = {
     .car:focus-visible .dot { box-shadow: 0 0 0 3px var(--primary-color); }
     /* The dot is small; the target around it is 36 px. */
     .car::before { content: ""; position: absolute; left: -18px; top: -18px; width: 36px; height: 36px; border-radius: 50%; }
-    .label { position: absolute; width: ${jn}px; height: ${Mn}px; line-height: ${Mn}px; font-size: 12px; font-weight: 700;
+    .label { position: absolute; width: ${Mn}px; height: ${Nn}px; line-height: ${Nn}px; font-size: 12px; font-weight: 700;
       color: var(--primary-text-color); text-align: center; pointer-events: none; white-space: nowrap;
       text-shadow: 0 0 3px var(--card-background-color), 0 0 3px var(--card-background-color), 0 0 2px var(--card-background-color); }
     .label.r { left: ${Q.r[0]}px; top: ${Q.r[1]}px; text-align: left; }
@@ -4064,19 +4069,19 @@ var wn = {
     @media (prefers-reduced-motion: reduce) { .car { transition: none; } }
   `;
 	}
-}, Fn = /* @__PURE__ */ new Set(["send_message"]);
-function In(e) {
+}, In = /* @__PURE__ */ new Set(["send_message"]);
+function Ln(e) {
 	let t = e.replace(/_+/g, " ").trim();
 	return t ? t[0].toUpperCase() + t.slice(1) : e;
 }
-function Ln(e, t) {
-	let n = Object.keys(e.services?.notify ?? {}).filter((e) => !Fn.has(e)).map((e) => ({
+function Rn(e, t) {
+	let n = Object.keys(e.services?.notify ?? {}).filter((e) => !In.has(e)).map((e) => ({
 		id: e,
-		label: e === "persistent_notification" ? t("summary.haNotifications") : e.startsWith("mobile_app_") ? `${In(e.slice(11))} · ${t("summary.app")}` : In(e),
+		label: e === "persistent_notification" ? t("summary.haNotifications") : e.startsWith("mobile_app_") ? `${Ln(e.slice(11))} · ${t("summary.app")}` : Ln(e),
 		detail: `notify.${e}`
 	})), r = Object.entries(e.states ?? {}).filter(([e]) => e.startsWith("notify.")).map(([e, t]) => ({
 		id: e,
-		label: String(t.attributes?.friendly_name ?? "") || In(e.slice(7)),
+		label: String(t.attributes?.friendly_name ?? "") || Ln(e.slice(7)),
 		detail: e
 	})), i = (e, t) => e.label.localeCompare(t.label);
 	return [...n.sort(i), ...r.sort(i)];
@@ -4084,7 +4089,7 @@ function Ln(e, t) {
 function $(e) {
 	return e.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[_.\-]+/g, " ").replace(/\s+/g, " ").trim();
 }
-function Rn(e, t) {
+function zn(e, t) {
 	let n = $(t).split(" ").filter(Boolean);
 	return n.length ? e.filter((e) => {
 		let t = $(`${e.label} ${e.id} ${e.detail}`);
@@ -4093,7 +4098,7 @@ function Rn(e, t) {
 }
 //#endregion
 //#region src/notify-picker-define.ts
-P("plb-notify-picker", class extends k {
+N("plb-notify-picker", class extends O {
 	constructor(...e) {
 		super(...e), this.chosen = [], this.disabled = !1, this.query = "", this.open = !1, this.active = 0, this.hint = "";
 	}
@@ -4110,10 +4115,10 @@ P("plb-notify-picker", class extends k {
 		};
 	}
 	all() {
-		return this.hass && this.t ? Ln(this.hass, this.t) : [];
+		return this.hass && this.t ? Rn(this.hass, this.t) : [];
 	}
 	suggestions(e) {
-		return Rn(e.filter((e) => !this.chosen.includes(e.id)), this.query);
+		return zn(e.filter((e) => !this.chosen.includes(e.id)), this.query);
 	}
 	pick(e) {
 		if (!e) {
@@ -4144,25 +4149,25 @@ P("plb-notify-picker", class extends k {
 	}
 	render() {
 		let e = this.t;
-		if (!e || !this.hass) return T;
+		if (!e || !this.hass) return w;
 		let t = this.all(), n = new Map(t.map((e) => [e.id, e])), r = this.suggestions(t), i = this.activeIn(r), a = t.filter((e) => !this.chosen.includes(e.id)), o = "plb-notify-options";
-		return S`
-      ${this.chosen.length ? S`<ul class="chosen">
+		return x`
+      ${this.chosen.length ? x`<ul class="chosen">
             ${this.chosen.map((t) => {
 			let r = n.get(t) ?? n.get(t.replace(/^notify\./, ""));
-			return S`<li>
+			return x`<li>
                 <span class="who">
                   <strong>${r?.label ?? t}</strong>
                   <span class="muted small">${r?.detail ?? t}</span>
                 </span>
-                ${r ? T : S`<span class="missing small">${e("summary.missing")}</span>`}
+                ${r ? w : x`<span class="missing small">${e("summary.missing")}</span>`}
                 <button class="btn flat" ?disabled=${this.disabled} @click=${() => this.drop(t)}>
                   ${e("summary.remove")}
                 </button>
               </li>`;
 		})}
-          </ul>` : S`<span class="muted small">${e("summary.none")}</span>`}
-      ${t.length ? S`<div class="search">
+          </ul>` : x`<span class="muted small">${e("summary.none")}</span>`}
+      ${t.length ? x`<div class="search">
             <div class="add-row">
               <input
                 type="text"
@@ -4190,8 +4195,8 @@ P("plb-notify-picker", class extends k {
               <button class="btn flat" ?disabled=${this.disabled || !a.length}
                 @click=${() => this.pickTyped(r)}>${e("summary.add")}</button>
             </div>
-            ${this.open && a.length ? r.length ? S`<ul class="options" id=${o} role="listbox">
-                    ${r.map((e, t) => S`<li
+            ${this.open && a.length ? r.length ? x`<ul class="options" id=${o} role="listbox">
+                    ${r.map((e, t) => x`<li
                         id=${`plb-opt-${t}`}
                         role="option"
                         class="option ${t === i ? "active" : ""}"
@@ -4203,13 +4208,13 @@ P("plb-notify-picker", class extends k {
                         <strong>${e.label}</strong>
                         <span class="muted small">${e.detail}</span>
                       </li>`)}
-                  </ul>` : S`<div class="muted small empty">${e("summary.noMatch")}</div>` : T}
-            ${this.hint ? S`<div class="hint small">${e(this.hint)}</div>` : T}
-          </div>` : S`<span class="muted">${e("summary.noServices")}</span>`}
+                  </ul>` : x`<div class="muted small empty">${e("summary.noMatch")}</div>` : w}
+            ${this.hint ? x`<div class="hint small">${e(this.hint)}</div>` : w}
+          </div>` : x`<span class="muted">${e("summary.noServices")}</span>`}
     `;
 	}
 	static {
-		this.styles = [R, o`
+		this.styles = [L, o`
       :host { display: grid; gap: 6px; }
       .small { font-size: 12px; }
       .muted { color: var(--secondary-text-color); }
@@ -4237,12 +4242,12 @@ P("plb-notify-picker", class extends k {
 });
 //#endregion
 //#region src/pages/settings.ts
-var zn = /* @__PURE__ */ new Set([
+var Bn = /* @__PURE__ */ new Set([
 	"token_invalid",
 	"token_expired",
 	"token_no_subscription",
 	"token_missing"
-]), Bn = class extends k {
+]), Vn = class extends O {
 	constructor(...e) {
 		super(...e), this.testResult = "", this.token = "", this.tokenError = "", this.saving = !1, this.confirmRemove = !1, this.busy = !1, this.saveError = "", this.clock = 0, this.asked = !1;
 	}
@@ -4267,8 +4272,8 @@ var zn = /* @__PURE__ */ new Set([
 	}
 	async loadDrivers() {
 		try {
-			let e = await N.standings(this.hass, this.settings.season, null, "drivers");
-			e.rows.length || (e = await N.standings(this.hass, this.settings.season - 1, null, "drivers")), this.drivers = e.rows.filter((e) => e.code).map((e) => ({
+			let e = await M.standings(this.hass, this.settings.season, null, "drivers");
+			e.rows.length || (e = await M.standings(this.hass, this.settings.season - 1, null, "drivers")), this.drivers = e.rows.filter((e) => e.code).map((e) => ({
 				code: e.code,
 				name: e.name ?? null,
 				team_id: e.team_id
@@ -4279,7 +4284,7 @@ var zn = /* @__PURE__ */ new Set([
 	}
 	async loadEntities() {
 		try {
-			this.entities = (await N.entities(this.hass)).entities;
+			this.entities = (await M.entities(this.hass)).entities;
 		} catch {
 			this.entities = [];
 		}
@@ -4287,7 +4292,7 @@ var zn = /* @__PURE__ */ new Set([
 	async set(e, t) {
 		this.busy = !0;
 		try {
-			await N.setSettings(this.hass, e);
+			await M.setSettings(this.hass, e);
 		} catch {
 			t instanceof HTMLInputElement && (t.checked = !t.checked);
 		} finally {
@@ -4309,10 +4314,10 @@ var zn = /* @__PURE__ */ new Set([
 		}
 		this.saving = !0, this.tokenError = "";
 		try {
-			await N.setToken(this.hass, e), this.token = "";
+			await M.setToken(this.hass, e), this.token = "";
 		} catch (e) {
 			let t = e?.message ?? "";
-			this.tokenError = zn.has(t) ? t : "token_invalid";
+			this.tokenError = Bn.has(t) ? t : "token_invalid";
 		} finally {
 			this.saving = !1;
 		}
@@ -4320,7 +4325,7 @@ var zn = /* @__PURE__ */ new Set([
 	async removeToken() {
 		this.saving = !0;
 		try {
-			await N.removeToken(this.hass);
+			await M.removeToken(this.hass);
 		} catch {
 			this.tokenError = "remove_failed";
 		} finally {
@@ -4328,7 +4333,7 @@ var zn = /* @__PURE__ */ new Set([
 		}
 	}
 	stateText(e, t) {
-		return this.hass.formatEntityState ? this.hass.formatEntityState(e) : (e.attributes.device_class === "timestamp" || t === "event") && !Number.isNaN(Date.parse(e.state)) ? `${Tt(this.hass, e.state)} ${K(this.hass, e.state, !0)}` : e.state;
+		return this.hass.formatEntityState ? this.hass.formatEntityState(e) : (e.attributes.device_class === "timestamp" || t === "event") && !Number.isNaN(Date.parse(e.state)) ? `${Et(this.hass, e.state)} ${G(this.hass, e.state, !0)}` : e.state;
 	}
 	moreInfo(e) {
 		this.dispatchEvent(new CustomEvent("hass-more-info", {
@@ -4338,28 +4343,28 @@ var zn = /* @__PURE__ */ new Set([
 		}));
 	}
 	render() {
-		let e = F(this.hass), t = this.settings;
-		return S`<div class="page">
+		let e = P(this.hass), t = this.settings;
+		return x`<div class="page">
       ${this.renderLive(e, t)}
       ${this.renderDelay(e, t)}
       ${this.renderClock(e)}
-      ${t.is_admin ? this.renderDrivers(e, t) : T}
-      ${t.is_admin ? this.renderSummary(e, t) : T}
-      ${t.is_admin ? this.renderPanel(e, t) : T}
-      ${t.is_admin ? this.renderF1tv(e, t) : T}
+      ${t.is_admin ? this.renderDrivers(e, t) : w}
+      ${t.is_admin ? this.renderSummary(e, t) : w}
+      ${t.is_admin ? this.renderPanel(e, t) : w}
+      ${t.is_admin ? this.renderF1tv(e, t) : w}
       ${this.renderKiosk(e)}
       ${this.renderEntities(e)}
     </div>`;
 	}
 	renderLive(e, t) {
 		let n = t.live ? t.running ? e("settings.running") : e("settings.waiting") : e("settings.pausedHelp");
-		return S`<section class="card">
+		return x`<section class="card">
       <div class="card-head">${e("settings.live")}</div>
       <div class="live">
         <div class="play-box">
           <button class="big-play ${t.live ? "on" : ""}" ?disabled=${this.busy} @click=${() => this.set({ live: !t.live })}
             aria-pressed=${t.live ? "true" : "false"} aria-label=${t.live ? e("settings.pause") : e("settings.start")}>
-            ${L(t.live ? I.pause : I.play, 36)}
+            ${I(t.live ? F.pause : F.play, 36)}
           </button>
           <small aria-hidden="true">${t.live ? e("settings.pauseShort") : e("settings.startShort")}</small>
         </div>
@@ -4378,7 +4383,7 @@ var zn = /* @__PURE__ */ new Set([
 	async setHousehold(e, t) {
 		this.busy = !0, this.saveError = "";
 		try {
-			await N.setHousehold(this.hass, e), e.favourites && this.loadEntities();
+			await M.setHousehold(this.hass, e), e.favourites && this.loadEntities();
 		} catch {
 			t instanceof HTMLInputElement && (t.checked = !t.checked), this.saveError = "summary.saveFailed";
 		} finally {
@@ -4390,17 +4395,17 @@ var zn = /* @__PURE__ */ new Set([
 	}
 	renderDrivers(e, t) {
 		let n = t.favourites ?? [], r = n.length >= 5, i = this.drivers;
-		return S`<section class="card">
+		return x`<section class="card">
       <div class="card-head">${e("drivers.title")}<span class="spacer"></span><small>${e("settings.adminOnly")}</small></div>
       <div class="body">
         <p>${e("drivers.help")}</p>
-        ${i ? S`<div class="chips">${i.map((e) => {
+        ${i ? x`<div class="chips">${i.map((e) => {
 			let t = n.includes(e.code);
-			return S`<button class="chip ${t ? "on" : ""}" ?disabled=${this.busy || !t && r}
+			return x`<button class="chip ${t ? "on" : ""}" ?disabled=${this.busy || !t && r}
                 title=${e.name ?? e.code} aria-pressed=${t ? "true" : "false"}
                 @click=${() => this.setHousehold({ favourites: this.toggle(n, e.code, !t) })}>
                 ${t ? "★ " : ""}${e.code}</button>`;
-		})}</div>` : S`<span class="muted">${e("common.loading")}</span>`}
+		})}</div>` : x`<span class="muted">${e("common.loading")}</span>`}
         <small class="muted">${e("drivers.max")}</small>
       </div>
     </section>`;
@@ -4408,7 +4413,7 @@ var zn = /* @__PURE__ */ new Set([
 	async testSummary() {
 		this.testResult = "";
 		try {
-			let { result: e } = await N.testSummary(this.hass);
+			let { result: e } = await M.testSummary(this.hass);
 			this.testResult = e === "sent" ? "summary.testSent" : e === "hidden" ? "summary.testHidden" : "summary.testNothing";
 		} catch {
 			this.testResult = "summary.testFailed";
@@ -4416,14 +4421,14 @@ var zn = /* @__PURE__ */ new Set([
 	}
 	renderSummary(e, t) {
 		let n = t.notify_targets ?? [], r = t.summary_kinds ?? [];
-		return S`<section class="card">
+		return x`<section class="card">
       <div class="card-head">${e("summary.title")}<span class="spacer"></span><small>${e("settings.adminOnly")}</small></div>
       <div class="body">
         <p>${e("summary.help")}</p>
         <b class="small">${e("summary.where")}</b>
         <plb-notify-picker .hass=${this.hass} .t=${e} .chosen=${n} ?disabled=${this.busy}
           @targets-changed=${(e) => this.setHousehold({ notify_targets: e.detail.targets })}></plb-notify-picker>
-        ${this.saveError ? S`<span class="error small">${e(this.saveError)}</span>` : T}
+        ${this.saveError ? x`<span class="error small">${e(this.saveError)}</span>` : w}
         <b class="small">${e("summary.which")}</b>
         <div class="chips">${[
 			"race",
@@ -4433,19 +4438,19 @@ var zn = /* @__PURE__ */ new Set([
 			"practice"
 		].map((t) => {
 			let n = r.includes(t);
-			return S`<button class="chip ${n ? "on" : ""}" ?disabled=${this.busy}
+			return x`<button class="chip ${n ? "on" : ""}" ?disabled=${this.busy}
             @click=${() => this.setHousehold({ summary_kinds: this.toggle(r, t, !n) })}>${e(`sessions.${t}`)}</button>`;
 		})}</div>
         <b class="small">${e("summary.format")}</b>
         <div class="chips" role="radiogroup" aria-label=${e("summary.format")}>
-          ${["compact", "full"].map((n) => S`<button class="chip ${(t.summary_format ?? "compact") === n ? "on" : ""}" role="radio"
+          ${["compact", "full"].map((n) => x`<button class="chip ${(t.summary_format ?? "compact") === n ? "on" : ""}" role="radio"
               aria-checked=${(t.summary_format ?? "compact") === n ? "true" : "false"} ?disabled=${this.busy}
               @click=${() => this.setHousehold({ summary_format: n })}>${e(`summary.${n}`)}</button>`)}
         </div>
         <small class="muted">${e(`summary.${t.summary_format === "full" ? "fullHelp" : "compactHelp"}`)}</small>
         <div class="line">
           <button class="btn flat" ?disabled=${!n.length} @click=${() => this.testSummary()}>${e("summary.test")}</button>
-          ${this.testResult ? S`<span class="muted small">${e(this.testResult)}</span>` : T}
+          ${this.testResult ? x`<span class="muted small">${e(this.testResult)}</span>` : w}
         </div>
         <small class="muted">${e("summary.spoiler")}</small>
       </div>
@@ -4454,7 +4459,7 @@ var zn = /* @__PURE__ */ new Set([
 	async setPanel(e, t) {
 		this.busy = !0;
 		try {
-			await N.setPanel(this.hass, e);
+			await M.setPanel(this.hass, e);
 		} catch {
 			t instanceof HTMLInputElement && (t.checked = !t.checked);
 		} finally {
@@ -4462,7 +4467,7 @@ var zn = /* @__PURE__ */ new Set([
 		}
 	}
 	renderPanel(e, t) {
-		return S`<section class="card">
+		return x`<section class="card">
       <div class="card-head">${e("settings.panel")}<span class="spacer"></span><small>${e("settings.adminOnly")}</small></div>
       <label class="row">
         <input type="checkbox" .checked=${t.show_in_sidebar} ?disabled=${this.busy}
@@ -4478,20 +4483,20 @@ var zn = /* @__PURE__ */ new Set([
 	}
 	async setClock(e) {
 		try {
-			await gt(this.hass, e);
+			await _t(this.hass, e);
 		} catch {}
 		this.requestUpdate();
 	}
 	renderClock(e) {
-		let t = mt(), n = [
-			["home_assistant", e("time.home", { zone: St(this.hass) })],
-			["device", e("time.device", { zone: xt() })],
+		let t = ht(), n = [
+			["home_assistant", e("time.home", { zone: Ct(this.hass) })],
+			["device", e("time.device", { zone: St() })],
 			["circuit", e("time.circuit")]
 		];
-		return S`<section class="card">
+		return x`<section class="card">
       <div class="card-head">${e("time.title")}<span class="spacer"></span><small>${e("time.justYou")}</small></div>
       <div class="radios" role="radiogroup" aria-label=${e("time.title")}>
-        ${n.map(([e, n]) => S`<label class="row">
+        ${n.map(([e, n]) => x`<label class="row">
             <input type="radio" name="clock" .checked=${t.zone === e}
               @change=${() => this.setClock({
 			...t,
@@ -4510,7 +4515,7 @@ var zn = /* @__PURE__ */ new Set([
     </section>`;
 	}
 	renderDelay(e, t) {
-		return S`<section class="card">
+		return x`<section class="card">
       <div class="card-head">${e("delay.title")}</div>
       <div class="body">
         <p>${e("delay.help")}</p>
@@ -4526,13 +4531,13 @@ var zn = /* @__PURE__ */ new Set([
 	}
 	renderF1tv(e, t) {
 		let n = t.f1tv, r = n && n.status !== "not_configured";
-		return S`<section class="card">
+		return x`<section class="card">
       <div class="card-head">F1TV<span class="spacer"></span><small>${e("settings.adminOnly")}</small></div>
       <div class="body">
         <p>${e("settings.f1tvHelp")}</p>
         <div class="status">
           <span class="dot ${n?.status ?? ""}"></span><b>${e(`f1tv.${n?.status ?? "not_configured"}`)}</b>
-          ${n?.expires ? S`<span class="muted">${e("settings.expires", { date: Tt(this.hass, n.expires) })}</span>` : T}
+          ${n?.expires ? x`<span class="muted">${e("settings.expires", { date: Et(this.hass, n.expires) })}</span>` : w}
         </div>
         <form class="token" @submit=${(e) => {
 			e.preventDefault(), this.saveToken();
@@ -4545,17 +4550,17 @@ var zn = /* @__PURE__ */ new Set([
 		}} />
           <button class="btn" type="submit" ?disabled=${this.saving || !this.token.trim()}>${e("settings.save")}</button>
         </form>
-        ${this.tokenError ? S`<div class="error-text" role="alert">${e(`settings.errors.${this.tokenError}`)}</div>` : T}
+        ${this.tokenError ? x`<div class="error-text" role="alert">${e(`settings.errors.${this.tokenError}`)}</div>` : w}
         <p class="muted small">${e("settings.tokenSteps")}</p>
-        ${r ? this.confirmRemove ? S`<div class="confirm">${e("settings.removeConfirm")}
+        ${r ? this.confirmRemove ? x`<div class="confirm">${e("settings.removeConfirm")}
                 <button class="btn danger" ?disabled=${this.saving} @click=${() => this.removeToken()}>${e("settings.remove")}</button>
-                <button class="btn flat" @click=${() => this.confirmRemove = !1}>${e("settings.cancel")}</button></div>` : S`<button class="btn flat danger" @click=${() => this.confirmRemove = !0}>${e("settings.remove")}</button>` : T}
+                <button class="btn flat" @click=${() => this.confirmRemove = !1}>${e("settings.cancel")}</button></div>` : x`<button class="btn flat danger" @click=${() => this.confirmRemove = !0}>${e("settings.remove")}</button>` : w}
       </div>
     </section>`;
 	}
 	renderKiosk(e) {
 		let t = `${location.origin}${location.pathname}?kiosk`;
-		return S`<section class="card">
+		return x`<section class="card">
       <div class="card-head">${e("kiosk.title")}</div>
       <div class="body">
         <p>${e("kiosk.help")}</p>
@@ -4570,20 +4575,20 @@ var zn = /* @__PURE__ */ new Set([
 	}
 	renderEntities(e) {
 		let t = this.entities;
-		return S`<section class="card">
+		return x`<section class="card">
       <div class="card-head">${e("settings.entities")}</div>
-      ${t ? S`<ul class="entities">${t.map((t) => {
+      ${t ? x`<ul class="entities">${t.map((t) => {
 			let n = this.hass.states?.[t.entity_id];
-			return S`<li><button class="entity" @click=${() => this.moreInfo(t.entity_id)}>
+			return x`<li><button class="entity" @click=${() => this.moreInfo(t.entity_id)}>
               <span class="name">${n?.attributes.friendly_name ?? t.entity_id}<small title=${t.entity_id}>${t.entity_id}</small></span>
-              ${((e) => S`<span class="value" title=${e}>${e}</span>`)(t.disabled ? e("settings.disabled") : n ? this.stateText(n, t.domain) : "—")}
+              ${((e) => x`<span class="value" title=${e}>${e}</span>`)(t.disabled ? e("settings.disabled") : n ? this.stateText(n, t.domain) : "—")}
             </button></li>`;
-		})}</ul>` : S`<div class="body muted">${e("common.loading")}</div>`}
+		})}</ul>` : x`<div class="body muted">${e("common.loading")}</div>`}
       <div class="note">${e("settings.entitiesHelp")}</div>
     </section>`;
 	}
 	static {
-		this.styles = [R, o`
+		this.styles = [L, o`
       :host { display: block; container-type: inline-size; }
       .page { display: grid; gap: var(--plb-gap); max-width: 760px; margin: 0 auto; }
       .body { padding: 14px 16px; display: grid; gap: 12px; }
@@ -4637,7 +4642,7 @@ var zn = /* @__PURE__ */ new Set([
       }
     `];
 	}
-}, Vn = 6e5, Hn = class extends k {
+}, Hn = 6e5, Un = class extends O {
 	constructor(...e) {
 		super(...e), this.seasons = [], this.kind = "drivers", this.round = null, this.failed = !1, this.request = 0, this.spoilers = "", this.pages = /* @__PURE__ */ new Map(), this.visibility = () => {
 			document.visibilityState === "visible" && this.refresh();
@@ -4666,11 +4671,11 @@ var zn = /* @__PURE__ */ new Set([
 	}
 	refresh() {
 		let e = this.pages.get(this.key);
-		this.round === null && e && Date.now() - e.at > Vn && document.visibilityState !== "hidden" && this.load(!0);
+		this.round === null && e && Date.now() - e.at > Hn && document.visibilityState !== "hidden" && this.load(!0);
 	}
 	willUpdate(e) {
 		this.season === void 0 && this.settings && (this.season = this.settings.season);
-		let t = Pt(this.settings);
+		let t = Ft(this.settings);
 		t === this.spoilers ? [
 			"season",
 			"kind",
@@ -4680,14 +4685,14 @@ var zn = /* @__PURE__ */ new Set([
 	async load(e = !1) {
 		if (!this.hass || this.season === void 0) return;
 		let t = this.key, n = this.pages.get(t);
-		if (n && !e && (this.round !== null || Date.now() - n.at < Vn)) {
+		if (n && !e && (this.round !== null || Date.now() - n.at < Hn)) {
 			this.request++, this.data = n.data, this.failed = !1;
 			return;
 		}
 		let r = ++this.request;
 		n || (this.failed = !1);
 		try {
-			let e = await N.standings(this.hass, this.season, this.round, this.kind);
+			let e = await M.standings(this.hass, this.season, this.round, this.kind);
 			this.pages.set(t, {
 				data: e,
 				at: Date.now()
@@ -4697,53 +4702,53 @@ var zn = /* @__PURE__ */ new Set([
 		}
 	}
 	render() {
-		let e = F(this.hass), t = this.seasons.length ? this.seasons : [this.season ?? 0], n = this.data?.rounds ?? 0, r = this.data?.round ?? n;
-		return S`
+		let e = P(this.hass), t = this.seasons.length ? this.seasons : [this.season ?? 0], n = this.data?.rounds ?? 0, r = this.data?.round ?? n;
+		return x`
       <div class="toolbar">
         <h1>${e("standings.title")}</h1>
-        ${["drivers", "constructors"].map((t) => S`<button class="chip ${this.kind === t ? "on" : ""}" @click=${() => this.kind = t}>${e(`standings.${t}`)}</button>`)}
+        ${["drivers", "constructors"].map((t) => x`<button class="chip ${this.kind === t ? "on" : ""}" @click=${() => this.kind = t}>${e(`standings.${t}`)}</button>`)}
         <span class="spacer"></span>
         <select aria-label=${e("common.season")} @change=${(e) => {
 			this.round = null, this.data = void 0, this.season = Number(e.target.value);
 		}}>
-          ${t.map((e) => S`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
+          ${t.map((e) => x`<option .selected=${e === this.season} value=${e}>${e}</option>`)}
         </select>
-        ${n ? S`<select aria-label=${e("common.round")} @change=${(e) => this.round = Number(e.target.value)}>
-              ${Array.from({ length: n }, (e, t) => n - t).map((t) => S`<option .selected=${t === r} value=${t}>${e("standings.after", { n: t })}</option>`)}
-            </select>` : T}
+        ${n ? x`<select aria-label=${e("common.round")} @change=${(e) => this.round = Number(e.target.value)}>
+              ${Array.from({ length: n }, (e, t) => n - t).map((t) => x`<option .selected=${t === r} value=${t}>${e("standings.after", { n: t })}</option>`)}
+            </select>` : w}
       </div>
-      ${this.failed ? X(e, () => this.load()) : this.data ? this.renderTable(this.data) : Ht(e)}
+      ${this.failed ? Y(e, () => this.load()) : this.data ? this.renderTable(this.data) : Wt(e)}
     `;
 	}
 	renderTable(e) {
-		let t = F(this.hass);
-		if (!e.rows.length) return S`<div class="card state">${e.capped ? t("spoiler.standingsCap") : t("standings.empty")}</div>`;
+		let t = P(this.hass);
+		if (!e.rows.length) return x`<div class="card state">${e.capped ? t("spoiler.standingsCap") : t("standings.empty")}</div>`;
 		let n = this.kind === "drivers", r = e.rows[0].points || 1, i = e.rows.some((e) => !!e.change);
-		return S`<div class="card">
+		return x`<div class="card">
       <div class="scroll"><table class="tbl">
         <tr>
-          <th>${t("common.pos")}</th>${i ? S`<th>${t("standings.change")}</th>` : T}
+          <th>${t("common.pos")}</th>${i ? x`<th>${t("standings.change")}</th>` : w}
           <th>${t(n ? "common.driver" : "common.team")}</th>
-          ${n ? S`<th class="wide">${t("common.team")}</th>` : T}
+          ${n ? x`<th class="wide">${t("common.team")}</th>` : w}
           <th class="barcol"></th>
           <th class="r">${t("common.points")}</th><th class="r">${t("standings.wins")}</th><th class="r col-behind">${t("standings.behind")}</th>
         </tr>
-        ${e.rows.map((e) => S`<tr>
+        ${e.rows.map((e) => x`<tr>
             <td class="num">${e.position_text && e.position_text !== String(e.position) ? e.position_text : e.position}</td>
-            ${i ? S`<td>${zt(e.change, !1)}</td>` : T}
-            <td class="wrap">${Y(n ? e.name : e.team, e.team_id)}</td>
-            ${n ? S`<td class="wide muted">${e.team ?? ""}</td>` : T}
-            <td class="barcol"><div class="fill" style="width:${(e.points ?? 0) / r * 100}%;background:${B(e.team_id)}"></div></td>
-            <td class="r num"><b>${q(this.hass, e.points)}</b></td>
+            ${i ? x`<td>${Vt(e.change, !1)}</td>` : w}
+            <td class="wrap">${J(n ? e.name : e.team, e.team_id)}</td>
+            ${n ? x`<td class="wide muted">${e.team ?? ""}</td>` : w}
+            <td class="barcol"><div class="fill" style="width:${(e.points ?? 0) / r * 100}%;background:${z(e.team_id)}"></div></td>
+            <td class="r num"><b>${K(this.hass, e.points)}</b></td>
             <td class="r num">${e.wins ?? ""}</td>
-            <td class="r num col-behind">${e.behind ? `−${q(this.hass, e.behind)}` : ""}</td>
+            <td class="r num col-behind">${e.behind ? `−${K(this.hass, e.behind)}` : ""}</td>
           </tr>`)}
       </table></div>
-      ${e.capped ? S`<div class="note">${t("spoiler.standingsCap")}</div>` : T}
+      ${e.capped ? x`<div class="note">${t("spoiler.standingsCap")}</div>` : w}
     </div>`;
 	}
 	static {
-		this.styles = [R, o`
+		this.styles = [L, o`
       :host { display: block; container-type: inline-size; }
       .barcol { width: 30%; min-width: 80px; }
       .fill { height: 6px; border-radius: 3px; min-width: 2px; }
@@ -4753,17 +4758,17 @@ var zn = /* @__PURE__ */ new Set([
       @container (max-width: 420px) { .col-behind { display: none; } }
     `];
 	}
-}, Un = [
+}, Wn = [
 	"live",
 	"calendar",
 	"results",
 	"standings"
-], Wn = [...Un, "settings"], Gn = "pit-lane-live-board-page", Kn = 3e4;
-function qn() {
+], Gn = [...Wn, "settings"], Kn = "pit-lane-live-board-page", qn = 3e4;
+function Jn() {
 	return new URLSearchParams(location.search);
 }
-function Jn() {
-	let e = qn();
+function Yn() {
+	let e = Jn();
 	return e.has("kiosk") && ![
 		"0",
 		"false",
@@ -4771,22 +4776,22 @@ function Jn() {
 		"no"
 	].includes((e.get("kiosk") ?? "").toLowerCase());
 }
-function Yn() {
-	return Math.min(2.5, Math.max(.6, Number(qn().get("scale")) || 1));
-}
 function Xn() {
-	let e = qn().get("page");
-	if (e && Wn.includes(e)) return e;
+	return Math.min(2.5, Math.max(.6, Number(Jn().get("scale")) || 1));
+}
+function Zn() {
+	let e = Jn().get("page");
+	if (e && Gn.includes(e)) return e;
 	try {
-		let e = localStorage.getItem(Gn);
-		return e && Wn.includes(e) ? e : "live";
+		let e = localStorage.getItem(Kn);
+		return e && Gn.includes(e) ? e : "live";
 	} catch {
 		return "live";
 	}
 }
-var Zn = class extends k {
+var Qn = class extends O {
 	constructor(...e) {
-		super(...e), this.narrow = !1, this.page = Xn(), this.seasons = [], this.delayOpen = !1, this.failed = !1, this.clockVersion = 0, this.kiosk = !1, this.fullscreen = !1, this.kioskAsked = !1, this.scale = 1, this.moved = () => {
+		super(...e), this.narrow = !1, this.page = Zn(), this.seasons = [], this.delayOpen = !1, this.failed = !1, this.clockVersion = 0, this.kiosk = !1, this.fullscreen = !1, this.kioskAsked = !1, this.scale = 1, this.moved = () => {
 			this.classList.remove("idle"), window.clearTimeout(this.idleTimer), this.kiosk && (this.idleTimer = window.setTimeout(() => {
 				this.kiosk && this.classList.add("idle");
 			}, 3e3));
@@ -4815,12 +4820,12 @@ var Zn = class extends k {
 		};
 	}
 	get t() {
-		return F(this.hass);
+		return P(this.hass);
 	}
 	connectedCallback() {
-		super.connectedCallback(), window.addEventListener(V, this.clockChanged), window.addEventListener("pointermove", this.moved), document.addEventListener("fullscreenchange", this.fullscreenChanged), document.addEventListener("visibilitychange", this.visibilityChanged), this.kioskAsked = Jn(), this.kiosk = this.kioskAsked, this.fullscreen = !!document.fullscreenElement, this.scale = Yn();
-		let e = qn().get("page");
-		e && Wn.includes(e) && (this.page = e), this.kiosk && this.startKiosk();
+		super.connectedCallback(), window.addEventListener(B, this.clockChanged), window.addEventListener("pointermove", this.moved), document.addEventListener("fullscreenchange", this.fullscreenChanged), document.addEventListener("visibilitychange", this.visibilityChanged), this.kioskAsked = Yn(), this.kiosk = this.kioskAsked, this.fullscreen = !!document.fullscreenElement, this.scale = Xn();
+		let e = Jn().get("page");
+		e && Gn.includes(e) && (this.page = e), this.kiosk && this.startKiosk();
 	}
 	startKiosk() {
 		this.moved(), this.keepAwake();
@@ -4850,16 +4855,16 @@ var Zn = class extends k {
 		} catch {}
 	}
 	disconnectedCallback() {
-		super.disconnectedCallback(), window.removeEventListener(V, this.clockChanged), window.removeEventListener("pointermove", this.moved), document.removeEventListener("fullscreenchange", this.fullscreenChanged), document.removeEventListener("visibilitychange", this.visibilityChanged), window.clearTimeout(this.idleTimer), this.letSleep(), this.unsubscribe?.(), this.unsubscribe = void 0, window.clearTimeout(this.retry), this.retry = void 0, window.clearTimeout(this.seasonsTimer), this.seasonsTimer = void 0;
+		super.disconnectedCallback(), window.removeEventListener(B, this.clockChanged), window.removeEventListener("pointermove", this.moved), document.removeEventListener("fullscreenchange", this.fullscreenChanged), document.removeEventListener("visibilitychange", this.visibilityChanged), window.clearTimeout(this.idleTimer), this.letSleep(), this.unsubscribe?.(), this.unsubscribe = void 0, window.clearTimeout(this.retry), this.retry = void 0, window.clearTimeout(this.seasonsTimer), this.seasonsTimer = void 0;
 	}
 	updated() {
 		this.hass && !this.unsubscribe && !this.connecting && this.retry === void 0 && this.connect();
 	}
 	async connect() {
 		if (this.hass) {
-			this.connecting = !0, ht(this.hass);
+			this.connecting = !0, gt(this.hass);
 			try {
-				this.unsubscribe = await N.subscribeSettings(this.hass, (e) => this.receive(e)), this.failed = !1, this.backoff = 5e3;
+				this.unsubscribe = await M.subscribeSettings(this.hass, (e) => this.receive(e)), this.failed = !1, this.backoff = 5e3;
 			} catch {
 				this.failed = !0, this.retry = window.setTimeout(() => {
 					this.retry = void 0, this.requestUpdate();
@@ -4875,11 +4880,11 @@ var Zn = class extends k {
 		if (!(!this.hass || this.seasons.length || this.askingSeasons)) {
 			this.askingSeasons = !0;
 			try {
-				this.seasons = (await N.seasons(this.hass)).seasons;
+				this.seasons = (await M.seasons(this.hass)).seasons;
 			} catch {
 				window.clearTimeout(this.seasonsTimer), this.seasonsTimer = window.setTimeout(() => {
 					this.seasonsTimer = void 0, this.loadSeasons();
-				}, Kn);
+				}, qn);
 			} finally {
 				this.askingSeasons = !1;
 			}
@@ -4900,7 +4905,7 @@ var Zn = class extends k {
 	}
 	go(e) {
 		if ((e.page !== "circuit" || e.circuit_id) && (this.page = e.page, this.target = e, this.delayOpen = !1, e.page !== "circuit")) try {
-			localStorage.setItem(Gn, e.page);
+			localStorage.setItem(Kn, e.page);
 		} catch {}
 	}
 	setDelay(e) {
@@ -4915,23 +4920,23 @@ var Zn = class extends k {
 		if (!this.hass || this.pendingDelay === null) return;
 		let e = this.pendingDelay;
 		try {
-			let t = await N.setSettings(this.hass, { tv_delay: e });
+			let t = await M.setSettings(this.hass, { tv_delay: e });
 			this.pendingDelay === e && (this.pendingDelay = null), this.receive(t);
 		} catch {
 			this.pendingDelay = null;
 			try {
-				this.receive(await N.settings(this.hass));
+				this.receive(await M.settings(this.hass));
 			} catch {}
 		}
 	}
 	async setSpoiler(e) {
 		if (this.hass) try {
-			this.receive(await N.setSettings(this.hass, { no_spoiler: e }));
+			this.receive(await M.setSettings(this.hass, { no_spoiler: e }));
 		} catch {}
 	}
 	async reveal(e) {
 		if (this.hass) try {
-			this.receive(await N.reveal(this.hass, e.detail));
+			this.receive(await M.reveal(this.hass, e.detail));
 		} catch {}
 	}
 	back() {
@@ -4945,9 +4950,9 @@ var Zn = class extends k {
 		}));
 	}
 	renderPage() {
-		if (!this.hass || !this.settings) return this.failed ? X(this.t, () => {
+		if (!this.hass || !this.settings) return this.failed ? Y(this.t, () => {
 			window.clearTimeout(this.retry), this.retry = void 0, this.connect();
-		}) : S`<div class="card loading">${this.t("common.loading")}</div>`;
+		}) : x`<div class="card loading">${this.t("common.loading")}</div>`;
 		let e = {
 			hass: this.hass,
 			settings: this.settings,
@@ -4955,60 +4960,60 @@ var Zn = class extends k {
 			clock: this.clockVersion
 		};
 		switch (this.page) {
-			case "settings": return S`<plb-settings .hass=${e.hass} .settings=${e.settings} .clock=${e.clock}
+			case "settings": return x`<plb-settings .hass=${e.hass} .settings=${e.settings} .clock=${e.clock}
           @plb-delay=${(e) => this.setDelay(e.detail)}></plb-settings>`;
-			case "calendar": return S`<plb-calendar .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons} .clock=${e.clock}
+			case "calendar": return x`<plb-calendar .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons} .clock=${e.clock}
           @plb-go=${(e) => this.go(e.detail)}></plb-calendar>`;
-			case "results": return S`<plb-results .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons} .clock=${e.clock}
+			case "results": return x`<plb-results .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons} .clock=${e.clock}
           .target=${this.target} @plb-reveal=${this.reveal} @plb-go=${(e) => this.go(e.detail)}></plb-results>`;
-			case "circuit": return S`<plb-circuit .hass=${e.hass} .settings=${e.settings} .circuitId=${this.target?.circuit_id ?? ""}
+			case "circuit": return x`<plb-circuit .hass=${e.hass} .settings=${e.settings} .circuitId=${this.target?.circuit_id ?? ""}
           .circuitName=${this.target?.circuit ?? ""} @plb-back=${() => this.back()}></plb-circuit>`;
-			case "standings": return S`<plb-standings .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons}></plb-standings>`;
-			default: return S`<plb-live .hass=${e.hass} .settings=${e.settings} .clock=${e.clock} ?kiosk=${this.kiosk}
+			case "standings": return x`<plb-standings .hass=${e.hass} .settings=${e.settings} .seasons=${e.seasons}></plb-standings>`;
+			default: return x`<plb-live .hass=${e.hass} .settings=${e.settings} .clock=${e.clock} ?kiosk=${this.kiosk}
           @plb-spoiler-off=${() => this.setSpoiler(!1)}></plb-live>`;
 		}
 	}
 	render() {
 		let e = this.t, t = this.settings, n = t?.f1tv && t.f1tv.status !== "not_configured" ? t.f1tv.status : null, r = this.scale === 1 ? "" : `zoom:${this.scale}`, i = this.fullscreen || this.kiosk && !this.kioskAsked;
-		return S`
+		return x`
       <div class="barwrap" style=${r}><header class="appbar">
-        ${this.narrow && !this.kiosk ? S`<button class="icon-btn" @click=${this.toggleMenu} aria-label=${e("common.menu")}>${L(I.menu, 24)}</button>` : T}
-        <div class="brand"><span class="mark">${L(I.board, 18)}</span><span class="name">${e("common.title")}</span></div>
+        ${this.narrow && !this.kiosk ? x`<button class="icon-btn" @click=${this.toggleMenu} aria-label=${e("common.menu")}>${I(F.menu, 24)}</button>` : w}
+        <div class="brand"><span class="mark">${I(F.board, 18)}</span><span class="name">${e("common.title")}</span></div>
         <nav class="tabs">
-          ${Un.map((t) => S`<button class="tab ${this.page === t || this.page === "circuit" && this.target?.from === t ? "active" : ""}"
+          ${Wn.map((t) => x`<button class="tab ${this.page === t || this.page === "circuit" && this.target?.from === t ? "active" : ""}"
               aria-current=${this.page === t ? "page" : "false"}
               @click=${() => this.go({ page: t })}>${e(`tabs.${t}`)}</button>`)}
         </nav>
         <span class="spacer"></span>
-        ${t && !t.live ? S`<button class="chip paused" @click=${() => this.go({ page: "settings" })} title=${e("settings.pausedHelp")}
+        ${t && !t.live ? x`<button class="chip paused" @click=${() => this.go({ page: "settings" })} title=${e("settings.pausedHelp")}
               aria-label=${t.auto_start ? e("live.pausedAuto") : e("live.pausedShort")}>
-              ${L(I.pause, 16)}<span class="label">${t.auto_start ? e("live.pausedAuto") : e("live.pausedShort")}</span></button>` : T}
-        ${n ? S`<span class="chip small f1tv ${n === "active" ? "" : "warn"}" title=${e(`f1tv.${n}`)}>F1TV</span>` : T}
+              ${I(F.pause, 16)}<span class="label">${t.auto_start ? e("live.pausedAuto") : e("live.pausedShort")}</span></button>` : w}
+        ${n ? x`<span class="chip small f1tv ${n === "active" ? "" : "warn"}" title=${e(`f1tv.${n}`)}>F1TV</span>` : w}
         <button class="chip delay ${t?.tv_delay ? "on" : ""}" @click=${() => this.delayOpen = !this.delayOpen}
           aria-expanded=${this.delayOpen ? "true" : "false"} aria-label=${e("delay.title")}>
-          ${L(I.clock, 18)}<span class="num">${e("delay.seconds", { n: t?.tv_delay ? `+${t.tv_delay}` : 0 })}</span>
+          ${I(F.clock, 18)}<span class="num">${e("delay.seconds", { n: t?.tv_delay ? `+${t.tv_delay}` : 0 })}</span>
           <span class="label">${e("delay.title")}</span>
         </button>
         <button class="chip spoiler ${t?.no_spoiler ? "on" : ""}" @click=${() => this.setSpoiler(!t?.no_spoiler)}
           title=${e("spoiler.help")} aria-pressed=${t?.no_spoiler ? "true" : "false"}
           aria-label=${t?.no_spoiler ? e("spoiler.on") : e("spoiler.off")}>
-          ${L(t?.no_spoiler ? I.eyeOff : I.eye, 18)}
+          ${I(t?.no_spoiler ? F.eyeOff : F.eye, 18)}
           <span class="label">${t?.no_spoiler ? e("spoiler.on") : e("spoiler.off")}</span>
         </button>
         <button class="icon-btn full" @click=${() => i && !this.fullscreen ? this.endKiosk() : this.toggleFullScreen()}
           aria-label=${e(i ? "kiosk.leave" : "kiosk.enter")} title=${e(i ? "kiosk.leave" : "kiosk.enter")}>
-          ${L(i ? I.exitFullscreen : I.fullscreen, 22)}</button>
+          ${I(i ? F.exitFullscreen : F.fullscreen, 22)}</button>
         <button class="icon-btn gear ${this.page === "settings" ? "active" : ""}" @click=${() => this.go({ page: "settings" })}
-          aria-label=${e("settings.title")} title=${e("settings.title")}>${L(I.cog, 22)}</button>
+          aria-label=${e("settings.title")} title=${e("settings.title")}>${I(F.cog, 22)}</button>
       </header></div>
-      ${this.delayOpen && t ? this.renderPopover(t) : T}
-      <main style=${r}>${$e(this.renderPage())}</main>
+      ${this.delayOpen && t ? this.renderPopover(t) : w}
+      <main style=${r}>${et(this.renderPage())}</main>
       <footer style=${r}>${e("common.disclaimer")}</footer>
     `;
 	}
 	renderPopover(e) {
 		let t = this.t;
-		return S`<div class="card pop" role="dialog" aria-label=${t("delay.title")}>
+		return x`<div class="card pop" role="dialog" aria-label=${t("delay.title")}>
       <h3>${t("delay.title")}</h3>
       <p>${t("delay.help")}</p>
       <div class="stepper">
@@ -5021,7 +5026,7 @@ var Zn = class extends k {
     </div>`;
 	}
 	static {
-		this.styles = [R, o`
+		this.styles = [L, o`
       :host {
         display: block;
         min-height: 100vh;
@@ -5103,6 +5108,6 @@ var Zn = class extends k {
     `];
 	}
 };
-P("plb-calendar", qt), P("plb-results", Zt), P("plb-circuit", vn), P("plb-standings", Hn), P("plb-live", Dn), P("plb-live-map", Pn), P("plb-settings", Bn), P("plb-countdown", Ut), P("plb-age", Wt), P("pit-lane-live-board-panel", Zn);
+N("plb-calendar", Yt), N("plb-results", $t), N("plb-circuit", bn), N("plb-standings", Un), N("plb-live", On), N("plb-live-map", Fn), N("plb-settings", Vn), N("plb-countdown", Gt), N("plb-age", Kt), N("pit-lane-live-board-panel", Qn);
 //#endregion
-export { Zn as PitLaneLiveBoardPanel };
+export { Qn as PitLaneLiveBoardPanel };
