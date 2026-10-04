@@ -18,7 +18,7 @@ import { clockTime, hassChanged, number, sessionClock, sessionTime, shortTime } 
 import { translator, type Translate } from "../i18n";
 import { ICON, icon } from "../icons";
 import { mergeLive } from "../merge";
-import { alsoTime, failure, gained, gapText, onKey, segmentStrip, sessionName, tyre } from "../parts";
+import { alsoTime, failure, gained, gapText, onKey, segmentStrip, sessionName, tyre, outLap } from "../parts";
 import { feedStyles, tokens } from "../styles";
 import type { Hass, LiveView, Message, NextSession, Row, Settings, Timed } from "../types";
 import { pillStyles, stewardsCard, stewardsStyles } from "./stewards";
@@ -358,7 +358,7 @@ export class PlbLive extends LitElement {
         ? html`${[0, 1, 2].map(
               (p) => html`<td class="t ${p + 1 === part ? "" : "col-s muted"}">${q.part_bests[p] ?? ""}</td>`,
             )}<td class="t">${q.gap ?? ""}</td>`
-        : html`<td class="col-gain">${gained(r.gained)}</td><td class="t">${gapText(t, r.gap)}</td><td class="t col-int">${gapText(t, r.interval, true)}</td>
+        : html`<td class="col-gain">${gained(r.gained)}</td><td class="t">${outLap(t, r.status, r.laps) || gapText(t, r.gap)}</td><td class="t col-int">${gapText(t, r.interval, true)}</td>
             <td class="col-last">${this.timed(r.last_lap)}</td>
             <td class="col-best">${r.best_lap ? html`<span class="t">${r.best_lap.time}</span>` : ""}</td>`}
       ${r.sectors.map(
