@@ -5,7 +5,7 @@ from __future__ import annotations
 DOMAIN = "pit_lane_live_board"
 NAME = "Pit Lane Live Board"
 # Kept equal to manifest.json and pyproject.toml by a test.
-VERSION = "0.10.2"
+VERSION = "0.10.3"
 REPOSITORY = "https://github.com/foyer-labs/Pit-Lane-Live-Board"
 
 # Every request says who is asking (INV-4; Jolpica asks for it).
