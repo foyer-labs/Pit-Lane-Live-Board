@@ -49,8 +49,8 @@ OUTLINE_YEARS_BACK = 3
 MEETING_WINDOW = timedelta(days=3)
 
 # The formats of the derived entries (see the module docstring).
-DETAIL_VERSION = "v2"
-FINAL_VERSION = "v2"
+DETAIL_VERSION = "v3"
+FINAL_VERSION = "v3"
 OUTLINE_VERSION = "v2"
 PATH_VERSION = "v2"
 
