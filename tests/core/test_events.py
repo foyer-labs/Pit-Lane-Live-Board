@@ -159,3 +159,33 @@ def test_the_track_status_sensor_reads_red_while_aborted():
 
     assert track_status({"Status": "1"}, "aborted") == "red_flag"
     assert track_status({"Status": "1"}, "started") == "clear"
+
+
+def with_started(status, started, key=9002):
+    out = topics(status=status, key=key)
+    out["SessionStatus"]["Started"] = started
+    return out
+
+
+def test_the_last_sessions_finalised_does_not_end_the_next_one():
+    """Singapore 2026: F1 named the new session while the status still read the
+    last one's Finalised; its first word, Inactive/Inactive, starts it clean."""
+    events, marks = derive({}, with_started("Finalised", "Finished"))
+    assert events == []
+    events, marks = derive(marks, with_started("Inactive", "Inactive"))
+    assert events == [] and marks["started"] is False and marks["ended"] is False
+    events, marks = derive(marks, with_started("Started", "Started"))
+    assert events == ["session_started"]
+    events, marks = derive(marks, with_started("Finished", "Finished"))
+    assert events == ["session_ended"]
+    events, marks = derive(marks, with_started("Finalised", "Finished"))
+    assert events == [] and marks["ended"] is True
+
+
+def test_inactive_after_a_red_flag_keeps_the_session_started():
+    _, marks = derive({}, with_started("Started", "Started"))
+    _, marks = derive(marks, with_started("Aborted", "Started"))
+    events, marks = derive(marks, with_started("Inactive", "Started"))
+    assert marks["started"] is True
+    events, marks = derive(marks, with_started("Started", "Started"))
+    assert "session_started" not in events

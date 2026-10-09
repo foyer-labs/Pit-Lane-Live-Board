@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import dataclasses
+from datetime import timedelta
 from unittest.mock import patch
 
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.util import dt as dt_util
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -221,3 +224,52 @@ async def test_the_small_screen_sensor(hass: HomeAssistant, entry):
     assert state.state == "live"
     assert state.attributes["p2"].split() == ["2", "LEC", "+1.2"]
     assert state.attributes["flag_colour"] == "#1fa855"
+
+
+def _feed_for(session) -> dict:
+    """The feed of our calendar's session, as F1 sends it."""
+    frames = race(
+        **{"4": {"Position": "1"}, "16": {"Position": "2", "GapToLeader": "+1.2"}}
+    )
+    frames["SessionInfo"]["StartDate"] = session.start.strftime("%Y-%m-%dT%H:%M:%S")
+    frames["SessionInfo"]["GmtOffset"] = "00:00:00"
+    frames["SessionStatus"] = {"Status": "Finalised"}
+    return frames
+
+
+async def test_nothing_is_finalised_before_its_start(hass: HomeAssistant, entry):
+    """Singapore 2026: F1 named the new session while its status still read the
+    last one's Finalised. Before the start that is the last session's state: no
+    summary, and the window stays open."""
+    hub = entry.runtime_data.hub
+    sent: list[ServiceCall] = []
+    hass.services.async_register("notify", "family_phone", sent.append)
+    await hub.async_update_settings(
+        hub.settings.with_summary(["family_phone"], ["race"])
+    )
+    meeting = hub.meetings[0]
+    session = next(s for s in meeting.sessions if s.kind == "race")
+    assert session.start > dt_util.utcnow()
+    await hub._async_start_live(meeting, session)
+    FakeClient.instances[-1].keyframes(_feed_for(session))
+    await settle()
+    assert hub.live.finalised_at is None
+    assert session.key not in hub.store.summaries_sent and sent == []
+
+
+async def test_a_session_that_began_is_finalised(hass: HomeAssistant, entry):
+    hub = entry.runtime_data.hub
+    sent: list[ServiceCall] = []
+    hass.services.async_register("notify", "family_phone", sent.append)
+    await hub.async_update_settings(
+        hub.settings.with_summary(["family_phone"], ["race"])
+    )
+    meeting = hub.meetings[0]
+    scheduled = next(s for s in meeting.sessions if s.kind == "race")
+    # The same session, as if its start had passed.
+    began = dataclasses.replace(scheduled, start=dt_util.utcnow() - timedelta(hours=2))
+    await hub._async_start_live(meeting, began)
+    FakeClient.instances[-1].keyframes(_feed_for(scheduled))
+    await settle()
+    await until(lambda: sent)
+    assert hub.live.finalised_at is not None and len(sent) == 1
