@@ -81,6 +81,17 @@ def _is_end(status: str, topics: dict[str, Any]) -> bool:
     return part >= len(parts)
 
 
+def _not_begun(status: str, topics: dict[str, Any]) -> bool:
+    """Inactive and never started: F1's `Started` field says so. After a red flag
+    the status is Inactive again, but `Started` stays `Started`."""
+    raw = topics.get("SessionStatus")
+    return (
+        status == "inactive"
+        and isinstance(raw, dict)
+        and str(raw.get("Started") or "").lower() == "inactive"
+    )
+
+
 def derive(
     marks: dict[str, Any], topics: dict[str, Any]
 ) -> tuple[list[str], dict[str, Any]]:
@@ -107,6 +118,11 @@ def derive(
             if not ended and _is_end(status, topics):
                 events.append("session_ended")
                 ended = True
+        if _not_begun(status, topics):
+            # The session's first word: whatever was read before it (the last
+            # session's Finalised, still in the feed while F1 names the next one)
+            # neither started nor ended this one.
+            started = ended = False
         new["session"] = status
         new["started"] = started or status != "inactive"
         new["ended"] = ended

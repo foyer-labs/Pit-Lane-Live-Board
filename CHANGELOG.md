@@ -6,6 +6,19 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.10.4] - 2026-10-09
+
+### Fixed
+- **A session summary with the previous session's results.** As a session opened,
+  F1's feed named the new session for a few seconds while it still carried the last
+  one's results marked as final: the summary went out at once, with the wrong
+  classification (FP1 with the last race's gaps, sprint qualifying with FP1's order
+  and "no time"), and the real one at the end was then skipped. A session now
+  counts as over only after its scheduled start.
+- In the same seconds the **Session started** and **Session ended** events could
+  take the old session's end for the new one's and stay silent at its real start
+  and end. They now start clean with each session.
+
 ## [0.10.3] - 2026-10-04
 
 ### Fixed
