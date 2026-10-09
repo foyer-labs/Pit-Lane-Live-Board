@@ -674,6 +674,14 @@ class Hub:
             if matched is None or matched.key != live.session.key:
                 live.finalised_at = None
                 return
+            if live.session.start is not None and dt_util.utcnow() < live.session.start:
+                # Nothing is over before it began. F1 publishes the next session's
+                # SessionInfo seconds before it moves the status off the last
+                # session's "Finalised" (Singapore 2026): that moment, with the
+                # last session's tower, sent its summary as the new one's and
+                # could have closed the window before the start.
+                live.finalised_at = None
+                return
         status = session_status(live.state.get("SessionStatus"))
         if status == "finalised":
             if live.finalised_at is None:

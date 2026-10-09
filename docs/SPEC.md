@@ -1148,6 +1148,17 @@ Decisions taken in chat with the owner.
   Results strategy tab all read it; cached details and final views are rebuilt
   (`detail/v3`, `final/v3`).
 
+62. **Nothing is over before it began** (a user's report from Singapore 2026: the FP1
+  summary carried the Bahrain race's classification, the sprint qualifying summary
+  FP1's, both sent as the sessions opened). F1 publishes the next session's
+  `SessionInfo` some seconds before it moves `SessionStatus` off the last session's
+  `Finalised` (7 s in the archive, 13 minutes before the start), with the last
+  session's tower still in the feed. A live session therefore counts as finalised
+  only from its scheduled start: before it, no summary, and the window is not
+  closed. The automation events start clean on the session's first word, Inactive
+  with `Started: Inactive`; an Inactive after a red flag keeps `Started: Started`
+  and is not a new start.
+
 ---
 
 ## 18. Choices awaiting confirmation
