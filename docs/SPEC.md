@@ -483,6 +483,7 @@ mode hides it like the live session.
 | Race | Classification: position, driver, team, grid, positions gained, laps, time or status, points, fastest lap | 1950 (Jolpica) |
 | Qualifying | Q1/Q2/Q3 times, position | Jolpica (Q times from 1994 onwards where present) |
 | Sprint | Sprint classification | 2021 (Jolpica) |
+| Sprint qualifying | SQ1/SQ2/SQ3 times, position | 2023 (archive; Jolpica has none) |
 | Lap chart | Position of every driver on every lap, drawn as lines | 1996 (Jolpica laps) |
 | Tyre strategy | One bar per driver, stints coloured by compound, pit laps marked | 2018 (archive `TimingAppData`) |
 | Lap times | Per driver: lap time, sectors, compound, tyre age; personal and overall bests coloured | 2018 (archive `TimingData`) |
@@ -1158,6 +1159,18 @@ Decisions taken in chat with the owner.
   closed. The automation events start clean on the session's first word, Inactive
   with `Started: Inactive`; an Inactive after a red flag keeps `Started: Started`
   and is not a new start.
+
+63. **The weekend's sessions before Jolpica has them** (asked by the owner: on the
+  Singapore Saturday, sprint qualifying, the sprint and qualifying were run and the
+  Results page showed none of them). Jolpica publishes after the race; F1's archive
+  has each session 0-30 minutes after it ends. Until Jolpica has a session, its
+  Race, Qualifying or Sprint tab is built from the archive's final state (the tower
+  the Live page shows after it, `core/provisional.py`) in Jolpica's row shape and
+  marked `provisional`: no points and no driver ids, F1's team colours, and a note
+  that the official results replace it. Jolpica's own rows always win when present.
+  Not read while the session is still running, and an archive that fails is no data,
+  not an error. Sprint weekends from 2023 get a Sprint qualifying tab from the
+  archive alone (Jolpica does not carry the session), not provisional.
 
 ---
 

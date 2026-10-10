@@ -15,11 +15,13 @@ FIRST_QUALIFYING_SEASON = 1994  # Jolpica qualifying: nothing before
 FIRST_LAPS_SEASON = 1996  # Jolpica laps
 FIRST_PITSTOPS_SEASON = 2011  # Jolpica pit stops
 FIRST_ARCHIVE_SEASON = 2018  # F1's archive
+FIRST_SPRINT_QUALIFYING_SEASON = 2023  # the sprint shootout, then sprint qualifying
 
 TABS = (
     "race",
     "qualifying",
     "sprint",
+    "sprint_qualifying",
     "lap_chart",
     "strategy",
     "lap_times",
@@ -32,6 +34,7 @@ TAB_SESSION = {
     "race": "race",
     "qualifying": "qualifying",
     "sprint": "sprint",
+    "sprint_qualifying": "sprint_qualifying",
     "lap_chart": "race",
     "strategy": "race",
     "lap_times": "race",
@@ -45,7 +48,12 @@ def session_key(season: int, rnd: int, kind: str) -> str:
     return f"{season}-{rnd}-{kind}"
 
 
-ARCHIVE_TABS = frozenset({"strategy", "lap_times", "race_control", "weather"})
+ARCHIVE_TABS = frozenset(
+    {"sprint_qualifying", "strategy", "lap_times", "race_control", "weather"}
+)
+# Tabs Jolpica fills once it has the session; until then, from F1's archive
+# (decision 63).
+PROVISIONAL_TABS = frozenset({"race", "qualifying", "sprint"})
 
 
 def without_archive_tabs(page: dict[str, Any]) -> dict[str, Any]:
@@ -62,6 +70,8 @@ def tabs_for(season: int, sprint: bool) -> list[str]:
         tabs.append("qualifying")
     if sprint:
         tabs.append("sprint")
+        if season >= FIRST_SPRINT_QUALIFYING_SEASON:
+            tabs.append("sprint_qualifying")
     if season >= FIRST_LAPS_SEASON:
         tabs.append("lap_chart")
     if season >= FIRST_ARCHIVE_SEASON:

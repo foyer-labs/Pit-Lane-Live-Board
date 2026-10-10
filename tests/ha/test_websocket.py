@@ -382,3 +382,114 @@ async def test_reveal_takes_only_sessions_of_the_calendar(hass, setup, hass_ws_c
     await ws.send_json_auto_id({"type": f"{P}spoiler/reveal", "session": race})
     assert (await ws.receive_json())["result"]["revealed"] == [race]
     assert hub.settings.revealed == frozenset({race})
+
+
+FINAL_TOPICS = {
+    "SessionInfo": {"Type": "Race", "Name": "Race"},
+    "DriverList": {
+        "1": {
+            "Tla": "VER",
+            "FirstName": "Max",
+            "LastName": "Verstappen",
+            "TeamName": "Red Bull Racing",
+            "TeamColour": "3671C6",
+        },
+        "44": {
+            "Tla": "HAM",
+            "FirstName": "Lewis",
+            "LastName": "Hamilton",
+            "TeamName": "Ferrari",
+            "TeamColour": "E8002D",
+        },
+    },
+    "TimingData": {
+        "Lines": {
+            "1": {"Position": "1", "GapToLeader": "LAP 57", "NumberOfLaps": 57},
+            "44": {"Position": "2", "GapToLeader": "+2.591", "NumberOfLaps": 57},
+        }
+    },
+}
+
+
+async def test_a_race_before_jolpica_has_it_comes_from_the_archive(
+    hass, setup, hass_ws_client, aioclient_mock
+):
+    """Decision 63: the weekend's sessions show F1's timing until Jolpica
+    publishes, marked provisional; then Jolpica's."""
+    hub = setup.runtime_data.hub
+    started = datetime.now(UTC) - timedelta(hours=3)
+    hub.meetings = parse_schedule(schedule_payload(started))
+    season = started.year
+    aioclient_mock.get(
+        f"{JOLPICA_BASE}{season}/1/results.json", json=races(season=str(season))
+    )
+    calls = []
+
+    async def final_state(meetings, session):
+        calls.append(session.key)
+        return {"path": "x", "topics": FINAL_TOPICS, "pit_stream": []}
+
+    hub.archive.final_state = final_state
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id(
+        {"type": f"{P}results/detail", "season": season, "round": 1, "tab": "race"}
+    )
+    data = (await ws.receive_json())["result"]["data"]
+    assert data["provisional"] is True
+    assert [r["code"] for r in data["rows"]] == ["VER", "HAM"]
+    assert data["rows"][1]["time"] == "+2.591"
+    assert calls == [f"{season}-1-race"]
+
+
+async def test_once_jolpica_has_the_race_the_archive_is_not_read(
+    hass, setup, hass_ws_client, aioclient_mock
+):
+    hub = setup.runtime_data.hub
+    started = datetime.now(UTC) - timedelta(hours=3)
+    hub.meetings = parse_schedule(schedule_payload(started))
+    season = started.year
+    aioclient_mock.get(
+        f"{JOLPICA_BASE}{season}/1/results.json",
+        json=races(season=str(season), Results=[result("max_verstappen", "VER", 1)]),
+    )
+    calls = []
+
+    async def final_state(meetings, session):
+        calls.append(session.key)
+        return {"path": "x", "topics": FINAL_TOPICS, "pit_stream": []}
+
+    hub.archive.final_state = final_state
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id(
+        {"type": f"{P}results/detail", "season": season, "round": 1, "tab": "race"}
+    )
+    data = (await ws.receive_json())["result"]["data"]
+    assert (
+        "provisional" not in data and data["rows"][0]["driver_id"] == "max_verstappen"
+    )
+    assert calls == []
+
+
+async def test_a_session_still_running_is_not_read_from_the_archive(
+    hass, setup, hass_ws_client, aioclient_mock
+):
+    hub = setup.runtime_data.hub
+    started = datetime.now(UTC) - timedelta(minutes=30)  # the race is on
+    hub.meetings = parse_schedule(schedule_payload(started))
+    season = started.year
+    aioclient_mock.get(
+        f"{JOLPICA_BASE}{season}/1/results.json", json=races(season=str(season))
+    )
+    calls = []
+
+    async def final_state(meetings, session):
+        calls.append(session.key)
+        return {"path": "x", "topics": FINAL_TOPICS, "pit_stream": []}
+
+    hub.archive.final_state = final_state
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id(
+        {"type": f"{P}results/detail", "season": season, "round": 1, "tab": "race"}
+    )
+    reply = (await ws.receive_json())["result"]
+    assert reply["available"] is False and calls == []

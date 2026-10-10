@@ -6,6 +6,17 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-10
+
+### Added
+- **The weekend's results as it goes.** Results no longer waits for the race: about
+  half an hour after each session, its Race, Qualifying or Sprint tab shows the
+  classification from F1's own timing, marked *provisional* (no points yet, and the
+  stewards may still change the order), until the official results are published
+  and take its place by themselves.
+- **Sprint qualifying** has its own tab on sprint weekends (from 2023), with the
+  SQ1, SQ2 and SQ3 times.
+
 ## [0.10.4] - 2026-10-09
 
 ### Fixed

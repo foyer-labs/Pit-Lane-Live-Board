@@ -10,7 +10,7 @@ import { COMPOUND_VAR, feedStyles, tokens } from "../styles";
 import { teamColour } from "../teams";
 import type { Classified, Hass, Message, Round, Settings, TabResult } from "../types";
 
-const ARCHIVE_TABS = new Set(["strategy", "lap_times", "race_control", "weather"]);
+const ARCHIVE_TABS = new Set(["sprint_qualifying", "strategy", "lap_times", "race_control", "weather"]);
 
 /** Jolpica's classification statuses, in the page's language. The long tail of
  *  older mechanical causes stays as Jolpica writes it. */
@@ -253,12 +253,18 @@ export class PlbResults extends LitElement {
       return html`<div class="state">${ARCHIVE_TABS.has(this.tab) ? t("results.notArchived") : t("common.noData")}</div>`;
     }
     const data = result.data;
+    // Jolpica has not published the session yet: F1's timing, until it does.
+    const note = data.provisional
+      ? html`<div class="provisional">${icon(ICON.timer, 18)}<span>${t("results.provisional")}</span></div>`
+      : nothing;
     switch (this.tab) {
       case "race":
       case "sprint":
-        return this.classification(t, data.rows as Classified[], this.tab === "race");
+        return html`${note}${this.classification(t, data.rows as Classified[], this.tab === "race")}`;
       case "qualifying":
-        return this.qualifying(t, data.rows as Classified[]);
+        return html`${note}${this.qualifying(t, data.rows as Classified[], "Q")}`;
+      case "sprint_qualifying":
+        return this.qualifying(t, data.rows as Classified[], "SQ");
       case "lap_chart":
         return this.lapChart(t, data);
       case "strategy":
@@ -293,7 +299,7 @@ export class PlbResults extends LitElement {
       ${rows.map(
         (r) => html`<tr>
           <td class="num">${r.position_text && !/^\d+$/.test(r.position_text) ? r.position_text : r.position}</td>
-          <td>${person(r.name, r.team_id)}</td>
+          <td>${person(r.name, r.team_id, r.colour)}</td>
           <td class="phone-hide">${gained(r.gained)}</td>
           <td class="wide muted">${r.team ?? ""}</td>
           <td class="r num phone-hide">${r.grid ?? "—"}</td>
@@ -306,20 +312,20 @@ export class PlbResults extends LitElement {
     </table></div>`;
   }
 
-  private qualifying(t: Translate, rows: Classified[]) {
+  private qualifying(t: Translate, rows: Classified[], prefix: "Q" | "SQ") {
     const best = (key: "q1" | "q2" | "q3") => rows.map((r) => r[key]).filter(Boolean).sort()[0];
     const fastest = { q1: best("q1"), q2: best("q2"), q3: best("q3") };
     // On a phone: the part each driver reached and its time, in one column.
     const reached = (r: Classified) => (r.q3 ? "q3" : r.q2 ? "q2" : r.q1 ? "q1" : null);
     return html`<div class="scroll"><table class="tbl">
       <tr><th>${t("common.pos")}</th><th>${t("common.driver")}</th><th class="wide">${t("common.team")}</th>
-        <th class="phone-hide">Q1</th><th class="phone-hide">Q2</th><th class="phone-hide">Q3</th><th class="phone-only">${t("results.best")}</th></tr>
+        ${[1, 2, 3].map((n) => html`<th class="phone-hide">${prefix}${n}</th>`)}<th class="phone-only">${t("results.best")}</th></tr>
       ${rows.map((r) => {
         const part = reached(r);
         return html`<tr>
-          <td class="num">${r.position}</td><td>${person(r.name, r.team_id)}</td><td class="wide muted">${r.team ?? ""}</td>
+          <td class="num">${r.position}</td><td>${person(r.name, r.team_id, r.colour)}</td><td class="wide muted">${r.team ?? ""}</td>
           ${(["q1", "q2", "q3"] as const).map((k) => html`<td class="t phone-hide ${r[k] && r[k] === fastest[k] ? "ob" : ""}">${r[k] ?? ""}</td>`)}
-          <td class="t phone-only">${part ? html`<small class="muted">${part.toUpperCase()}</small> <span class=${r[part] === fastest[part] ? "t ob" : "t"}>${r[part]}</span>` : ""}</td>
+          <td class="t phone-only">${part ? html`<small class="muted">${prefix}${part.slice(1)}</small> <span class=${r[part] === fastest[part] ? "t ob" : "t"}>${r[part]}</span>` : ""}</td>
         </tr>`;
       })}
     </table></div>`;
@@ -470,6 +476,11 @@ export class PlbResults extends LitElement {
     css`
       :host { display: block; container-type: inline-size; }
       .back { display: inline-flex; align-items: center; gap: 4px; }
+      .provisional { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 10px; padding: 8px 12px;
+        border-radius: 8px; font-size: 13px; color: var(--secondary-text-color);
+        background: color-mix(in srgb, var(--warning-color, #ffa600) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--warning-color, #ffa600) 35%, transparent); }
+      .provisional svg { flex: none; margin-top: 1px; color: var(--warning-color, #ffa600); }
       .history { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; margin-left: auto; }
       .subtabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--divider-color); }
       .subtabs .tab { font-size: 13px; padding: 6px 12px; }
