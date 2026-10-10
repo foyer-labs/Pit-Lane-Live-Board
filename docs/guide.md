@@ -119,12 +119,19 @@ the data exists:
 | Race | 1950 |
 | Qualifying | 1994 |
 | Sprint | 2021 |
+| Sprint qualifying | 2023 |
 | Lap chart | 1996 |
 | Pit stops | 2011 |
 | Tyre strategy, Lap times, Race control, Weather | 2018 |
 
 The 2018+ tabs come from F1's session archive: the first time you open a race, it is
 downloaded once (a few MB) and kept in the cache, so later openings are instant.
+
+During a race weekend, each session appears in Results about half an hour after it
+ends, before the official results are published (usually after the race): Race,
+Qualifying and Sprint then show F1's own timing, marked **provisional** — no points
+yet, and the stewards may still change the order — and switch to the official
+results by themselves once they are out.
 
 ![The lap chart](screenshots/lap-chart.png)
 

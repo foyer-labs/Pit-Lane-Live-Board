@@ -126,6 +126,7 @@ compare solo quando i dati esistono:
 | Gara | 1950 |
 | Qualifiche | 1994 |
 | Sprint | 2021 |
+| Qualifiche sprint | 2023 |
 | Posizioni giro per giro | 1996 |
 | Pit stop | 2011 |
 | Strategia gomme, Tempi sul giro, Direzione gara, Meteo | 2018 |
@@ -133,6 +134,12 @@ compare solo quando i dati esistono:
 Le schede dal 2018 arrivano dall'archivio delle sessioni della F1: la prima volta che
 apri una gara viene scaricato una volta sola (qualche MB) e resta in cache, così le
 aperture successive sono immediate.
+
+Durante un weekend di gara ogni sessione compare nei Risultati circa mezz'ora dopo la
+fine, prima che escano i risultati ufficiali (di solito dopo la gara): Gara, Qualifiche
+e Sprint mostrano allora i tempi della F1, segnati come **provvisori** — ancora senza
+punti, e i commissari possono cambiare l'ordine — e passano da soli ai risultati
+ufficiali appena vengono pubblicati.
 
 ![Posizioni giro per giro](screenshots/lap-chart.it.png)
 
