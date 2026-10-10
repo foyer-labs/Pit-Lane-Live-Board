@@ -72,6 +72,7 @@
       "race": "Race",
       "qualifying": "Qualifying",
       "sprint": "Sprint",
+      "sprint_qualifying": "Sprint qualifying",
       "lap_chart": "Lap chart",
       "strategy": "Tyre strategy",
       "lap_times": "Lap times",
@@ -145,7 +146,8 @@
     "dry": "Dry",
     "wet": "Rain during the session",
     "open": "Open the round",
-    "usedFaded": "A faded bar is a used set."
+    "usedFaded": "A faded bar is a used set.",
+    "provisional": "Provisional, from F1's live timing: the official results, with points and any later penalties, replace it when they are published (usually after the race)."
   },
   "standings": {
     "title": "Standings",

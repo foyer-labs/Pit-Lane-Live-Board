@@ -170,6 +170,13 @@ export function createHass() {
         }
         case "results/detail":
           if (settings.no_spoiler && msg.tab === "race") return { tab: "race", hidden: true, session: "2026-14-race" };
+          // `provisional=true`: as before Jolpica publishes (decision 63); the
+          // sprint qualifying tab reuses the qualifying file.
+          if (msg.tab === "sprint_qualifying") return data("detail_qualifying");
+          if (params.get("provisional") === "true" && ["race", "qualifying", "sprint"].includes(msg.tab)) {
+            const detail = await data(`detail_${msg.tab}`);
+            return { ...detail, data: detail.data && { ...detail.data, provisional: true } };
+          }
           return data(`detail_${msg.tab}`);
         case "standings/get":
           return data(`standings_${msg.kind}`);

@@ -22,7 +22,7 @@ import voluptuous as vol
 
 from .clients.http import SourceError
 from .const import DOMAIN, OPTION_ADMIN_ONLY, OPTION_SHOW_IN_SIDEBAR
-from .core import circuit_history, pages
+from .core import circuit_history, pages, provisional, stints
 from .core.f1tv_token import acceptable, evaluate, extract_token
 from .core.jolpica_parse import (
     add_changes,
@@ -35,8 +35,10 @@ from .core.jolpica_parse import (
     parse_sprint,
     parse_standings,
 )
+from .core.live_state import LiveState
 from .core.schedule import spoiler_scope
 from .core.spoiler import hidden_sessions, standings_round_cap
+from .core.timing import build_tower
 from .hub import SIGNAL_SETTINGS, Hub, listen_live, listen_map
 
 FIRST_SEASON = 1950
@@ -407,13 +409,69 @@ async def _archive_detail(hub: Hub, season: int, rnd: int) -> dict[str, Any] | N
     return await hub.archive.detail(meetings, meeting.race)
 
 
+async def _from_archive(
+    hub: Hub, season: int, rnd: int, kind: str
+) -> dict[str, Any] | None:
+    """One session's classification from F1's archive, once the session is over
+    and published (decision 63). None when it is not there (yet)."""
+    meetings = await hub.async_meetings(season)
+    meeting = next((m for m in meetings if m.round == rnd), None)
+    session = (
+        next((s for s in meeting.sessions if s.kind == kind), None) if meeting else None
+    )
+    if meeting is None or session is None or season < pages.FIRST_ARCHIVE_SEASON:
+        return None
+    if session.end is not None and _now() < session.end:
+        return None
+    final = await hub.archive.final_state(meetings, session)
+    if not final:
+        return None
+    state = LiveState()
+    state.apply_keyframes(final.get("topics") or {})
+    for payload in final.get("pit_stream") or []:
+        state.apply("PitLaneTimeCollection", payload)
+    tower = build_tower(state.topics, stints.pit_laps(state.pit_log))
+    meta = {
+        "season": season,
+        "round": rnd,
+        "name": meeting.name,
+        "date": session.day.isoformat(),
+        "circuit": meeting.circuit,
+        "circuit_id": meeting.circuit_id,
+        "locality": meeting.locality,
+        "country": meeting.country,
+    }
+    if kind in ("qualifying", "sprint_qualifying"):
+        return provisional.qualifying(tower, meta)
+    return provisional.race(tower, meta)
+
+
+async def _provisional(
+    hub: Hub, season: int, rnd: int, kind: str
+) -> dict[str, Any] | None:
+    """The archive's classification, marked provisional: Jolpica has not
+    published the session yet. An archive that cannot be read is no answer,
+    not an error, since Jolpica did answer."""
+    try:
+        data = await _from_archive(hub, season, rnd, kind)
+    except SourceError:
+        return None
+    return {**data, "provisional": True} if data else None
+
+
 async def _tab(hub: Hub, season: int, rnd: int, tab: str) -> dict[str, Any] | None:
-    if tab == "race":
-        return parse_results(await hub.jolpica.results(season, rnd))
-    if tab == "qualifying":
-        return parse_qualifying(await hub.jolpica.qualifying(season, rnd))
-    if tab == "sprint":
-        return parse_sprint(await hub.jolpica.sprint(season, rnd))
+    if tab in pages.PROVISIONAL_TABS:
+        if tab == "race":
+            parsed = parse_results(await hub.jolpica.results(season, rnd))
+        elif tab == "qualifying":
+            parsed = parse_qualifying(await hub.jolpica.qualifying(season, rnd))
+        else:
+            parsed = parse_sprint(await hub.jolpica.sprint(season, rnd))
+        if parsed is not None and parsed.get("rows"):
+            return parsed
+        return await _provisional(hub, season, rnd, tab)
+    if tab == "sprint_qualifying":
+        return await _from_archive(hub, season, rnd, "sprint_qualifying")
     if tab == "lap_chart" and season >= pages.FIRST_ARCHIVE_SEASON:
         # One archive file instead of a dozen pages of Jolpica laps.
         results, detail = await asyncio.gather(

@@ -105,6 +105,8 @@ export interface Round {
 
 export interface Classified extends Person {
   driver_id: string | null;
+  /** F1's team colour, for rows from F1's timing (they have no team id). */
+  colour?: string | null;
   number: string | null;
   position_text?: string | null;
   grid?: number | null;
