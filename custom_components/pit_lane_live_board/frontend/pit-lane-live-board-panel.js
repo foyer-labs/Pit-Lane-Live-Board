@@ -765,6 +765,7 @@ var at = {
 			race: "Race",
 			qualifying: "Qualifying",
 			sprint: "Sprint",
+			sprint_qualifying: "Sprint qualifying",
 			lap_chart: "Lap chart",
 			strategy: "Tyre strategy",
 			lap_times: "Lap times",
@@ -838,7 +839,8 @@ var at = {
 		dry: "Dry",
 		wet: "Rain during the session",
 		open: "Open the round",
-		usedFaded: "A faded bar is a used set."
+		usedFaded: "A faded bar is a used set.",
+		provisional: "Provisional, from F1's live timing: the official results, with points and any later penalties, replace it when they are published (usually after the race)."
 	},
 	standings: {
 		title: "Standings",
@@ -1266,6 +1268,7 @@ var at = {
 				race: "Gara",
 				qualifying: "Qualifiche",
 				sprint: "Sprint",
+				sprint_qualifying: "Qualifiche sprint",
 				lap_chart: "Posizioni giro per giro",
 				strategy: "Strategia gomme",
 				lap_times: "Tempi sul giro",
@@ -1339,7 +1342,8 @@ var at = {
 			dry: "Asciutto",
 			wet: "Pioggia durante la sessione",
 			open: "Apri la gara",
-			usedFaded: "Una barra sbiadita è un treno usato."
+			usedFaded: "Una barra sbiadita è un treno usato.",
+			provisional: "Provvisoria, dal live timing della F1: i risultati ufficiali, con punti ed eventuali penalità successive, la sostituiscono quando vengono pubblicati (di solito dopo la gara)."
 		},
 		standings: {
 			title: "Classifiche",
@@ -2353,6 +2357,7 @@ var Jt = 6e5, Yt = class extends O {
     `];
 	}
 }, Xt = /* @__PURE__ */ new Set([
+	"sprint_qualifying",
 	"strategy",
 	"lap_times",
 	"race_control",
@@ -2528,11 +2533,12 @@ var $t = class extends O {
 			composed: !0
 		}))}>${e("spoiler.reveal")}</button></div>`;
 		if (!t.available || !t.data) return x`<div class="state">${Xt.has(this.tab) ? e("results.notArchived") : e("common.noData")}</div>`;
-		let n = t.data;
+		let n = t.data, r = n.provisional ? x`<div class="provisional">${I(F.timer, 18)}<span>${e("results.provisional")}</span></div>` : w;
 		switch (this.tab) {
 			case "race":
-			case "sprint": return this.classification(e, n.rows, this.tab === "race");
-			case "qualifying": return this.qualifying(e, n.rows);
+			case "sprint": return x`${r}${this.classification(e, n.rows, this.tab === "race")}`;
+			case "qualifying": return x`${r}${this.qualifying(e, n.rows, "Q")}`;
+			case "sprint_qualifying": return this.qualifying(e, n.rows, "SQ");
 			case "lap_chart": return this.lapChart(e, n);
 			case "strategy": return this.strategy(e, n);
 			case "lap_times": return this.lapTimes(e, n);
@@ -2556,7 +2562,7 @@ var $t = class extends O {
         <th class="r">${e("common.points")}</th>${n ? x`<th class="wide">${e("results.fastest")}</th>` : w}</tr>
       ${t.map((t) => x`<tr>
           <td class="num">${t.position_text && !/^\d+$/.test(t.position_text) ? t.position_text : t.position}</td>
-          <td>${J(t.name, t.team_id)}</td>
+          <td>${J(t.name, t.team_id, t.colour)}</td>
           <td class="phone-hide">${Vt(t.gained)}</td>
           <td class="wide muted">${t.team ?? ""}</td>
           <td class="r num phone-hide">${t.grid ?? "—"}</td>
@@ -2567,25 +2573,29 @@ var $t = class extends O {
         </tr>`)}
     </table></div>`;
 	}
-	qualifying(e, t) {
-		let n = (e) => t.map((t) => t[e]).filter(Boolean).sort()[0], r = {
-			q1: n("q1"),
-			q2: n("q2"),
-			q3: n("q3")
-		}, i = (e) => e.q3 ? "q3" : e.q2 ? "q2" : e.q1 ? "q1" : null;
+	qualifying(e, t, n) {
+		let r = (e) => t.map((t) => t[e]).filter(Boolean).sort()[0], i = {
+			q1: r("q1"),
+			q2: r("q2"),
+			q3: r("q3")
+		}, a = (e) => e.q3 ? "q3" : e.q2 ? "q2" : e.q1 ? "q1" : null;
 		return x`<div class="scroll"><table class="tbl">
       <tr><th>${e("common.pos")}</th><th>${e("common.driver")}</th><th class="wide">${e("common.team")}</th>
-        <th class="phone-hide">Q1</th><th class="phone-hide">Q2</th><th class="phone-hide">Q3</th><th class="phone-only">${e("results.best")}</th></tr>
+        ${[
+			1,
+			2,
+			3
+		].map((e) => x`<th class="phone-hide">${n}${e}</th>`)}<th class="phone-only">${e("results.best")}</th></tr>
       ${t.map((e) => {
-			let t = i(e);
+			let t = a(e);
 			return x`<tr>
-          <td class="num">${e.position}</td><td>${J(e.name, e.team_id)}</td><td class="wide muted">${e.team ?? ""}</td>
+          <td class="num">${e.position}</td><td>${J(e.name, e.team_id, e.colour)}</td><td class="wide muted">${e.team ?? ""}</td>
           ${[
 				"q1",
 				"q2",
 				"q3"
-			].map((t) => x`<td class="t phone-hide ${e[t] && e[t] === r[t] ? "ob" : ""}">${e[t] ?? ""}</td>`)}
-          <td class="t phone-only">${t ? x`<small class="muted">${t.toUpperCase()}</small> <span class=${e[t] === r[t] ? "t ob" : "t"}>${e[t]}</span>` : ""}</td>
+			].map((t) => x`<td class="t phone-hide ${e[t] && e[t] === i[t] ? "ob" : ""}">${e[t] ?? ""}</td>`)}
+          <td class="t phone-only">${t ? x`<small class="muted">${n}${t.slice(1)}</small> <span class=${e[t] === i[t] ? "t ob" : "t"}>${e[t]}</span>` : ""}</td>
         </tr>`;
 		})}
     </table></div>`;
@@ -2707,6 +2717,11 @@ var $t = class extends O {
 			o`
       :host { display: block; container-type: inline-size; }
       .back { display: inline-flex; align-items: center; gap: 4px; }
+      .provisional { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 10px; padding: 8px 12px;
+        border-radius: 8px; font-size: 13px; color: var(--secondary-text-color);
+        background: color-mix(in srgb, var(--warning-color, #ffa600) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--warning-color, #ffa600) 35%, transparent); }
+      .provisional svg { flex: none; margin-top: 1px; color: var(--warning-color, #ffa600); }
       .history { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; margin-left: auto; }
       .subtabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--divider-color); }
       .subtabs .tab { font-size: 13px; padding: 6px 12px; }

@@ -600,6 +600,7 @@ var Le = {
 			race: "Race",
 			qualifying: "Qualifying",
 			sprint: "Sprint",
+			sprint_qualifying: "Sprint qualifying",
 			lap_chart: "Lap chart",
 			strategy: "Tyre strategy",
 			lap_times: "Lap times",
@@ -673,7 +674,8 @@ var Le = {
 		dry: "Dry",
 		wet: "Rain during the session",
 		open: "Open the round",
-		usedFaded: "A faded bar is a used set."
+		usedFaded: "A faded bar is a used set.",
+		provisional: "Provisional, from F1's live timing: the official results, with points and any later penalties, replace it when they are published (usually after the race)."
 	},
 	standings: {
 		title: "Standings",
@@ -1101,6 +1103,7 @@ var Le = {
 				race: "Gara",
 				qualifying: "Qualifiche",
 				sprint: "Sprint",
+				sprint_qualifying: "Qualifiche sprint",
 				lap_chart: "Posizioni giro per giro",
 				strategy: "Strategia gomme",
 				lap_times: "Tempi sul giro",
@@ -1174,7 +1177,8 @@ var Le = {
 			dry: "Asciutto",
 			wet: "Pioggia durante la sessione",
 			open: "Apri la gara",
-			usedFaded: "Una barra sbiadita è un treno usato."
+			usedFaded: "Una barra sbiadita è un treno usato.",
+			provisional: "Provvisoria, dal live timing della F1: i risultati ufficiali, con punti ed eventuali penalità successive, la sostituiscono quando vengono pubblicati (di solito dopo la gara)."
 		},
 		standings: {
 			title: "Classifiche",
