@@ -141,3 +141,33 @@ def test_a_season_without_archive_has_no_archive_tabs():
         "lap_chart",
         "pit_stops",
     ]
+
+
+def test_a_sprint_weekend_shows_the_sprint_podium_too():
+    """Decision 64: the sprint's podium beside the race's, hidden on its own."""
+    from datetime import UTC, datetime
+
+    later = datetime(2027, 1, 1, tzinfo=UTC)  # both weekends run
+    sprint_winner = {**WINNER, "code": "SPR"}
+    page = pages.calendar_page(
+        MEETINGS,
+        later,
+        frozenset(),
+        {1: [WINNER], 2: [WINNER]},
+        sprint_podiums={1: [sprint_winner], 2: [sprint_winner]},
+        provisional=(frozenset({2}), frozenset()),
+    )
+    first, second = page["meetings"]
+    assert first["sprint_podium"] is None  # not a sprint weekend
+    assert second["sprint_podium"][0]["code"] == "SPR"
+    assert second["podium_provisional"] is True
+    assert second["sprint_podium_provisional"] is False
+    hidden = pages.calendar_page(
+        MEETINGS,
+        later,
+        frozenset({"2026-2-sprint"}),
+        {2: [WINNER]},
+        sprint_podiums={2: [sprint_winner]},
+    )["meetings"][1]
+    assert hidden["sprint_podium"] is None and hidden["sprint_podium_hidden"] is True
+    assert hidden["podium"][0]["code"] == "ADR"  # the race is not hidden

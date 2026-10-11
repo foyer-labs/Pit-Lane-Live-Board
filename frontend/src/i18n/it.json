@@ -60,7 +60,8 @@
     "startsIn": "inizia tra",
     "empty": "Ancora nessun calendario per questa stagione.",
     "round": "G{n}",
-    "watch": "Segui in diretta"
+    "watch": "Segui in diretta",
+    "provisional": "provvisorio"
   },
   "results": {
     "title": "Risultati",
@@ -498,5 +499,9 @@
     "fastestRank": "#{n}",
     "q": "Q",
     "pitLane": "Pit lane"
+  },
+  "update": {
+    "reload": "Pit Lane Live Board è stato aggiornato: ricarica la pagina per usare la nuova versione.",
+    "button": "Ricarica"
   }
 }

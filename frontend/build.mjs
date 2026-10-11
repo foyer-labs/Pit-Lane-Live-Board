@@ -3,9 +3,12 @@
 // custom_components/pit_lane_live_board as it is, with no build step.
 import { build } from "vite";
 import { fileURLToPath } from "node:url";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const here = fileURLToPath(new URL(".", import.meta.url));
+// The panel compares its own version with the backend's (decision 64).
+const { version } = JSON.parse(readFileSync(resolve(here, "package.json"), "utf-8"));
 const out = resolve(here, "../custom_components/pit_lane_live_board/frontend");
 
 // Minification drops the licence comments of bundled dependencies: the notices
@@ -26,6 +29,7 @@ for (const [index, [entry, file]] of bundles.entries()) {
     configFile: false,
     root: here,
     logLevel: "warn",
+    define: { __PLB_VERSION__: JSON.stringify(version) },
     build: {
       outDir: out,
       emptyOutDir: index === 0,
