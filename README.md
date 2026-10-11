@@ -122,6 +122,17 @@ best laps and gaps, and the mini-sectors in purple, green and yellow under each 
   <sub><em>Q3, the knockout zone and every deleted lap, in one view.</em></sub>
 </p>
 
+**Saturday evening.** Missed the sprint? Half an hour after the flag it is already in
+Results, from F1's own timing and marked *provisional* until the official results are
+out, and the calendar shows its podium beside the race's. Sprint qualifying has its own
+tab too.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/provisional.png" alt="Results: a race classification from F1's live timing, marked provisional until the official results are published" width="820">
+  <br>
+  <sub><em>Every session in Results half an hour after it ends.</em></sub>
+</p>
+
 **Sunday, 15 minutes to go.** A calendar trigger pings your phone: *the race starts in 15
 minutes*. No code, one of the ready-made automations in the guide.
 
@@ -180,7 +191,8 @@ both championships after any round.
 
 **Live**
 - **Timing tower** with gaps, intervals, last and best lap, sectors and mini-sectors in
-  F1's purple, green and yellow, tyres and their age, pit stops, places gained or lost.
+  F1's purple, green and yellow, tyres and their age, pit stops, places gained or lost,
+  and the lap of every retirement.
 - **Flags & stewards** above the tower: track status, yellow sectors, the safety car and its
   last lap, every penalty, incidents under investigation, deleted laps.
 - **Race control** messages, filtered by flags or penalties, and **weather**: air and track
@@ -190,8 +202,9 @@ both championships after any round.
 - **My drivers**: follow up to five, each with a ★ in the tower and a sensor of their own.
 
 **Around the weekend**
-- **Calendar** in your time zone, with a countdown; **results since 1950**; **both
-  championships**, drivers and constructors, for any season.
+- **Calendar** in your time zone, with a countdown and every podium — the sprint's
+  beside the race's; **results since 1950**, and the weekend's sessions half an hour after
+  each one ends; **both championships**, drivers and constructors, for any season.
 - **Circuit history** with an **affinity index**: how each driver goes at this track,
   net of their car.
 - **No-spoiler mode** for when you watch later.

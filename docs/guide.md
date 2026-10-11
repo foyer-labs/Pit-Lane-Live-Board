@@ -135,6 +135,8 @@ Qualifying and Sprint then show F1's own timing, marked **provisional** — no p
 yet, and the stewards may still change the order — and switch to the official
 results by themselves once they are out.
 
+![A race's results from F1's timing, marked provisional](screenshots/provisional.png)
+
 ![The lap chart](screenshots/lap-chart.png)
 
 In the lap chart, click a line to highlight that driver.
@@ -681,6 +683,11 @@ and reopening the app twice, clear the page cache from the app's settings: on An
 cache" is not enough); on iPhone *Settings → Companion app → Debugging → Reset frontend
 cache* (in some versions *Clear web view cache*).
 
+**After an update the page shows raw text (such as `results.tabs.sprint_qualifying`)
+or asks you to reload.** A page left open while Home Assistant was updated and restarted
+still runs the previous panel. Reload the page (or close and reopen the app). From 0.12
+the panel notices by itself and shows a *Reload* button.
+
 ## FAQ
 
 **Is it official?** No. It reads F1's public live timing and archive the way a single
@@ -702,6 +709,12 @@ the SD card. During a session the page receives only what changed.
 
 **Why no driver photos or team logos?** They belong to F1 and to the teams. Drivers are
 shown by their three-letter code, number, name and team colour.
+
+**Why does every update ask for a restart?** Home Assistant loads an integration's code
+once, when it starts: its *Reload* button and *Quick reload* do not load new code. The
+panel is also kept from that start, so it always matches the integration's code. After
+updating, restart, then reload the page. You need not take every version: updating once
+in a while is enough, preferably not during a session.
 
 **Can I watch an old race lap by lap, as if live?** No: history shows results and the
 detail of each lap, not a replay.

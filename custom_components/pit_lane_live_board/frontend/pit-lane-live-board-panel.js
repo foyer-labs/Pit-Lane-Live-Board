@@ -4834,7 +4834,7 @@ function Qn() {
 		return "live";
 	}
 }
-var $n = "0.12.0", er = class extends k {
+var $n = "0.12.1", er = class extends k {
 	constructor(...e) {
 		super(...e), this.narrow = !1, this.page = Qn(), this.seasons = [], this.delayOpen = !1, this.failed = !1, this.clockVersion = 0, this.kiosk = !1, this.fullscreen = !1, this.kioskAsked = !1, this.scale = 1, this.moved = () => {
 			this.classList.remove("idle"), window.clearTimeout(this.idleTimer), this.kiosk && (this.idleTimer = window.setTimeout(() => {

@@ -28,6 +28,15 @@ def _seconds(lap_time: str | None) -> float | None:
         return None
 
 
+def _minutes(gap: str) -> str:
+    """`+86.746` → `+1:26.746`, as Jolpica writes a gap of a minute or more."""
+    seconds = _seconds(gap.lstrip("+"))
+    if seconds is None or seconds < 60:
+        return gap
+    minutes, rest = divmod(seconds, 60)
+    return f"+{int(minutes)}:{rest:06.3f}"
+
+
 def _person(row: dict[str, Any]) -> dict[str, Any]:
     return {
         "driver_id": None,
@@ -71,7 +80,7 @@ def race(tower: list[dict[str, Any]], meta: dict[str, Any]) -> dict[str, Any] | 
             down = int(lapped.group(1))
             status = f"+{down} Lap" + ("s" if down > 1 else "")
         elif row["position"] != 1 and gap.startswith("+"):
-            time = gap
+            time = _minutes(gap)
         best = row.get("best_lap") or {}
         out.append(
             {
