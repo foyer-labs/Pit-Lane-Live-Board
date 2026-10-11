@@ -124,6 +124,17 @@ migliori giri e distacchi, e sotto ogni settore i mini-settori in viola, verde e
   <sub><em>Q3, la zona eliminazione e ogni giro cancellato, in un'unica schermata.</em></sub>
 </p>
 
+**Sabato sera.** Ti sei perso la sprint? Mezz'ora dopo la bandiera a scacchi è già nei
+Risultati, con i tempi della F1 e segnata come *provvisoria* finché non escono i risultati
+ufficiali, e il calendario mostra il suo podio accanto a quello della gara. Anche le
+qualifiche sprint hanno la loro scheda.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/foyer-labs/Pit-Lane-Live-Board/main/docs/screenshots/provisional.it.png" alt="Risultati: la classifica di una gara dal live timing della F1, segnata come provvisoria finché non escono i risultati ufficiali" width="820">
+  <br>
+  <sub><em>Ogni sessione nei Risultati mezz'ora dopo la fine.</em></sub>
+</p>
+
 **Domenica, meno 15 minuti.** Un'automazione sul calendario ti scrive sul telefono: *la gara
 parte tra 15 minuti*. Senza codice, è una delle automazioni pronte nella guida.
 
@@ -183,7 +194,7 @@ dal 1950; i due campionati dopo qualunque gara.
 **In diretta**
 - **Classifica live** con distacchi, intervalli, ultimo e miglior giro, settori e
   mini-settori nel viola, verde e giallo della F1, gomme e loro età, pit stop, posizioni
-  guadagnate o perse.
+  guadagnate o perse, e il giro di ogni ritiro.
 - **Bandiere e commissari** sopra la classifica: stato della pista, settori in giallo, la
   safety car e il suo ultimo giro, ogni penalità, gli incidenti sotto investigazione, i giri
   cancellati.
@@ -196,8 +207,10 @@ dal 1950; i due campionati dopo qualunque gara.
   sensore.
 
 **Intorno al weekend**
-- **Calendario** nel tuo fuso orario, con il conto alla rovescia; **risultati dal 1950**;
-  **i due campionati**, piloti e costruttori, di qualunque stagione.
+- **Calendario** nel tuo fuso orario, con il conto alla rovescia e ogni podio — quello
+  della sprint accanto a quello della gara; **risultati dal 1950**, e le sessioni del
+  weekend mezz'ora dopo la fine di ciascuna; **i due campionati**, piloti e costruttori, di
+  qualunque stagione.
 - **Storico del circuito** con un **indice di affinità**: come va ogni pilota su questa
   pista, al netto della macchina.
 - **Modalità senza spoiler** per quando guardi la gara più tardi.

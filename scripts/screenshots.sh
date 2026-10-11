@@ -39,9 +39,12 @@ for lang in en it; do
   shot "tv$suffix" 1920 1080 "page=live&live=race&lang=$lang&kiosk&scale=1.2&theme=dark"
   shot "driver$suffix" 1440 1000 "page=live&live=race&lang=$lang&select=63"
   shot "qualifying$suffix" 1440 900 "page=live&live=qualifying&lang=$lang&theme=dark"
-  shot "calendar$suffix" 1440 1000 "page=calendar&lang=$lang"
+  # The calendar with sprint podiums and the last weekend's podium still provisional.
+  shot "calendar$suffix" 1440 1000 "page=calendar&lang=$lang&provisional=true"
   shot "strategy$suffix" 1440 860 "page=results&round=14&tab=strategy&lang=$lang"
   shot "lap-chart$suffix" 1440 760 "page=results&round=14&tab=lap_chart&lang=$lang&theme=dark"
+  # A session's results before Jolpica publishes them (decision 63).
+  shot "provisional$suffix" 1440 820 "page=results&round=14&tab=race&lang=$lang&provisional=true"
   shot "standings$suffix" 1440 900 "page=standings&lang=$lang"
   # A circuit's history (bench/data, else bench/fixtures: Baku), then Leclerc's years there.
   shot "circuit$suffix" 1440 1100 "page=circuit&circuit=baku&lang=$lang"
