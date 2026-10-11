@@ -175,6 +175,21 @@ def parse_qualifying(payload: Any) -> dict[str, Any] | None:
     return {"race": race_meta(races[0]), "rows": rows}
 
 
+def parse_season_sprints(payload: Any) -> list[dict[str, Any]]:
+    """The season's sprints with the driver of one place, from
+    `/{season}/sprint/{place}.json`."""
+    out = []
+    for race in _races(payload):
+        results = race.get("SprintResults")
+        winner = (
+            _classification(results[:1])[0]
+            if isinstance(results, list) and results
+            else None
+        )
+        out.append({**race_meta(race), "winner": winner})
+    return out
+
+
 def parse_season_races(payload: Any) -> list[dict[str, Any]]:
     """The season's rounds with their winner, from `/{season}/results/1.json`."""
     out = []

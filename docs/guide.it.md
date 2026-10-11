@@ -113,8 +113,10 @@ inizia la zona di eliminazione.
 ![Il calendario](screenshots/calendar.it.png)
 
 **Calendario.** Ogni weekend della stagione, le sessioni nel fuso orario del tuo Home
-Assistant, il conto alla rovescia per la prossima e il podio di ogni weekend già corso.
-Scegli qualsiasi stagione dal menu.
+Assistant, il conto alla rovescia per la prossima e il podio di ogni weekend già corso —
+nei weekend sprint, il podio della sprint accanto a quello della gara. Subito dopo una
+gara, prima che escano i risultati ufficiali, il podio arriva dai tempi della F1 ed è
+segnato come *provvisorio* finché non escono. Scegli qualsiasi stagione dal menu.
 
 ![La strategia gomme di una gara](screenshots/strategy.it.png)
 
