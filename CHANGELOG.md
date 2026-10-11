@@ -6,6 +6,20 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-11
+
+### Added
+- **The sprint podium in the calendar.** On a sprint weekend, the card shows the
+  sprint's podium beside the race's.
+- **Provisional podiums in the calendar** too: right after a race (or a sprint), its
+  podium comes from F1's timing, marked *provisional*, until the official results are
+  published.
+- **"Reload the page" after an update.** A page left open while Home Assistant was
+  updated and restarted kept running the old panel against the new integration, and
+  could show raw text such as `results.tabs.sprint_qualifying`. The panel now notices
+  and offers a Reload button. (Pages opened with an earlier version cannot know yet:
+  reload them once after this update.)
+
 ## [0.11.0] - 2026-10-10
 
 ### Added

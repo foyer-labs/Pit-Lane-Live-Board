@@ -588,7 +588,8 @@ var Le = {
 		startsIn: "starts in",
 		empty: "No calendar for this season yet.",
 		round: "R{n}",
-		watch: "Watch live"
+		watch: "Watch live",
+		provisional: "provisional"
 	},
 	results: {
 		title: "Results",
@@ -1026,6 +1027,10 @@ var Le = {
 		fastestRank: "#{n}",
 		q: "Q",
 		pitLane: "Pit lane"
+	},
+	update: {
+		reload: "Pit Lane Live Board has been updated: reload the page to use the new version.",
+		button: "Reload"
 	}
 }, Re = {
 	en: Le,
@@ -1091,7 +1096,8 @@ var Le = {
 			startsIn: "inizia tra",
 			empty: "Ancora nessun calendario per questa stagione.",
 			round: "G{n}",
-			watch: "Segui in diretta"
+			watch: "Segui in diretta",
+			provisional: "provvisorio"
 		},
 		results: {
 			title: "Risultati",
@@ -1529,6 +1535,10 @@ var Le = {
 			fastestRank: "#{n}",
 			q: "Q",
 			pitLane: "Pit lane"
+		},
+		update: {
+			reload: "Pit Lane Live Board è stato aggiornato: ricarica la pagina per usare la nuova versione.",
+			button: "Ricarica"
 		}
 	}
 };

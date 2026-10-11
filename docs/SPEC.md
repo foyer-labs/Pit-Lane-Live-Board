@@ -1172,6 +1172,15 @@ Decisions taken in chat with the owner.
   not an error. Sprint weekends from 2023 get a Sprint qualifying tab from the
   archive alone (Jolpica does not carry the session), not provisional.
 
+64. **The calendar keeps up with the weekend, and the panel with the backend** (asked
+  by the owner). A sprint weekend shows the sprint's podium beside the race's
+  (Jolpica `/{season}/sprint/{place}`, three requests, hidden on its own by no-spoiler
+  mode), surnames only when side by side. A podium Jolpica has not published, for a
+  weekend run in the last 14 days, comes from F1's archive as on the Results page
+  (decision 63) and is marked provisional. The settings carry the backend's version;
+  a panel built for another one (a page left open across an update, which showed
+  "results.tabs.sprint_qualifying" to a user) asks to be reloaded.
+
 ---
 
 ## 18. Choices awaiting confirmation

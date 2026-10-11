@@ -46,6 +46,7 @@ from custom_components.pit_lane_live_board.core.jolpica_parse import (  # noqa: 
     parse_qualifying,
     parse_results,
     parse_season_races,
+    parse_season_sprints,
     parse_sprint,
     parse_standings,
 )
@@ -249,7 +250,15 @@ def main() -> None:
         for race in parse_season_races(jolpica(f"{SEASON}/results/{place}")):
             if race["round"] < ROUND and race["winner"]:
                 podiums.setdefault(race["round"], []).append(race["winner"])
-    write("calendar", pages.calendar_page(meetings, NOW, hidden, podiums))
+    sprints: dict[int, list] = {}
+    for place in (1, 2, 3):
+        for race in parse_season_sprints(jolpica(f"{SEASON}/sprint/{place}")):
+            if race["winner"]:
+                sprints.setdefault(race["round"], []).append(race["winner"])
+    write(
+        "calendar",
+        pages.calendar_page(meetings, NOW, hidden, podiums, sprint_podiums=sprints),
+    )
     winners = [
         w
         for w in parse_season_races(jolpica(f"{SEASON}/results/1"))

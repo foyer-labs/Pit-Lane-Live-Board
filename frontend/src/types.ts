@@ -25,6 +25,8 @@ export interface Hass {
 }
 
 export interface Settings {
+  /** The backend's version, compared with the panel's own (decision 64). */
+  version?: string;
   tv_delay: number;
   no_spoiler: boolean;
   live: boolean;
@@ -64,6 +66,8 @@ export interface Person {
   code: string | null;
   team: string | null;
   team_id: string | null;
+  /** F1's team colour, when there is no team id (a provisional podium). */
+  colour?: string | null;
 }
 
 export interface Meeting {
@@ -82,6 +86,12 @@ export interface Meeting {
   state: "done" | "live" | "next" | "upcoming";
   podium: Person[] | null;
   podium_hidden: boolean;
+  /** A sprint weekend's sprint podium (decision 64). */
+  sprint_podium?: Person[] | null;
+  sprint_podium_hidden?: boolean;
+  /** From F1's timing, until Jolpica publishes (decision 64). */
+  podium_provisional?: boolean;
+  sprint_podium_provisional?: boolean;
 }
 
 export interface CalendarPage {

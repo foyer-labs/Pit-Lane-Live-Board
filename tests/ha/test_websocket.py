@@ -493,3 +493,38 @@ async def test_a_session_still_running_is_not_read_from_the_archive(
     )
     reply = (await ws.receive_json())["result"]
     assert reply["available"] is False and calls == []
+
+
+async def test_settings_carry_the_backend_version(hass, setup, hass_ws_client):
+    """Decision 64: a panel left open across an update sees it differs."""
+    from custom_components.pit_lane_live_board.const import VERSION
+
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": f"{P}settings/get"})
+    assert (await ws.receive_json())["result"]["version"] == VERSION
+
+
+async def test_a_weekend_just_run_gets_its_podium_from_the_archive(
+    hass, setup, hass_ws_client, aioclient_mock
+):
+    """Decision 64: the calendar shows the podium before Jolpica has it."""
+    hub = setup.runtime_data.hub
+    started = datetime.now(UTC) - timedelta(hours=4)  # the race is over
+    hub.meetings = parse_schedule(schedule_payload(started))
+    season = started.year
+    for place in (1, 2, 3):
+        aioclient_mock.get(
+            f"{JOLPICA_BASE}{season}/results/{place}.json",
+            json=races(season=str(season)),
+        )
+
+    async def final_state(meetings, session):
+        return {"path": "x", "topics": FINAL_TOPICS, "pit_stream": []}
+
+    hub.archive.final_state = final_state
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id({"type": f"{P}calendar/get", "season": season})
+    meeting = (await ws.receive_json())["result"]["meetings"][0]
+    assert meeting["state"] == "done" and meeting["podium_provisional"] is True
+    assert [p["code"] for p in meeting["podium"]] == ["VER", "HAM"]
+    assert meeting["podium"][0]["colour"] == "#3671C6"

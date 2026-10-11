@@ -10,6 +10,7 @@ from custom_components.pit_lane_live_board.core.jolpica_parse import (
     parse_qualifying,
     parse_results,
     parse_season_races,
+    parse_season_sprints,
     parse_seasons,
     parse_sprint,
     parse_standings,
@@ -143,6 +144,22 @@ def test_season_races_with_winners():
         }
     )
     rounds = parse_season_races(payload)
+    assert rounds[0]["winner"]["code"] == "ANT"
+    assert rounds[1]["winner"] is None
+
+
+def test_season_sprints_with_one_place():
+    payload = wrap(
+        {
+            "RaceTable": {
+                "Races": [
+                    {**RACE, "SprintResults": RESULTS[:1]},
+                    {**RACE, "round": "8"},
+                ]
+            }
+        }
+    )
+    rounds = parse_season_sprints(payload)
     assert rounds[0]["winner"]["code"] == "ANT"
     assert rounds[1]["winner"] is None
 

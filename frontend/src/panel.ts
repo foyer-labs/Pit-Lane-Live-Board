@@ -74,6 +74,10 @@ export interface GoTo {
 
 type WakeLock = { release(): Promise<void> };
 
+// Set by the build from package.json: the version this panel was built for.
+declare const __PLB_VERSION__: string;
+const PANEL_VERSION = __PLB_VERSION__;
+
 export class PitLaneLiveBoardPanel extends LitElement {
   static override properties = {
     hass: { attribute: false },
@@ -436,6 +440,12 @@ export class PitLaneLiveBoardPanel extends LitElement {
         <button class="icon-btn gear ${this.page === "settings" ? "active" : ""}" @click=${() => this.go({ page: "settings" })}
           aria-label=${t("settings.title")} title=${t("settings.title")}>${icon(ICON.cog, 22)}</button>
       </header></div>
+      ${s?.version && s.version !== PANEL_VERSION
+        ? html`<div class="updated" role="status">
+            <span>${t("update.reload")}</span>
+            <button class="btn" @click=${() => location.reload()}>${t("update.button")}</button>
+          </div>`
+        : nothing}
       ${this.delayOpen && s ? this.renderPopover(s) : nothing}
       <main style=${zoom}>${cache(this.renderPage())}</main>
       <footer style=${zoom}>${t("common.disclaimer")}</footer>
@@ -464,6 +474,13 @@ export class PitLaneLiveBoardPanel extends LitElement {
         display: block;
         min-height: 100vh;
         background: var(--primary-background-color);
+      }
+      /* The backend was updated under an open page: reload (decision 64). */
+      .updated {
+        display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; margin: 12px 16px 0;
+        padding: 10px 14px; border-radius: 10px; font-size: 14px;
+        background: color-mix(in srgb, var(--primary-color) 12%, var(--card-background-color));
+        border: 1px solid color-mix(in srgb, var(--primary-color) 35%, transparent);
       }
       /* Kiosk: over Home Assistant's sidebar and header, the whole screen. */
       :host([kiosk]) {

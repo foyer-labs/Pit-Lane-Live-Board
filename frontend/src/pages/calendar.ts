@@ -3,13 +3,19 @@
 import { LitElement, css, html, nothing } from "lit";
 import { api } from "../api";
 import { countdown, dayRange, sessionTime } from "../format";
-import { translator } from "../i18n";
+import { translator, type Translate } from "../i18n";
 import { ICON, icon } from "../icons";
 import { failure, loading, person, spoilerKey, alsoTime } from "../parts";
 import { tokens } from "../styles";
-import type { CalendarPage, Hass, Meeting, Settings } from "../types";
+import type { CalendarPage, Hass, Meeting, Person, Settings } from "../types";
 
 const REFRESH = 10 * 60_000;
+
+/** "Andrea Kimi Antonelli" → "Antonelli". */
+function surname(name: string | null | undefined): string | null {
+  const words = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  return words.length ? words[words.length - 1] : (name ?? null);
+}
 
 export class PlbCalendar extends LitElement {
   static override properties = {
@@ -149,13 +155,12 @@ export class PlbCalendar extends LitElement {
           </div>`
         : nothing}
       ${m.state === "done"
-        ? html`<div class="podium">
-              ${m.podium_hidden
-                ? html`<div class="hidden-cell">${t("spoiler.hiddenRound")}</div>`
-                : (m.podium ?? []).map(
-                    (p, i) => html`<div><b>${i + 1}</b>${person(p.name, p.team_id)}</div>`,
-                  )}
+        ? m.sprint_podium || m.sprint_podium_hidden
+          ? html`<div class="podiums">
+              ${this.podium(t, t("sessions.race"), m.podium, m.podium_hidden, Boolean(m.podium_provisional))}
+              ${this.podium(t, t("sessions.sprint"), m.sprint_podium ?? null, Boolean(m.sprint_podium_hidden), Boolean(m.sprint_podium_provisional))}
             </div>`
+          : this.podium(t, null, m.podium, m.podium_hidden, Boolean(m.podium_provisional))
         : html`<ul>
             ${m.sessions.map(
               (s) => html`<li><span>${t(`sessions.${s.kind}`)}</span><span class="num">${sessionTime(this.hass, s.start, s.date, m.timezone)}${alsoTime(t, this.hass, s.start, m.timezone)}</span></li>`,
@@ -182,6 +187,22 @@ export class PlbCalendar extends LitElement {
     </div>`;
   }
 
+  /** A podium; with a title when the race's and the sprint's sit side by side. */
+  private podium(t: Translate, title: string | null, podium: Person[] | null, hidden: boolean, provisional: boolean) {
+    const mark = provisional && !hidden && podium?.length
+      ? html`<span class="prov" title=${t("results.provisional")}>${t("calendar.provisional")}</span>`
+      : nothing;
+    return html`<div class="podium">
+      ${title || mark !== nothing ? html`<span class="ptitle">${title ?? ""}${mark}</span>` : nothing}
+      ${hidden
+        ? html`<div class="hidden-cell">${t("spoiler.hiddenRound")}</div>`
+        : (podium ?? []).map(
+            // Side by side the columns are narrow: the surname, as F1's graphics do.
+            (p, i) => html`<div title=${p.name ?? ""}><b>${i + 1}</b>${person(title ? surname(p.name) : p.name, p.team_id, p.colour)}</div>`,
+          )}
+    </div>`;
+  }
+
   static override styles = [
     tokens,
     css`
@@ -205,7 +226,14 @@ export class PlbCalendar extends LitElement {
         background: color-mix(in srgb, var(--primary-color) 10%, transparent);
       }
       .countdown b { font-size: 18px; font-weight: 500; }
-      .podium { display: grid; gap: 4px; padding: 0 16px 10px; font-size: 13px; }
+      .podium { display: grid; gap: 4px; padding: 0 16px 10px; font-size: 13px; align-content: start; min-width: 0; }
+      .podiums { display: grid; grid-template-columns: 1fr 1fr; }
+      .podiums .podium + .podium { padding-left: 0; }
+      .podiums .podium div { min-width: 0; }
+      .podiums .drv { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .ptitle { display: flex; align-items: center; gap: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--secondary-text-color); }
+      .prov { text-transform: none; letter-spacing: 0; padding: 0 6px; border-radius: 6px; font-size: 11px;
+        background: color-mix(in srgb, var(--warning-color, #ffa600) 16%, transparent); cursor: help; }
       .podium div { display: flex; align-items: center; gap: 8px; }
       .podium b { width: 18px; color: var(--secondary-text-color); font-weight: 500; }
       /* The card's links, at its foot whatever its height. */
