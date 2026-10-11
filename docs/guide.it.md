@@ -143,6 +143,8 @@ e Sprint mostrano allora i tempi della F1, segnati come **provvisori** — ancor
 punti, e i commissari possono cambiare l'ordine — e passano da soli ai risultati
 ufficiali appena vengono pubblicati.
 
+![I risultati di una gara dai tempi della F1, segnati come provvisori](screenshots/provisional.it.png)
+
 ![Posizioni giro per giro](screenshots/lap-chart.it.png)
 
 Nel grafico delle posizioni, clicca una linea per evidenziare quel pilota.
@@ -709,6 +711,12 @@ frontend cache* (lo "Svuota cache" di Android non basta); su iPhone *Impostazion
 Companion → Debug → Reimposta la cache del frontend* (in alcune versioni *Clear web view
 cache*).
 
+**Dopo un aggiornamento la pagina mostra testi grezzi (come
+`results.tabs.sprint_qualifying`) o chiede di ricaricare.** Una pagina rimasta aperta
+mentre Home Assistant veniva aggiornato e riavviato usa ancora il pannello precedente.
+Ricarica la pagina (o chiudi e riapri l'app). Dalla 0.12 il pannello se ne accorge da
+solo e mostra un pulsante *Ricarica*.
+
 ## Domande frequenti
 
 **È ufficiale?** No. Legge il live timing pubblico e l'archivio della F1 come farebbe
@@ -732,6 +740,13 @@ cambia.
 **Perché niente foto dei piloti o loghi delle squadre?** Appartengono alla F1 e alle
 squadre. I piloti sono indicati con la sigla di tre lettere, il numero, il nome e il
 colore della squadra.
+
+**Perché ogni aggiornamento chiede il riavvio?** Home Assistant carica il codice di
+un'integrazione una sola volta, all'avvio: il pulsante *Ricarica* e la *Ricarica rapida*
+non caricano codice nuovo. Anche il pannello resta quello di quell'avvio, così è sempre
+della stessa versione del codice. Dopo l'aggiornamento riavvia, poi ricarica la pagina.
+Non serve installare ogni versione: basta aggiornare ogni tanto, meglio non durante una
+sessione.
 
 **Posso rivedere una vecchia gara giro per giro, come se fosse live?** No: lo storico
 mostra i risultati e il dettaglio di ogni giro, non un replay.

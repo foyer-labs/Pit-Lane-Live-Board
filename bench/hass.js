@@ -157,8 +157,19 @@ export function createHass() {
           return { ...settings, revealed: [...settings.revealed, msg.session] };
         case "seasons":
           return data("seasons");
-        case "calendar/get":
-          return data("calendar");
+        case "calendar/get": {
+          // `provisional=true`: the last weekend run before Jolpica has it (decision 64).
+          const calendar = await data("calendar");
+          if (params.get("provisional") !== "true") return calendar;
+          const done = calendar.meetings.filter((m) => m.state === "done" && m.podium);
+          const last = done[done.length - 1];
+          return {
+            ...calendar,
+            meetings: calendar.meetings.map((m) =>
+              m === last ? { ...m, podium_provisional: true, sprint_podium_provisional: Boolean(m.sprint_podium) } : m,
+            ),
+          };
+        }
         case "results/season": {
           // Older generated files have no circuit_id on rounds: taken from the calendar.
           const rounds = await data("rounds");
@@ -174,8 +185,13 @@ export function createHass() {
           // sprint qualifying tab reuses the qualifying file.
           if (msg.tab === "sprint_qualifying") return data("detail_qualifying");
           if (params.get("provisional") === "true" && ["race", "qualifying", "sprint"].includes(msg.tab)) {
-            const detail = await data(`detail_${msg.tab}`);
-            return { ...detail, data: detail.data && { ...detail.data, provisional: true } };
+            // The real thing when generated (the race), else the tab marked.
+            try {
+              return await data(`detail_${msg.tab}_provisional`);
+            } catch {
+              const detail = await data(`detail_${msg.tab}`);
+              return { ...detail, data: detail.data && { ...detail.data, provisional: true } };
+            }
           }
           return data(`detail_${msg.tab}`);
         case "standings/get":

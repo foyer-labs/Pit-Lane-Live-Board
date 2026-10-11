@@ -84,3 +84,8 @@ def test_sprint_weekends_have_a_sprint_qualifying_tab_from_2023():
     assert "sprint_qualifying" not in pages.tabs_for(2026, False)
     assert "sprint_qualifying" not in pages.tabs_for(2022, True)
     assert pages.TAB_SESSION["sprint_qualifying"] == "sprint_qualifying"
+
+
+def test_a_gap_of_a_minute_reads_like_jolpica():
+    tower = [row("VER", 1, gap="LAP 57"), row("LAW", 2, gap="+86.746")]
+    assert provisional.race(tower, META)["rows"][1]["time"] == "+1:26.746"

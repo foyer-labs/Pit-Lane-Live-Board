@@ -6,6 +6,17 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-10-11
+
+### Documentation
+- README and guide describe the weekend's results in Results and the calendar's sprint
+  and provisional podiums, with new and refreshed screenshots; the guide explains the
+  reload notice and why an update needs a restart.
+
+### Fixed
+- A provisional classification writes a gap of a minute or more as `+1:26.746`, like
+  the official results.
+
 ## [0.12.0] - 2026-10-11
 
 ### Added

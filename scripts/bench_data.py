@@ -31,6 +31,8 @@ from custom_components.pit_lane_live_board.core import (  # noqa: E402
     circuit_history,
     live_view,
     pages,
+    provisional,
+    stints,
 )
 from custom_components.pit_lane_live_board.core.archive_parse import (  # noqa: E402
     decode_z,
@@ -64,6 +66,9 @@ from custom_components.pit_lane_live_board.core.panels import (  # noqa: E402
 from custom_components.pit_lane_live_board.core.schedule import (  # noqa: E402
     next_session,
     parse_schedule,
+)
+from custom_components.pit_lane_live_board.core.timing import (  # noqa: E402
+    build_tower,
 )
 
 SEASON = 2026
@@ -354,6 +359,22 @@ def main() -> None:
         **session.to_dict(),
     }
     race_state = replay(RACE, RACE_OFFSET_MS, positions=True)
+    # The race as Results shows it before Jolpica publishes (decision 63): the
+    # archive's final tower, through the integration's own code.
+    final = replay(RACE, 10**9)
+    provisional_race = provisional.race(
+        build_tower(final.topics, stints.pit_laps(final.pit_log)),
+        {"season": SEASON, "round": ROUND, "name": meeting.name},
+    )
+    write(
+        "detail_race_provisional",
+        {
+            "tab": "race",
+            "hidden": False,
+            "available": True,
+            "data": {**provisional_race, "provisional": True},
+        },
+    )
     common = {
         "now": NOW,
         "syncing": False,
