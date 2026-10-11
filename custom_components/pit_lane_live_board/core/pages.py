@@ -90,6 +90,8 @@ def _podium_row(row: dict[str, Any]) -> dict[str, Any]:
         "code": row.get("code"),
         "team": row.get("team"),
         "team_id": row.get("team_id"),
+        # F1's colour, on a podium from the archive (no Jolpica team id).
+        "colour": row.get("colour"),
     }
 
 
@@ -98,12 +100,20 @@ def calendar_page(
     now: datetime,
     hidden: frozenset[str],
     podiums: dict[int, list[dict[str, Any]]],
+    *,
+    sprint_podiums: dict[int, list[dict[str, Any]]] | None = None,
+    provisional: tuple[frozenset[int], frozenset[int]] = (frozenset(), frozenset()),
 ) -> dict[str, Any]:
+    """The season's meetings; a weekend run shows its podium and, on a sprint
+    weekend, the sprint's, `provisional` when it comes from F1's archive while
+    Jolpica has not published (decision 64)."""
     out = []
     for meeting in meetings:
         state = meeting_state(meeting, meetings, now)
         race_key = session_key(meeting.season, meeting.round, "race")
+        sprint_key = session_key(meeting.season, meeting.round, "sprint")
         podium = podiums.get(meeting.round)
+        sprint = (sprint_podiums or {}).get(meeting.round) if meeting.sprint else None
         out.append(
             {
                 **meeting.to_dict(),
@@ -114,6 +124,17 @@ def calendar_page(
                     if state == "done" and podium and race_key not in hidden
                     else None
                 ),
+                # A sprint weekend's sprint podium beside the race's (decision 64).
+                "sprint_podium_hidden": state == "done"
+                and meeting.sprint
+                and sprint_key in hidden,
+                "sprint_podium": (
+                    [_podium_row(r) for r in sprint]
+                    if state == "done" and sprint and sprint_key not in hidden
+                    else None
+                ),
+                "podium_provisional": meeting.round in provisional[0],
+                "sprint_podium_provisional": meeting.round in provisional[1],
             }
         )
     season = meetings[0].season if meetings else None

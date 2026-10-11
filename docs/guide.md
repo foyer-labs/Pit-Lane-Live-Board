@@ -106,8 +106,10 @@ fastest in the current part, and a dashed red line where the knockout zone start
 ![The calendar](screenshots/calendar.png)
 
 **Calendar.** Every weekend of the season, sessions in your Home Assistant's
-timezone, the next session counting down, and the podium of every weekend already run.
-Pick any season from the menu.
+timezone, the next session counting down, and the podium of every weekend already run —
+on a sprint weekend, the sprint's podium beside the race's. Right after a race, before
+the official results are out, the podium comes from F1's timing and is marked
+*provisional* until they are. Pick any season from the menu.
 
 ![Tyre strategy of a race](screenshots/strategy.png)
 

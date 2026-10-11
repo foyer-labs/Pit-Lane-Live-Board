@@ -8,7 +8,7 @@ mode is applied here, before anything is sent (INV-5).
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from homeassistant.components import websocket_api
@@ -21,7 +21,7 @@ from homeassistant.util import dt as dt_util
 import voluptuous as vol
 
 from .clients.http import SourceError
-from .const import DOMAIN, OPTION_ADMIN_ONLY, OPTION_SHOW_IN_SIDEBAR
+from .const import DOMAIN, OPTION_ADMIN_ONLY, OPTION_SHOW_IN_SIDEBAR, VERSION
 from .core import circuit_history, pages, provisional, stints
 from .core.f1tv_token import acceptable, evaluate, extract_token
 from .core.jolpica_parse import (
@@ -31,6 +31,7 @@ from .core.jolpica_parse import (
     parse_qualifying,
     parse_results,
     parse_season_races,
+    parse_season_sprints,
     parse_seasons,
     parse_sprint,
     parse_standings,
@@ -93,6 +94,9 @@ def _settings_payload(hub: Hub, is_admin: bool) -> dict[str, Any]:
         "season": hub.season,
         "first_season": FIRST_SEASON,
         "is_admin": is_admin,
+        # The panel compares it with its own: a page left open across an update
+        # runs the old panel against the new backend (decision 64).
+        "version": VERSION,
         "running": hub.live is not None,
         "show_in_sidebar": bool(hub.entry.options.get(OPTION_SHOW_IN_SIDEBAR, True)),
         "admin_only": bool(hub.entry.options.get(OPTION_ADMIN_ONLY, False)),
@@ -309,20 +313,62 @@ def ws_entities(hass, connection, msg):
 # Calendar.
 
 
-async def _podiums(hub: Hub, season: int) -> dict[int, list[dict[str, Any]]]:
-    """First, second and third of every race: three requests at once."""
+async def _podiums(
+    hub: Hub, season: int, kind: str = "results"
+) -> dict[int, list[dict[str, Any]]]:
+    """First, second and third of every race (or sprint, `kind="sprint"`): three
+    requests at once."""
+    parse = parse_season_sprints if kind == "sprint" else parse_season_races
     payloads = await asyncio.gather(
         *(
-            hub.jolpica.get(f"{season}/results/{place}", season=season)
+            hub.jolpica.get(f"{season}/{kind}/{place}", season=season)
             for place in (1, 2, 3)
         )
     )
     podiums: dict[int, list[dict[str, Any]]] = {}
     for payload in payloads:
-        for race in parse_season_races(payload):
+        for race in parse(payload):
             if race.get("round") and race.get("winner"):
                 podiums.setdefault(race["round"], []).append(race["winner"])
     return podiums
+
+
+async def _no_podiums() -> dict[int, list[dict[str, Any]]]:
+    return {}
+
+
+# How long after a race the calendar looks for a podium in F1's archive while
+# Jolpica has none (decision 64): a weekend or two, never old seasons' gaps.
+PROVISIONAL_PODIUM_FOR = timedelta(days=14)
+
+
+async def _provisional_podiums(
+    hub: Hub,
+    season: int,
+    meetings: list[Any],
+    podiums: dict[int, list[dict[str, Any]]],
+    sprints: dict[int, list[dict[str, Any]]],
+) -> tuple[frozenset[int], frozenset[int]]:
+    """Fill the podiums of weekends just run that Jolpica has not published, from
+    F1's archive; returns the rounds filled this way (race, sprint)."""
+    if season < pages.FIRST_ARCHIVE_SEASON:
+        return frozenset(), frozenset()
+    now = _now()
+    filled: dict[str, set[int]] = {"race": set(), "sprint": set()}
+    for meeting in meetings:
+        race = meeting.race
+        if not meeting.finished(now) or race is None or race.end is None:
+            continue
+        if now - race.end > PROVISIONAL_PODIUM_FOR:
+            continue
+        for kind, table in (("race", podiums), ("sprint", sprints)):
+            if (kind == "sprint" and not meeting.sprint) or table.get(meeting.round):
+                continue
+            data = await _provisional(hub, season, meeting.round, kind)
+            if data and data["rows"]:
+                table[meeting.round] = data["rows"][:3]
+                filled[kind].add(meeting.round)
+    return frozenset(filled["race"]), frozenset(filled["sprint"])
 
 
 @websocket_api.websocket_command(
@@ -340,10 +386,26 @@ async def ws_calendar_get(hass, connection, msg):
         meetings, podiums = await asyncio.gather(
             hub.async_meetings(season), _podiums(hub, season)
         )
+        # Sprint podiums only for a season with sprints run (decision 64).
+        sprints = (
+            await _podiums(hub, season, "sprint")
+            if any(m.sprint and m.started(_now()) for m in meetings)
+            else await _no_podiums()
+        )
     except SourceError as err:
         _error(connection, msg["id"], err)
         return
-    page = pages.calendar_page(meetings, _now(), _hidden(hub), podiums)
+    provisional_race, provisional_sprint = await _provisional_podiums(
+        hub, season, meetings, podiums, sprints
+    )
+    page = pages.calendar_page(
+        meetings,
+        _now(),
+        _hidden(hub),
+        podiums,
+        sprint_podiums=sprints,
+        provisional=(provisional_race, provisional_sprint),
+    )
     # The season asked for, even when it has no meetings yet (January).
     page["season"] = season
     connection.send_result(msg["id"], page)
