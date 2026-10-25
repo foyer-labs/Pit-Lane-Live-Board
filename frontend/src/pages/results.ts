@@ -250,7 +250,10 @@ export class PlbResults extends LitElement {
         <button class="btn" @click=${() => this.dispatchEvent(new CustomEvent("plb-reveal", { detail: result.session, bubbles: true, composed: true }))}>${t("spoiler.reveal")}</button></div>`;
     }
     if (!result.available || !result.data) {
-      return html`<div class="state">${ARCHIVE_TABS.has(this.tab) ? t("results.notArchived") : t("common.noData")}</div>`;
+      const empty = result.reason === "archive_closed"
+        ? t("results.archiveClosed")
+        : ARCHIVE_TABS.has(this.tab) ? t("results.notArchived") : t("common.noData");
+      return html`<div class="state">${empty}</div>`;
     }
     const data = result.data;
     // Jolpica has not published the session yet: F1's timing, until it does.

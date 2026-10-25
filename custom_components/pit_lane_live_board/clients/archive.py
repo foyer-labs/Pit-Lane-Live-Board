@@ -24,6 +24,7 @@ from datetime import UTC, datetime, timedelta
 import io
 import json
 import logging
+import time
 from typing import Any
 
 import aiohttp
@@ -48,7 +49,14 @@ PAST_INDEX_MAX_AGE = 30 * 24 * 3600
 OUTLINE_YEARS_BACK = 3
 MEETING_WINDOW = timedelta(days=3)
 
+
 # The formats of the derived entries (see the module docstring).
+class ArchiveClosed(SourceError):
+    """F1 asks for authorisation to read its archive (decision 65)."""
+
+
+# How long a 401 keeps the archive closed before it is tried again (decision 65).
+CLOSED_FOR = 6 * 3600
 DETAIL_VERSION = "v3"
 FINAL_VERSION = "v3"
 OUTLINE_VERSION = "v2"
@@ -148,13 +156,27 @@ class ArchiveClient:
         cache.expire("archive/", ARCHIVE_FILE_MAX_AGE)
         cache.expire("archive-missing/", MISSING_PAST)
         cache.expire("detail-partial/", PARTIAL_PAST)
+        self._closed_until = 0.0
+
+    @property
+    def closed(self) -> bool:
+        """F1 refused the archive (401) not long ago (decision 65)."""
+        return time.monotonic() < self._closed_until
 
     async def _download(self, url: str) -> bytes | None:
         """The file's bytes, or None when the archive does not have it (403)."""
+        if self.closed:
+            raise ArchiveClosed("F1's archive asks for authorisation")
         try:
             async with self._session.get(
                 url, headers={"User-Agent": USER_AGENT}, timeout=TIMEOUT
             ) as response:
+                if response.status == 401:
+                    # Since October 2026 F1 answers 401 for the whole archive. Not
+                    # asked again for a while: every page open would knock.
+                    self._closed_until = time.monotonic() + CLOSED_FOR
+                    self.last_error = "closed (401)"
+                    raise ArchiveClosed("F1's archive asks for authorisation")
                 if response.status in (403, 404):
                     return None
                 if response.status != 200:
@@ -218,11 +240,14 @@ class ArchiveClient:
         if year < FIRST_ARCHIVED_SEASON:
             return None
         current = year >= datetime.now(UTC).year
-        return await self._json(
-            f"{year}/Index.json",
-            INDEX_MAX_AGE if current else PAST_INDEX_MAX_AGE,
-            INDEX_MAX_AGE if current else MISSING_PAST,
-        )
+        try:
+            return await self._json(
+                f"{year}/Index.json",
+                INDEX_MAX_AGE if current else PAST_INDEX_MAX_AGE,
+                INDEX_MAX_AGE if current else MISSING_PAST,
+            )
+        except ArchiveClosed:
+            return None
 
     async def _session_index(self, path: str, recent: bool) -> dict[str, Any] | None:
         index = await self._json(
@@ -282,9 +307,12 @@ class ArchiveClient:
         if path is None:
             return None
         recent = _recent(session)
-        return await self._inflight.run(
-            f"detail {path}", lambda: self._detail(path, recent)
-        )
+        try:
+            return await self._inflight.run(
+                f"detail {path}", lambda: self._detail(path, recent)
+            )
+        except ArchiveClosed:
+            return None
 
     async def _detail(self, path: str, recent: bool) -> Any:
         key = f"detail/{DETAIL_VERSION}/{path}"
@@ -353,9 +381,12 @@ class ArchiveClient:
         if path is None:
             return None
         recent = _recent(session)
-        return await self._inflight.run(
-            f"final {path}", lambda: self._final(path, recent)
-        )
+        try:
+            return await self._inflight.run(
+                f"final {path}", lambda: self._final(path, recent)
+            )
+        except ArchiveClosed:
+            return None
 
     async def _final(self, path: str, recent: bool) -> dict[str, Any] | None:
         key = f"final/{FINAL_VERSION}/{path}"
@@ -391,9 +422,12 @@ class ArchiveClient:
         cached = await self._run(self._cache.read_json, key, None)
         if cached is not None:
             return Outline.from_dict(cached)
-        return await self._inflight.run(
-            key, lambda: self._outline(key, circuit_key, before)
-        )
+        try:
+            return await self._inflight.run(
+                key, lambda: self._outline(key, circuit_key, before)
+            )
+        except ArchiveClosed:
+            return None
 
     async def _outline(
         self, key: str, circuit_key: int, before: datetime

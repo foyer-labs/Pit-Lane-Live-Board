@@ -676,7 +676,8 @@ var Le = {
 		wet: "Rain during the session",
 		open: "Open the round",
 		usedFaded: "A faded bar is a used set.",
-		provisional: "Provisional, from F1's live timing: the official results, with points and any later penalties, replace it when they are published (usually after the race)."
+		provisional: "Provisional, from F1's live timing: the official results, with points and any later penalties, replace it when they are published (usually after the race).",
+		archiveClosed: "F1's session archive is not available at the moment (F1 now asks for authorisation). Races opened before stay available; the weekend's sessions appear here from live timing, when it was on."
 	},
 	standings: {
 		title: "Standings",
@@ -1184,7 +1185,8 @@ var Le = {
 			wet: "Pioggia durante la sessione",
 			open: "Apri la gara",
 			usedFaded: "Una barra sbiadita è un treno usato.",
-			provisional: "Provvisoria, dal live timing della F1: i risultati ufficiali, con punti ed eventuali penalità successive, la sostituiscono quando vengono pubblicati (di solito dopo la gara)."
+			provisional: "Provvisoria, dal live timing della F1: i risultati ufficiali, con punti ed eventuali penalità successive, la sostituiscono quando vengono pubblicati (di solito dopo la gara).",
+			archiveClosed: "L'archivio delle sessioni della F1 al momento non è disponibile (ora la F1 chiede un'autorizzazione). Le gare già aperte restano disponibili; le sessioni del weekend compaiono qui dal live timing, se era attivo."
 		},
 		standings: {
 			title: "Classifiche",

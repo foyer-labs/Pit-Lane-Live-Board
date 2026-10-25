@@ -178,3 +178,20 @@ async def test_old_formats_are_retired(hass, cache):
     await hass.async_add_executor_job(cache.write_json, "trigger", {})
     names = sorted(p.name.split("-")[0] for p in cache.root.iterdir())
     assert names == ["detail_v3_2018_2018", "trigger"]
+
+
+async def test_a_closed_archive_is_not_asked_again(hass, aioclient_mock, cache):
+    """Decision 65: since October 2026 F1 answers 401 for its whole archive. The
+    client says "nothing" rather than failing, and does not knock again soon."""
+    aioclient_mock.get(f"{ARCHIVE_BASE}2018/Index.json", status=401)
+    meetings = parse_schedule(schedule_payload(datetime(2018, 5, 10, 13, tzinfo=UTC)))
+    archive_client = client(hass, cache)
+    assert await archive_client.season_index(2018) is None
+    assert archive_client.closed and archive_client.last_error == "closed (401)"
+    assert await archive_client.detail(meetings, meetings[0].race) is None
+    assert await archive_client.final_state(meetings, meetings[0].race) is None
+    assert aioclient_mock.call_count == 1
+    # Not remembered as missing: when F1 opens it again, it is read again.
+    assert not list(cache.root.glob("archive-missing*"))
+    archive_client._closed_until = 0.0
+    assert not archive_client.closed

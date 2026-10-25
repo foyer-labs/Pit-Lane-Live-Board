@@ -148,7 +148,8 @@
     "wet": "Rain during the session",
     "open": "Open the round",
     "usedFaded": "A faded bar is a used set.",
-    "provisional": "Provisional, from F1's live timing: the official results, with points and any later penalties, replace it when they are published (usually after the race)."
+    "provisional": "Provisional, from F1's live timing: the official results, with points and any later penalties, replace it when they are published (usually after the race).",
+    "archiveClosed": "F1's session archive is not available at the moment (F1 now asks for authorisation). Races opened before stay available; the weekend's sessions appear here from live timing, when it was on."
   },
   "standings": {
     "title": "Standings",
