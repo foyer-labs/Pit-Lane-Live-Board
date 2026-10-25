@@ -310,7 +310,10 @@ actions:
 - **The pit estimate is an estimate**, from the circuit's typical pit loss.
 - **Not a video stream.** It shows timing data, not the race: use the TV delay to match
   your stream.
-- **Lap-by-lap detail starts in 2018**, with F1's archive, which has gaps.
+- **Lap-by-lap detail starts in 2018**, with F1's archive, which has gaps — and since
+  October 2026 F1 asks for authorisation to read it: races opened before stay available,
+  newer ones show their detail only if F1 opens it again. The weekend's results still
+  appear, from live timing when it was on.
 - **No driver photos or team logos.** They belong to F1 and the teams: drivers appear by
   code, number, name and team colour.
 

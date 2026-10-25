@@ -6,6 +6,20 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.12.2] - 2026-10-25
+
+### Fixed
+- **Provisional qualifying (and every provisional result) without F1's archive.** Since
+  October 2026 F1 asks for authorisation to read its session archive, so the
+  provisional results of 0.11 had nothing to come from. The integration now keeps the
+  classification live timing ends each session with, and Results and the calendar
+  show it — marked provisional — until the official results are published. It needs
+  live timing to have been on during the session (or *Start automatically at each
+  session*).
+- **A closed archive no longer looks like an error.** Its tabs say F1's archive is not
+  available instead of offering a retry, races opened before still open, and the
+  archive is tried again only every few hours instead of at every page.
+
 ## [0.12.1] - 2026-10-11
 
 ### Documentation

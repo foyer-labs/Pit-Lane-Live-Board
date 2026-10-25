@@ -1181,6 +1181,17 @@ Decisions taken in chat with the owner.
   a panel built for another one (a page left open across an update, which showed
   "results.tabs.sprint_qualifying" to a user) asks to be reloaded.
 
+65. **F1's archive asks for authorisation** (found on 2026-10-25, when the owner's
+  provisional qualifying did not appear): every `static/{year}/…` JSON answers 401 from
+  CloudFront, for every season and with any user agent; team radio clips and live timing
+  still answer. It is not worked around. A 401 closes the archive client for 6 hours
+  (no request, nothing remembered as missing, so a reopened archive is read again), its
+  public methods answer None, archive tabs say why (`reason: archive_closed`) and keep
+  their place on past seasons, since cached races still open. The provisional
+  classifications of decisions 63 and 64 fall back to the tower live timing ended each
+  session with: kept on disk when a session is finalised and again when its window
+  closes (`session-tower/<key>`, 30 days), so they appear whenever live timing was on.
+
 ---
 
 ## 18. Choices awaiting confirmation

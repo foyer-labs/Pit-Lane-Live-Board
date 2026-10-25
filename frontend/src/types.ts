@@ -136,6 +136,8 @@ export interface TabResult {
   hidden: boolean;
   session?: string;
   available?: boolean;
+  /** Why there is nothing: `archive_closed` when F1 refuses its archive (decision 65). */
+  reason?: string;
   data?: any;
 }
 

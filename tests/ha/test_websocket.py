@@ -528,3 +528,57 @@ async def test_a_weekend_just_run_gets_its_podium_from_the_archive(
     assert meeting["state"] == "done" and meeting["podium_provisional"] is True
     assert [p["code"] for p in meeting["podium"]] == ["VER", "HAM"]
     assert meeting["podium"][0]["colour"] == "#3671C6"
+
+
+async def test_with_the_archive_closed_results_come_from_live_timing(
+    hass, setup, hass_ws_client, aioclient_mock
+):
+    """Decision 65: F1's archive refuses (401); the tower live timing kept at
+    the end of the session answers, marked provisional, until Jolpica has it."""
+    hub = setup.runtime_data.hub
+    started = datetime.now(UTC) - timedelta(hours=3)
+    hub.meetings = parse_schedule(schedule_payload(started))
+    season = started.year
+    for kind in ("qualifying", "results"):
+        aioclient_mock.get(
+            f"{JOLPICA_BASE}{season}/1/{kind}.json", json=races(season=str(season))
+        )
+
+    async def closed(meetings, session):
+        return None
+
+    hub.archive.final_state = closed
+    hub.archive._closed_until = float("inf")
+    quali = next(s for s in hub.meetings[0].sessions if s.kind == "qualifying")
+    tower = [
+        {
+            "number": "1",
+            "tla": "VER",
+            "name": "Max Verstappen",
+            "team": "Red Bull Racing",
+            "colour": "#3671C6",
+            "position": 1,
+            "status": "running",
+            "qualifying": {"part_bests": ["1:33.241", "1:31.639", "1:31.373"]},
+        },
+    ]
+    await hass.async_add_executor_job(
+        hub.cache.write_json, f"session-tower/{quali.key}", {"tower": tower}
+    )
+    ws = await hass_ws_client(hass)
+    await ws.send_json_auto_id(
+        {
+            "type": f"{P}results/detail",
+            "season": season,
+            "round": 1,
+            "tab": "qualifying",
+        }
+    )
+    data = (await ws.receive_json())["result"]["data"]
+    assert data["provisional"] is True and data["rows"][0]["q3"] == "1:31.373"
+    # An archive tab says why it is empty.
+    await ws.send_json_auto_id(
+        {"type": f"{P}results/detail", "season": season, "round": 1, "tab": "weather"}
+    )
+    reply = (await ws.receive_json())["result"]
+    assert reply["available"] is False and reply["reason"] == "archive_closed"

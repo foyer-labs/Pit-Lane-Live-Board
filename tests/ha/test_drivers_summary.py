@@ -273,3 +273,9 @@ async def test_a_session_that_began_is_finalised(hass: HomeAssistant, entry):
     await settle()
     await until(lambda: sent)
     assert hub.live.finalised_at is not None and len(sent) == 1
+    # Its final tower is kept for Results until Jolpica publishes (decision 65).
+    await until(
+        lambda: hub.cache.read_json(f"session-tower/{scheduled.key}") is not None
+    )
+    tower = await hub.async_session_tower(scheduled.key)
+    assert [row["tla"] for row in tower] == ["NOR", "LEC"]

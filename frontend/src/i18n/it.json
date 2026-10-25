@@ -148,7 +148,8 @@
     "wet": "Pioggia durante la sessione",
     "open": "Apri la gara",
     "usedFaded": "Una barra sbiadita è un treno usato.",
-    "provisional": "Provvisoria, dal live timing della F1: i risultati ufficiali, con punti ed eventuali penalità successive, la sostituiscono quando vengono pubblicati (di solito dopo la gara)."
+    "provisional": "Provvisoria, dal live timing della F1: i risultati ufficiali, con punti ed eventuali penalità successive, la sostituiscono quando vengono pubblicati (di solito dopo la gara).",
+    "archiveClosed": "L'archivio delle sessioni della F1 al momento non è disponibile (ora la F1 chiede un'autorizzazione). Le gare già aperte restano disponibili; le sessioni del weekend compaiono qui dal live timing, se era attivo."
   },
   "standings": {
     "title": "Classifiche",
