@@ -318,7 +318,10 @@ actions:
   circuito.
 - **Non è un video.** Mostra i dati dei tempi, non la gara: usa il ritardo TV per andare a
   tempo con il tuo streaming.
-- **Il dettaglio giro per giro parte dal 2018**, con l'archivio della F1, che ha dei buchi.
+- **Il dettaglio giro per giro parte dal 2018**, con l'archivio della F1, che ha dei buchi
+  — e da ottobre 2026 la F1 chiede un'autorizzazione per leggerlo: le gare già aperte
+  restano disponibili, quelle nuove mostrano il dettaglio solo se la F1 lo riapre. I
+  risultati del weekend compaiono comunque, dal live timing quando era attivo.
 - **Niente foto dei piloti né loghi delle squadre.** Appartengono alla F1 e alle squadre: i
   piloti sono indicati con sigla, numero, nome e colore della squadra.
 
