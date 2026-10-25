@@ -694,6 +694,15 @@ la scheda dice quale delle due manca.
 **Una scheda dice che l'archivio della F1 non ha il dettaglio.** Alcune sessioni
 mancano semplicemente dall'archivio della F1, e prima del 2018 non c'è niente.
 
+**Una scheda dice che l'archivio della F1 non è disponibile.** Da ottobre 2026 la F1
+chiede un'autorizzazione per leggere l'archivio delle sessioni (il live timing e i team
+radio non sono toccati). Le gare già aperte restano salvate e si aprono ancora;
+l'integrazione riprova l'archivio ogni qualche ora. Nel frattempo le schede Gara,
+Qualifiche, Sprint e Qualifiche sprint del weekend, e i podi del calendario, arrivano da
+ciò che il live timing ha ricevuto durante la sessione: tieni attivo il live timing, o
+accendi *Avvia automaticamente a ogni sessione*, per vederle prima dei risultati
+ufficiali.
+
 **"La fonte dei dati non ha risposto."** Jolpica (risultati, classifiche, calendario)
 potrebbe essere occupata; l'integrazione si limita anche da sola a 200 richieste
 all'ora. Riprova tra un minuto: quello che era già stato caricato arriva dalla cache.

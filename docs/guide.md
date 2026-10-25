@@ -667,6 +667,14 @@ which of the two is missing.
 **A tab says F1's archive has no detail.** Some sessions are simply missing from F1's
 archive, and nothing before 2018 is there.
 
+**A tab says F1's archive is not available.** Since October 2026 F1 asks for
+authorisation to read its session archive (live timing and team radio are not
+affected). Races opened before are kept and still open; the integration tries the
+archive again every few hours. Meanwhile the weekend's Race, Qualifying, Sprint and
+Sprint qualifying tabs, and the calendar's podiums, come from what live timing received
+during the session — so keep live timing on, or turn on *Start automatically at each
+session*, to see them before the official results are out.
+
 **"The data source did not answer."** Jolpica (results, standings, calendar) may be
 busy; the integration also limits itself to 200 requests an hour. Try again in a
 minute: what was loaded before is served from the cache.

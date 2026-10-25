@@ -841,7 +841,8 @@ var it = {
 		wet: "Rain during the session",
 		open: "Open the round",
 		usedFaded: "A faded bar is a used set.",
-		provisional: "Provisional, from F1's live timing: the official results, with points and any later penalties, replace it when they are published (usually after the race)."
+		provisional: "Provisional, from F1's live timing: the official results, with points and any later penalties, replace it when they are published (usually after the race).",
+		archiveClosed: "F1's session archive is not available at the moment (F1 now asks for authorisation). Races opened before stay available; the weekend's sessions appear here from live timing, when it was on."
 	},
 	standings: {
 		title: "Standings",
@@ -1349,7 +1350,8 @@ var it = {
 			wet: "Pioggia durante la sessione",
 			open: "Apri la gara",
 			usedFaded: "Una barra sbiadita è un treno usato.",
-			provisional: "Provvisoria, dal live timing della F1: i risultati ufficiali, con punti ed eventuali penalità successive, la sostituiscono quando vengono pubblicati (di solito dopo la gara)."
+			provisional: "Provvisoria, dal live timing della F1: i risultati ufficiali, con punti ed eventuali penalità successive, la sostituiscono quando vengono pubblicati (di solito dopo la gara).",
+			archiveClosed: "L'archivio delle sessioni della F1 al momento non è disponibile (ora la F1 chiede un'autorizzazione). Le gare già aperte restano disponibili; le sessioni del weekend compaiono qui dal live timing, se era attivo."
 		},
 		standings: {
 			title: "Classifiche",
@@ -2562,7 +2564,7 @@ var $t = class extends k {
 			bubbles: !0,
 			composed: !0
 		}))}>${e("spoiler.reveal")}</button></div>`;
-		if (!t.available || !t.data) return C`<div class="state">${Xt.has(this.tab) ? e("results.notArchived") : e("common.noData")}</div>`;
+		if (!t.available || !t.data) return C`<div class="state">${t.reason === "archive_closed" ? e("results.archiveClosed") : Xt.has(this.tab) ? e("results.notArchived") : e("common.noData")}</div>`;
 		let n = t.data, r = n.provisional ? C`<div class="provisional">${L(I.timer, 18)}<span>${e("results.provisional")}</span></div>` : E;
 		switch (this.tab) {
 			case "race":
@@ -4834,7 +4836,7 @@ function Qn() {
 		return "live";
 	}
 }
-var $n = "0.12.1", er = class extends k {
+var $n = "0.12.2", er = class extends k {
 	constructor(...e) {
 		super(...e), this.narrow = !1, this.page = Qn(), this.seasons = [], this.delayOpen = !1, this.failed = !1, this.clockVersion = 0, this.kiosk = !1, this.fullscreen = !1, this.kioskAsked = !1, this.scale = 1, this.moved = () => {
 			this.classList.remove("idle"), window.clearTimeout(this.idleTimer), this.kiosk && (this.idleTimer = window.setTimeout(() => {

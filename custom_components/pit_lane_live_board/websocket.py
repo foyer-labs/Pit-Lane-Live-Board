@@ -453,7 +453,7 @@ async def ws_results_season(hass, connection, msg):
             archived = await hub.archive.season_index(season) is not None
         except SourceError:
             archived = True  # unreachable now: keep the tabs, they say so if empty
-        if not archived:
+        if not archived and not hub.archive.closed:
             page = pages.without_archive_tabs(page)
     connection.send_result(msg["id"], page)
 
@@ -471,11 +471,10 @@ async def _archive_detail(hub: Hub, season: int, rnd: int) -> dict[str, Any] | N
     return await hub.archive.detail(meetings, meeting.race)
 
 
-async def _from_archive(
-    hub: Hub, season: int, rnd: int, kind: str
-) -> dict[str, Any] | None:
-    """One session's classification from F1's archive, once the session is over
-    and published (decision 63). None when it is not there (yet)."""
+async def _from_f1(hub: Hub, season: int, rnd: int, kind: str) -> dict[str, Any] | None:
+    """One session's classification from F1: its archive, once the session is
+    over and published (decision 63), else the final tower live timing kept
+    (decision 65). None when neither has it."""
     meetings = await hub.async_meetings(season)
     meeting = next((m for m in meetings if m.round == rnd), None)
     session = (
@@ -485,14 +484,20 @@ async def _from_archive(
         return None
     if session.end is not None and _now() < session.end:
         return None
+    tower = None
     final = await hub.archive.final_state(meetings, session)
-    if not final:
+    if final:
+        state = LiveState()
+        state.apply_keyframes(final.get("topics") or {})
+        for payload in final.get("pit_stream") or []:
+            state.apply("PitLaneTimeCollection", payload)
+        tower = build_tower(state.topics, stints.pit_laps(state.pit_log))
+    if not tower:
+        # The archive asks for authorisation since October 2026 (decision 65):
+        # the tower live timing ended the session with, when it was on.
+        tower = await hub.async_session_tower(session.key)
+    if not tower:
         return None
-    state = LiveState()
-    state.apply_keyframes(final.get("topics") or {})
-    for payload in final.get("pit_stream") or []:
-        state.apply("PitLaneTimeCollection", payload)
-    tower = build_tower(state.topics, stints.pit_laps(state.pit_log))
     meta = {
         "season": season,
         "round": rnd,
@@ -515,7 +520,7 @@ async def _provisional(
     published the session yet. An archive that cannot be read is no answer,
     not an error, since Jolpica did answer."""
     try:
-        data = await _from_archive(hub, season, rnd, kind)
+        data = await _from_f1(hub, season, rnd, kind)
     except SourceError:
         return None
     return {**data, "provisional": True} if data else None
@@ -533,13 +538,13 @@ async def _tab(hub: Hub, season: int, rnd: int, tab: str) -> dict[str, Any] | No
             return parsed
         return await _provisional(hub, season, rnd, tab)
     if tab == "sprint_qualifying":
-        return await _from_archive(hub, season, rnd, "sprint_qualifying")
+        return await _from_f1(hub, season, rnd, "sprint_qualifying")
     if tab == "lap_chart" and season >= pages.FIRST_ARCHIVE_SEASON:
         # One archive file instead of a dozen pages of Jolpica laps.
         results, detail = await asyncio.gather(
             _classification(hub, season, rnd), _archive_detail(hub, season, rnd)
         )
-        chart = pages.lap_chart_from_archive(detail, results) if detail else None
+        chart = pages.lap_chart_from_f1(detail, results) if detail else None
         if chart is not None:
             return chart
     elif tab in ("lap_chart", "pit_stops"):
@@ -587,10 +592,10 @@ async def ws_results_detail(hass, connection, msg):
     except SourceError as err:
         _error(connection, msg["id"], err)
         return
-    connection.send_result(
-        msg["id"],
-        {"tab": tab, "hidden": False, "available": data is not None, "data": data},
-    )
+    reply = {"tab": tab, "hidden": False, "available": data is not None, "data": data}
+    if data is None and hub.archive.closed:
+        reply["reason"] = "archive_closed"
+    connection.send_result(msg["id"], reply)
 
 
 # Standings.

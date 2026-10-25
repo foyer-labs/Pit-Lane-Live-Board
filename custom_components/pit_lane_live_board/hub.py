@@ -60,6 +60,7 @@ from .core import (
     display as screen,
     favourites as fav,
     live_view,
+    stints,
     summary as session_summary,
 )
 from .core.delay import DelayBuffer
@@ -83,6 +84,7 @@ from .core.session import RACE_LIKE, session_kind, session_status
 from .core.settings import Settings
 from .core.spoiler import hidden_sessions, live_hidden
 from .core.stewards import PENALTIES
+from .core.timing import build_tower
 from .core.values import to_int
 from .panel import URL_PATH as PANEL_PATH
 from .store import SettingsStore
@@ -111,6 +113,9 @@ STALE_REPUBLISH = 1.0
 DISPLAY_EVERY = 5.0
 RELEASE_CHUNK = 2000  # a lowered delay's backlog is applied over a few steps
 CLOSE_AFTER_FINAL = timedelta(minutes=5)
+# Final towers kept from live timing (decision 65), and for how long (seconds).
+SESSION_TOWERS = "session-tower/"
+SESSION_TOWERS_KEPT = 30 * 24 * 3600
 # The archive publishes a session 0-30 minutes after it ends: while it has not, an
 # open page asks again at most this often (INV-4).
 FINAL_RETRY = 120.0
@@ -516,6 +521,9 @@ class Hub:
         for task in tasks:
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await task
+        if live.finalised_at is not None:
+            # Its last word: a penalty applied after the flag lands here.
+            await self._async_keep_tower(live)
         if live.state.topics:
             self.final = FinalView(
                 live.session.key if live.session else None,
@@ -688,6 +696,9 @@ class Hub:
                 live.finalised_at = dt_util.utcnow()
                 self.entry.async_create_background_task(
                     self.hass, self._async_summarise(live), f"{DOMAIN} summary"
+                )
+                self.entry.async_create_background_task(
+                    self.hass, self._async_keep_tower(live), f"{DOMAIN} keep tower"
                 )
         else:
             live.finalised_at = None
@@ -1163,6 +1174,37 @@ class Hub:
             return
         self.final = FinalView(session.key, state, session.end, session.start)
         self.publish_full()
+
+    # Each session's final tower from live timing (decision 65).
+
+    async def _async_keep_tower(self, live: LiveSession) -> None:
+        """Keep the classification live timing ended the session with, for the
+        Results page and the calendar until Jolpica publishes: F1's archive, the
+        other source, has asked for authorisation since October 2026."""
+        if live.session is None:
+            return
+        tower = build_tower(live.state.topics, stints.pit_laps(live.state.pit_log))
+        if not tower:
+            return
+        try:
+            await self.hass.async_add_executor_job(
+                self.cache.write_json,
+                f"{SESSION_TOWERS}{live.session.key}",
+                {"tower": tower},
+            )
+            await self.hass.async_add_executor_job(
+                self.cache.expire, SESSION_TOWERS, SESSION_TOWERS_KEPT
+            )
+        except OSError as err:
+            _LOGGER.debug("Final tower of %s not kept: %s", live.session.key, err)
+
+    async def async_session_tower(self, key: str) -> list[dict[str, Any]] | None:
+        """The final tower live timing kept for a session, if any."""
+        kept = await self.hass.async_add_executor_job(
+            self.cache.read_json, f"{SESSION_TOWERS}{key}", None
+        )
+        tower = kept.get("tower") if isinstance(kept, dict) else None
+        return tower if isinstance(tower, list) and tower else None
 
     # The session summary (decision 53).
 
