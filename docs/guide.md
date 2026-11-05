@@ -171,8 +171,8 @@ wins, the gap to the leader and places gained or lost since the round before.
 | Column | Meaning |
 |---|---|
 | Pos | Position. ▲/▼ next to the driver: places gained or lost since the start (races and sprints). |
-| Gap | Time to the leader. `1 L`: one lap behind. |
-| Int | Interval: time to the car directly ahead. |
+| Gap | Time to the leader. `1 L`: one lap behind. In practice, the best lap's distance from the fastest. |
+| Int | Interval: time to the car directly ahead (in practice, between best laps). |
 | Last, Best | Last and best lap. |
 | S1, S2, S3 | The three sectors of the current lap; greyed values are from the lap just finished. |
 | Tyre | Compound (S soft red, M medium yellow, H hard white, I intermediate green, W wet blue), then the **laps on that set**. *used* marks a set that had laps before this stint. |

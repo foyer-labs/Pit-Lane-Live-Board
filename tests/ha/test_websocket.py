@@ -64,6 +64,9 @@ async def setup(hass: HomeAssistant, aioclient_mock, race_start):
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
+    # The hub's first tick refreshes the calendar in the background: done before
+    # a test sets its own meetings, it cannot replace them halfway (a flaky CI).
+    await entry.runtime_data.hub.first_tick
     yield entry
     await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()

@@ -131,16 +131,35 @@ def test_qualifying_uses_the_current_part():
     assert rows["LEC"]["qualifying"]["gap"] == "+0.5"
 
 
-def test_practice_gap_comes_from_time_diff():
+def test_practice_gaps_are_measured_between_best_laps():
+    """Decision 67: whatever the feed's gap fields say, practice is ranked by best
+    lap, so the gap is the best lap's distance from the fastest."""
     topics = race_topics()
     topics["SessionInfo"] = session_info("Practice", "Practice 1")
     line = topics["TimingData"]["Lines"]["4"]
-    del line["GapToLeader"], line["IntervalToPositionAhead"]
+    del line["IntervalToPositionAhead"]
+    line["GapToLeader"] = "+3.416"  # where the car is on track: not a practice gap
     line["TimeDiffToFastest"] = "+0.321"
     line["TimeDiffToPositionAhead"] = "+0.100"
+    first, second = build_tower(topics)
+    assert first["gap"] is None and first["interval"] is None
+    # LEC 1:30.950, NOR 1:31.020.
+    assert second["gap"] == "+0.070" and second["interval"] == "+0.070"
+
+
+def test_a_car_without_a_time_has_no_practice_gap():
+    topics = race_topics()
+    topics["SessionInfo"] = session_info("Practice", "Practice 3")
+    line = topics["TimingData"]["Lines"]["4"]
+    del line["BestLapTime"]
+    line["GapToLeader"] = "+17.942"
     _, second = build_tower(topics)
-    assert second["gap"] == "+0.321"
-    assert second["interval"] == "+0.100"
+    assert second["gap"] is None and second["interval"] is None
+
+
+def test_race_gaps_still_come_from_the_feed():
+    _, second = build_tower(race_topics())
+    assert second["gap"] == race_topics()["TimingData"]["Lines"]["4"]["GapToLeader"]
 
 
 def test_nothing_to_show():

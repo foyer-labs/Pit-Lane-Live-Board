@@ -352,3 +352,46 @@ def test_other_destinations_keep_their_format():
         "service", "mobile_app_pixel", "T", "M", panel_path="p"
     )
     assert action == "mobile_app_pixel" and data["data"]["tag"] == summary.TAG
+
+
+def test_a_practice_summary_reads_its_times():
+    """Mexico City FP3 2026: gaps that did not match the times, and two cars on
+    22nd. The order and the numbers now follow the best laps (decision 67)."""
+
+    def car(tla, position, best, gap):
+        return {
+            "tla": tla,
+            "name": tla,
+            "position": position,
+            "status": "running",
+            "best_lap": {"time": best} if best else None,
+            "gap": gap,
+        }
+
+    rows = [
+        car("NOR", 1, "1:17.600", None),
+        car("ANT", 2, "1:17.601", "+0.001"),
+        car("LEC", 3, "1:17.717", "+0.117"),
+        car("BOR", 21, None, None),
+        car("PER", 22, None, None),
+        car("OCO", 22, None, None),
+    ]
+    facts = summary.build(
+        {
+            "meeting": "Mexico City Grand Prix",
+            "session": "Practice 3",
+            "kind": "practice",
+        },
+        rows,
+        None,
+        (),
+    )
+    _, message = summary.render(facts, texts("it"), full=True)
+    assert message.split("📋 Classifica\n")[1].splitlines() == [
+        "1. NOR 1:17.600",
+        "2. ANT 1:17.601 +0.001",
+        "3. LEC 1:17.717 +0.117",
+        "4. BOR senza tempo",
+        "5. PER senza tempo",
+        "6. OCO senza tempo",
+    ]
