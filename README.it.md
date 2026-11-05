@@ -158,8 +158,8 @@ rientra. Bandiera rossa? Rosse. Di nuovo verde? Verdi.
 **Cinque secondi di penalità.** Accanto al pilota compare un `+5s` finché non la sconta, e
 l'evento dei commissari parte con pilota, secondi e motivo — dritto sul telefono, se vuoi.
 
-**Bandiera a scacchi.** Il riepilogo della sessione arriva sul telefono, scritto come un
-titolo di giornale — oppure con la classifica completa e tutti i tempi. Un tocco apre la
+**Bandiera a scacchi.** Il riepilogo della sessione arriva sul telefono o nella tua chat
+Telegram, scritto come un titolo di giornale — oppure con la classifica completa e tutti i tempi. Un tocco apre la
 plancia. Con la modalità senza spoiler aspetta che tu scopra la sessione.
 
 ```text
