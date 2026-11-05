@@ -6,6 +6,16 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.12.4] - 2026-11-05
+
+### Fixed
+- **Practice gaps that did not match the times.** In practice F1's gap field tells
+  where a car is on track, not how far its best lap is from the fastest: a summary
+  read "LEC 1:17.717 +3.416" with the fastest at 1:17.600, and gave a gap to cars
+  without a time. In practice the gap and the interval are now measured between best
+  laps — in the session summary and in the Live page's timing tower — and the
+  summary numbers the cars by best lap, those without a time last.
+
 ## [0.12.3] - 2026-11-05
 
 ### Changed

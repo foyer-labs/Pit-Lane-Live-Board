@@ -1206,6 +1206,15 @@ Decisions taken in chat with the owner.
   naming it, cleared by the next summary that reaches every destination; until then
   the summary still goes to the others.
 
+67. **Practice gaps are measured between best laps** (a user's report from the Mexico
+  City FP3 2026 summary: "LEC 1:17.717 +3.416" with the fastest at 1:17.600, "no time
+  +17.942", two cars on 22nd). In practice the feed's `GapToLeader` is where a car is on
+  track, not a classification gap. Practice is ranked by best lap, so the tower's gap
+  is the best lap's distance from the fastest and its interval the distance from the
+  car above with a time; a car without a time has neither. The practice summary orders
+  and numbers the cars by best lap, those without a time last. Races and qualifying
+  keep the feed's gaps (qualifying's per part, decision 59).
+
 ---
 
 ## 18. Choices awaiting confirmation
