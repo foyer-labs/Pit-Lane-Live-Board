@@ -401,6 +401,24 @@ integrazioni come il bot Telegram o l'e-mail. Scrivi una parte del nome — `pix
 scelta ha il suo pulsante *Rimuovi*. *Invia una prova* manda il riepilogo di ciò che
 mostra la pagina Live.
 
+**Telegram.** Scegli la chat del tuo bot Telegram (l'integrazione *Telegram bot* crea
+un'entità di notifica per ogni chat che aggiungi al bot). Il riepilogo viene inviato nel
+modo che il tuo Home Assistant si aspetta:
+
+| Home Assistant | Come viene inviato il riepilogo |
+|---|---|
+| 2026.11 e successivi | `telegram_bot.send_message` alla chat, in testo semplice (`parse_mode: plain_text`), così Telegram non lo legge mai come Markdown |
+| prima della 2026.11 | `notify.send_message` alla chat, come qualsiasi entità di notifica |
+
+Home Assistant 2026.11 ha rimosso la vecchia piattaforma di notifica Telegram configurata
+in YAML (`notify:` con `platform: telegram`) e le sue azioni `notify.<nome>`. Se avevi
+scelto una di quelle, dopo l'aggiornamento non esiste più: Home Assistant mostra una
+riparazione, *Una destinazione del riepilogo non esiste più*. Aggiungi la chat al tuo bot
+Telegram (*Impostazioni → Dispositivi e servizi → Telegram bot → Aggiungi ID chat
+consentito*), sceglila nelle Impostazioni e rimuovi la vecchia destinazione; la
+riparazione sparisce da sola al riepilogo successivo. La stessa riparazione compare per
+qualsiasi destinazione sparita, per esempio un telefono rimosso dall'app Companion.
+
 Si legge come un titolo di giornale: il titolo dice cosa è successo, la prima riga è il
 risultato e la seconda i tuoi piloti (★), così il telefono bloccato racconta già tutto.
 

@@ -18,6 +18,10 @@
     "live_unreachable": {
       "title": "Live timing unreachable",
       "description": "The last three session windows ended without a single connection to F1's live timing. F1 may have changed or closed the feed, or this Home Assistant cannot reach livetiming.formula1.com.\n\nCalendar, results and standings keep working. Check the diagnostics of Pit Lane Live Board and the project's issues for news; this notice clears itself after the next successful connection."
+    },
+    "summary_targets_missing": {
+      "title": "A summary destination no longer exists",
+      "description": "The session summary could not be sent to: {targets}. The destination was removed or renamed.\n\nFrom Home Assistant 2026.11 the Telegram notify platform configured in YAML (`platform: telegram`) no longer exists: add each chat as a subentry of the Telegram bot integration and choose its chat in Pit Lane Live Board → Settings → Summary at the end of a session. Remove there the destinations that are gone; this notice clears itself at the next summary sent to all of them."
     }
   },
   "selector": {
