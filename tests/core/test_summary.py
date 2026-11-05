@@ -284,3 +284,71 @@ def test_a_target_is_resolved_against_what_exists():
     assert resolve("notify.family_phone") == ("service", "family_phone")
     assert resolve("send_message") is None
     assert resolve("notify.gone") is None
+
+
+def test_versions_compare_by_year_and_month():
+    assert summary.at_least("2026.11.0", (2026, 11))
+    assert summary.at_least("2026.11.0b3", (2026, 11))
+    assert summary.at_least("2027.1.0.dev20270101", (2026, 11))
+    assert not summary.at_least("2026.10.4", (2026, 11))
+    assert not summary.at_least("nonsense", (2026, 11))
+
+
+def test_a_telegram_chat_from_2026_11_uses_the_bot_action():
+    """Decision 66: Home Assistant 2026.11 removed the YAML Telegram notify
+    actions; a Telegram bot chat is reached with telegram_bot.send_message."""
+    call = summary.notify_call(
+        "entity",
+        "notify.telegram_bot_chat",
+        "T",
+        "M",
+        panel_path="pit-lane-live-board",
+        telegram_bot=True,
+        telegram_actions=True,
+    )
+    assert call == (
+        "telegram_bot",
+        "send_message",
+        {
+            "title": "T",
+            "message": "M",
+            "entity_id": "notify.telegram_bot_chat",
+            "parse_mode": "plain_text",
+        },
+    )
+
+
+def test_before_2026_11_a_telegram_chat_is_a_notify_entity():
+    domain, action, data = summary.notify_call(
+        "entity",
+        "notify.telegram_bot_chat",
+        "T",
+        "M",
+        panel_path="pit-lane-live-board",
+        telegram_bot=True,
+        telegram_actions=False,
+    )
+    assert (domain, action) == ("notify", "send_message")
+    assert data == {
+        "title": "T",
+        "message": "M",
+        "entity_id": "notify.telegram_bot_chat",
+    }
+
+
+def test_other_destinations_keep_their_format():
+    # A notify entity of another integration, whatever the version.
+    assert summary.notify_call(
+        "entity", "notify.smtp", "T", "M", panel_path="p", telegram_actions=True
+    )[:2] == ("notify", "send_message")
+    # A notify action (here the legacy YAML Telegram one, before 2026.11): itself.
+    assert summary.notify_call("service", "telegram", "T", "M", panel_path="p") == (
+        "notify",
+        "telegram",
+        {"title": "T", "message": "M"},
+    )
+    # The Companion app keeps its data.
+    _, action, data = summary.notify_call(
+        "service", "mobile_app_pixel", "T", "M", panel_path="p"
+    )
+    assert action == "mobile_app_pixel" and data["data"]["tag"] == summary.TAG

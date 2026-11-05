@@ -6,6 +6,21 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.12.3] - 2026-11-05
+
+### Changed
+- **Telegram on Home Assistant 2026.11.** Home Assistant 2026.11 removed the Telegram
+  notify platform configured in YAML (`platform: telegram`). A Telegram bot chat chosen
+  as a summary destination is now sent with `telegram_bot.send_message`, in plain text,
+  from Home Assistant 2026.11; on earlier versions it keeps going through
+  `notify.send_message`. If you had chosen an old YAML Telegram destination, add the
+  chat to your Telegram bot and choose it in Settings (the guide shows how).
+
+### Added
+- **A repair when a summary destination is gone** — an old Telegram destination after
+  2026.11, or a phone removed from the Companion app — naming it, instead of a summary
+  that silently stops arriving.
+
 ## [0.12.2] - 2026-10-25
 
 ### Fixed

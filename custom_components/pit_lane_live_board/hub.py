@@ -35,8 +35,9 @@ import time
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
-from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers import entity_registry as er, issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import async_track_time_interval
@@ -129,6 +130,7 @@ DEV_WINDOW = "dev"
 
 ISSUE_F1TV = "f1tv_new_token"
 ISSUE_LIVE = "live_unreachable"
+ISSUE_TARGETS = "summary_targets_missing"
 
 _LIVE_LISTENERS = f"{DOMAIN}_live_listeners"
 _MAP_LISTENERS = f"{DOMAIN}_map_listeners"
@@ -1298,6 +1300,11 @@ class Hub:
     async def _async_deliver(self, record: dict[str, Any], event: bool = True) -> None:
         if event:
             async_dispatcher_send(self.hass, SIGNAL_SUMMARY, record)
+        registry = er.async_get(self.hass)
+        telegram_actions = session_summary.at_least(
+            HA_VERSION, session_summary.TELEGRAM_BOT_ACTIONS_SINCE
+        ) and self.hass.services.has_service("telegram_bot", "send_message")
+        missing: list[str] = []
         for target in self.settings.notify_targets:
             resolved = session_summary.resolve_target(
                 target,
@@ -1306,26 +1313,43 @@ class Hub:
             )
             if resolved is None:
                 _LOGGER.warning("Summary not sent: %s does not exist", target)
+                missing.append(target if "." in target else f"notify.{target}")
                 continue
             how, name = resolved
-            call: dict[str, Any] = {
-                "title": record["title"],
-                "message": record["message"],
-            }
-            if how == "entity":
-                # A notify entity takes title and message only.
-                service, call["entity_id"] = "send_message", name
-            else:
-                service = name
-                data = session_summary.delivery_data(name, PANEL_PATH)
-                if data:
-                    call["data"] = data
+            entry = registry.async_get(name) if how == "entity" else None
+            domain, action, call = session_summary.notify_call(
+                how,
+                name,
+                record["title"],
+                record["message"],
+                panel_path=PANEL_PATH,
+                telegram_bot=entry is not None and entry.platform == "telegram_bot",
+                telegram_actions=telegram_actions,
+            )
             try:
-                await self.hass.services.async_call(
-                    "notify", service, call, blocking=True
-                )
+                await self.hass.services.async_call(domain, action, call, blocking=True)
             except Exception as err:  # a phone offline must not stop the others
                 _LOGGER.warning("Summary not sent to %s: %s", target, err)
+        self._report_missing_targets(missing)
+
+    @callback
+    def _report_missing_targets(self, missing: list[str]) -> None:
+        """A repair while a chosen destination is gone (decision 66): Home Assistant
+        2026.11 removed the YAML Telegram notify actions, and a summary that stops
+        arriving must not do so in silence."""
+        if not missing:
+            ir.async_delete_issue(self.hass, DOMAIN, ISSUE_TARGETS)
+            return
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            ISSUE_TARGETS,
+            is_fixable=False,
+            is_persistent=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=ISSUE_TARGETS,
+            translation_placeholders={"targets": ", ".join(missing)},
+        )
 
     async def async_send_test_summary(self) -> str:
         """From Settings: the summary of what the Live page shows, sent now to

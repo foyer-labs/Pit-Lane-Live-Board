@@ -262,6 +262,57 @@ def resolve_target(
     return None
 
 
+# From this Home Assistant on, a Telegram chat is a Telegram bot notify entity
+# reached with telegram_bot.send_message; the YAML notify platform `telegram` and its
+# `notify.<name>` actions were removed (2026.11 release notes; decision 66).
+TELEGRAM_BOT_ACTIONS_SINCE = (2026, 11)
+
+
+def at_least(version: str, wanted: tuple[int, int]) -> bool:
+    """`2026.11.0`, `2026.11.0b2` or `2026.12.0.dev…` against (year, month)."""
+    parts = version.split(".")
+    try:
+        found = (int(parts[0]), int("".join(c for c in parts[1] if c.isdigit())))
+    except (IndexError, ValueError):
+        return False
+    return found >= wanted
+
+
+def notify_call(
+    how: str,
+    name: str,
+    title: str,
+    message: str,
+    *,
+    panel_path: str,
+    telegram_bot: bool = False,
+    telegram_actions: bool = False,
+) -> tuple[str, str, dict[str, Any]]:
+    """`(domain, action, data)` for one destination (decision 66).
+
+    - A Telegram bot chat (a notify entity of the `telegram_bot` integration) on a
+      Home Assistant that has its actions: `telegram_bot.send_message`, in plain
+      text, so Telegram does not read the summary as Markdown.
+    - Any other notify entity, or a Telegram chat before that: `notify.send_message`
+      with title and message.
+    - A notify action (`notify.<name>`, the Companion app, a YAML platform): the
+      action itself, with the `data` it understands.
+    """
+    call: dict[str, Any] = {"title": title, "message": message}
+    if how == "entity":
+        if telegram_bot and telegram_actions:
+            return (
+                "telegram_bot",
+                "send_message",
+                {**call, "entity_id": name, "parse_mode": "plain_text"},
+            )
+        return "notify", "send_message", {**call, "entity_id": name}
+    data = delivery_data(name, panel_path)
+    if data:
+        call["data"] = data
+    return "notify", name, call
+
+
 def delivery_data(target: str, panel_path: str) -> dict[str, Any] | None:
     """The `data` of the notify call for one service, or None for none.
 

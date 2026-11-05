@@ -384,6 +384,24 @@ pick it from the suggestions (or use the arrow keys and Enter); each chosen
 destination has its *Remove* button. *Send a test* sends the summary of what the Live
 page shows.
 
+**Telegram.** Choose the chat of your Telegram bot (the *Telegram bot* integration
+creates one notify entity for each chat you add to the bot). The summary is sent the
+way your Home Assistant expects it:
+
+| Home Assistant | How the summary is sent |
+|---|---|
+| 2026.11 and later | `telegram_bot.send_message` to the chat, in plain text (`parse_mode: plain_text`), so Telegram never reads it as Markdown |
+| before 2026.11 | `notify.send_message` to the chat, like any notify entity |
+
+Home Assistant 2026.11 removed the old Telegram notify platform configured in YAML
+(`notify:` with `platform: telegram`) and its `notify.<name>` actions. If you had chosen
+one of those, it no longer exists after the update: Home Assistant shows a repair, *A
+summary destination no longer exists*. Add the chat to your Telegram bot (*Settings →
+Devices & services → Telegram bot → Add allowed chat ID*), choose it in Settings and
+remove the old destination; the repair clears itself at the next summary. The same
+repair appears for any destination that has gone, such as a phone removed from the
+Companion app.
+
 It reads like a headline: the title says what happened, the first line is the result
 and the second your drivers (★), so a locked phone already tells the story.
 

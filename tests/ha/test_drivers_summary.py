@@ -168,6 +168,78 @@ async def test_the_summary_goes_to_a_notify_entity(hass: HomeAssistant, entry):
     assert "data" not in sent[0].data
 
 
+async def _finish_race(hub) -> None:
+    await hub._async_start_live(None, None)
+    client = FakeClient.instances[-1]
+    client.keyframes(
+        race(**{"4": {"Position": "1"}, "16": {"Position": "2", "GapToLeader": "+1.2"}})
+    )
+    await settle()
+    client.feed("SessionStatus", {"Status": "Finalised"})
+    await settle()
+
+
+def _telegram_chat(hass) -> str:
+    """A Telegram bot chat: a notify entity of the telegram_bot integration."""
+    registry = er.async_get(hass)
+    entry = registry.async_get_or_create(
+        "notify", "telegram_bot", "chat-123", suggested_object_id="telegram_bot_chat"
+    )
+    hass.states.async_set(entry.entity_id, "unknown")
+    return entry.entity_id
+
+
+@pytest.mark.parametrize(
+    ("version", "domain"), [("2026.11.0", "telegram_bot"), ("2026.10.3", "notify")]
+)
+async def test_a_telegram_chat_by_home_assistant_version(
+    hass: HomeAssistant, entry, version, domain
+):
+    """Decision 66: from 2026.11 telegram_bot.send_message in plain text; before,
+    notify.send_message as for any notify entity."""
+    hub = entry.runtime_data.hub
+    chat = _telegram_chat(hass)
+    bot: list[ServiceCall] = []
+    entity: list[ServiceCall] = []
+    hass.services.async_register("telegram_bot", "send_message", bot.append)
+    hass.services.async_register("notify", "send_message", entity.append)
+    await hub.async_update_settings(hub.settings.with_summary([chat], ["race"]))
+    with patch("custom_components.pit_lane_live_board.hub.HA_VERSION", version):
+        await _finish_race(hub)
+        await until(lambda: bot or entity)
+    sent = bot if domain == "telegram_bot" else entity
+    assert len(sent) == 1 and sent[0].data["entity_id"] == chat
+    assert sent[0].data["title"] == "🏆 NOR wins the Test GP"
+    if domain == "telegram_bot":
+        assert sent[0].data["parse_mode"] == "plain_text" and entity == []
+    else:
+        assert "parse_mode" not in sent[0].data and bot == []
+
+
+async def test_a_destination_that_is_gone_raises_a_repair(hass: HomeAssistant, entry):
+    """The YAML Telegram action of before 2026.11, removed by the update: the
+    summary cannot reach it, and Home Assistant says so."""
+    from homeassistant.helpers import issue_registry as ir
+
+    hub = entry.runtime_data.hub
+    sent: list[ServiceCall] = []
+    hass.services.async_register("notify", "family_phone", sent.append)
+    await hub.async_update_settings(
+        hub.settings.with_summary(["family_phone", "telegram"], ["race"])
+    )
+    await _finish_race(hub)
+    await until(lambda: sent)
+    issue = ir.async_get(hass).async_get_issue(DOMAIN, "summary_targets_missing")
+    assert issue is not None
+    assert issue.translation_placeholders == {"targets": "notify.telegram"}
+    # Removed from the destinations: the next summary clears the notice.
+    await hub.async_update_settings(
+        hub.settings.with_summary(["family_phone"], ["race"])
+    )
+    hub._report_missing_targets([])
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "summary_targets_missing") is None
+
+
 async def test_no_spoiler_holds_the_summary_until_it_is_off(hass: HomeAssistant, entry):
     hub = entry.runtime_data.hub
     sent: list[ServiceCall] = []
