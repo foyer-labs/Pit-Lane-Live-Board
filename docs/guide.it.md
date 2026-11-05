@@ -182,8 +182,8 @@ precedente.
 | Colonna | Significato |
 |---|---|
 | Pos | Posizione. ▲/▼ accanto al pilota: posizioni guadagnate o perse dalla partenza (gare e sprint). |
-| Distacco | Tempo dal primo. `1 L`: un giro di ritardo. |
-| Int | Intervallo: tempo dall'auto immediatamente davanti. |
+| Distacco | Tempo dal primo. `1 L`: un giro di ritardo. Nelle prove libere, la distanza del giro migliore dal più veloce. |
+| Int | Intervallo: tempo dall'auto immediatamente davanti (nelle libere, tra i giri migliori). |
 | Ultimo, Migliore | Ultimo e miglior giro. |
 | S1, S2, S3 | I tre settori del giro in corso; i valori in grigio sono del giro appena concluso. |
 | Gomma | Mescola (S soft rossa, M medium gialla, H hard bianca, I intermedia verde, W da bagnato blu), poi i **giri su quel treno**. *usata* indica un treno che aveva già giri prima di questo stint. |

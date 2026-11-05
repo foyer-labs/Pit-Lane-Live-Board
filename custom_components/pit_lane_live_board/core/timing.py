@@ -17,7 +17,7 @@ from .session import (
     session_kind,
     session_status,
 )
-from .values import colour, text, to_bool, to_int
+from .values import colour, lap_ms, text, to_bool, to_int
 
 COMPOUNDS = ("soft", "medium", "hard", "intermediate", "wet")
 
@@ -295,4 +295,34 @@ def build_tower(
         rows.append(row)
 
     rows.sort(key=lambda r: (r["position"] is None, r["position"] or 0, r["number"]))
+    if kind == SessionKind.PRACTICE:
+        _practice_gaps(rows)
     return rows
+
+
+def _practice_gaps(rows: list[dict[str, Any]]) -> None:
+    """Practice is ranked by best lap: its gap and interval are measured between
+    best laps (decision 67).
+
+    The feed's `GapToLeader` in practice is where a car is on track, not how far its
+    best lap is from the fastest: the Mexico City FP3 2026 summary read
+    "LEC 1:17.717 +3.416" with the fastest at 1:17.600, and "no time +17.942". A gap
+    computed from the best laps can never contradict the times beside it.
+    """
+    bests = [lap_ms((row.get("best_lap") or {}).get("time")) for row in rows]
+    fastest = min((b for b in bests if b is not None), default=None)
+    previous: int | None = None
+    for row, best in zip(rows, bests, strict=True):
+        if best is None or fastest is None:
+            row["gap"] = row["interval"] = None
+            continue
+        # The fastest has no gap; a car that equals it later shows +0.000.
+        first = previous is None and best == fastest
+        row["gap"] = None if first else _plus(best - fastest)
+        row["interval"] = _plus(best - previous) if previous is not None else None
+        previous = best
+
+
+def _plus(ms: int) -> str:
+    """`+0.117`: a gap in seconds, to the thousandth."""
+    return f"+{ms / 1000:.3f}"

@@ -59,6 +59,17 @@ def _joined(*parts: str | None) -> str:
     return " ".join(part for part in parts if part)
 
 
+def _by_best_lap(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Practice in F1's order, which is the best lap's, numbered again from 1: the
+    feed can leave two cars without a time on the same place (decision 67)."""
+    timed = [(_seconds((r.get("best_lap") or {}).get("time")), r) for r in rows]
+    order = sorted(
+        enumerate(timed),
+        key=lambda item: (item[1][0] is None, item[1][0] or 0.0, item[0]),
+    )
+    return [{**row, "position": place} for place, (_, (_, row)) in enumerate(order, 1)]
+
+
 def _segments(rows: list[dict[str, Any]]) -> dict[str, int]:
     """tla → the qualifying part reached (3, 2 or 1). Still running at the end is
     the last part; knocked out, the last part with a time. Never more than the
@@ -87,6 +98,8 @@ def build(
 ) -> dict[str, Any]:
     kind = header.get("kind") or "race"
     ranked = [r for r in rows if r.get("position")]
+    if kind == "practice":
+        ranked = _by_best_lap(ranked)
     qualifying = kind in QUALIFYING_LIKE
     race = kind in RACE_LIKE
     segments = _segments(ranked) if qualifying else {}
