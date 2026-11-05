@@ -156,8 +156,9 @@ in. Red flag? Red. Green again? Green.
 stewards event fires with the driver, the seconds and the reason — straight to your phone
 if you want.
 
-**Chequered flag.** The session summary lands on your phone, written like a headline — or
-with the whole classification and every time. A tap opens the board. In no-spoiler mode it
+**Chequered flag.** The session summary lands on your phone or in your Telegram chat,
+written like a headline — or with the whole classification and every time. A tap opens
+the board. In no-spoiler mode it
 waits until you reveal the session.
 
 ```text

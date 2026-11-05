@@ -1192,6 +1192,20 @@ Decisions taken in chat with the owner.
   session with: kept on disk when a session is finalised and again when its window
   closes (`session-tower/<key>`, 30 days), so they appear whenever live timing was on.
 
+66. **Telegram by Home Assistant version** (asked by the owner after Home Assistant
+  2026.11). That release removed the YAML Telegram notify platform (`platform:
+  telegram`) and its `notify.<name>` actions, deprecated since 2025.11; a Telegram chat
+  is a notify entity of the `telegram_bot` integration, one per allowed chat, and the
+  integration's own `telegram_bot.send_message` takes it as `entity_id` (2026.11 release
+  notes, telegram_bot docs and `services.yaml` at 2026.11.0). A summary destination
+  that is a notify entity of platform `telegram_bot` is sent with
+  `telegram_bot.send_message` (`title`, `message`, `entity_id`, `parse_mode:
+  plain_text`) when Home Assistant is 2026.11 or later and has the action; otherwise,
+  as before, with `notify.send_message`. Every other destination keeps its call. A
+  destination that no longer exists raises the repair `summary_targets_missing`,
+  naming it, cleared by the next summary that reaches every destination; until then
+  the summary still goes to the others.
+
 ---
 
 ## 18. Choices awaiting confirmation

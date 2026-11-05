@@ -18,6 +18,10 @@
     "live_unreachable": {
       "title": "Tempi live non raggiungibili",
       "description": "Le ultime tre finestre di sessione si sono chiuse senza nemmeno una connessione ai tempi live della F1. La F1 potrebbe aver cambiato o chiuso il flusso, oppure questo Home Assistant non raggiunge livetiming.formula1.com.\n\nCalendario, risultati e classifiche continuano a funzionare. Guarda la diagnostica di Pit Lane Live Board e le issue del progetto per le novità; questo avviso sparisce da solo alla prossima connessione riuscita."
+    },
+    "summary_targets_missing": {
+      "title": "Una destinazione del riepilogo non esiste più",
+      "description": "Non è stato possibile inviare il riepilogo della sessione a: {targets}. La destinazione è stata rimossa o rinominata.\n\nDa Home Assistant 2026.11 la piattaforma di notifica Telegram configurata in YAML (`platform: telegram`) non esiste più: aggiungi ogni chat come voce secondaria dell'integrazione Telegram bot e scegli la sua chat in Pit Lane Live Board → Impostazioni → Riepilogo a fine sessione. Rimuovi lì le destinazioni che non esistono più; questo avviso sparisce da solo al prossimo riepilogo inviato a tutte."
     }
   },
   "selector": {
