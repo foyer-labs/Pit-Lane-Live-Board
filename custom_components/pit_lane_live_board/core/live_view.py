@@ -68,6 +68,7 @@ class LiveViewBuilder:
 
     def __init__(self) -> None:
         self._state: LiveState | None = None
+        self._generation = 0
         self._cache: dict[str, tuple[tuple[int, ...], Any]] = {}
         self.book = StewardsBook()
         # The circuit, for the typical cost of a pit stop (set by the hub).
@@ -78,10 +79,11 @@ class LiveViewBuilder:
         self._sync(state)
 
     def _sync(self, state: LiveState) -> None:
-        if state is not self._state:
-            # A new state (a reconnect's keyframes): start the book and the cache
-            # again from its messages.
+        if state is not self._state or state.generation != self._generation:
+            # A new state (a reconnect's keyframes) or a new session within it:
+            # start the book and the cache again from its messages.
             self._state = state
+            self._generation = state.generation
             self._cache.clear()
             self.book = StewardsBook()
         messages = _messages(state.topics)
