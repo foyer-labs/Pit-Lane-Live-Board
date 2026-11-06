@@ -6,6 +6,8 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.12.5] - 2026-11-06
+
 ### Fixed
 - **The last race's penalties in the next session.** When the Live page started
   following a session while the feed still carried the previous one, that session's
