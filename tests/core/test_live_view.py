@@ -87,3 +87,47 @@ def test_the_session_clock_moves_by_whole_seconds():
     again = builder.sections(state, NOW + timedelta(seconds=0.4))["header"]
     assert first[1]["remaining"] == 16 * 60 and isinstance(first[1]["remaining"], int)
     assert first[0] == again[0]
+
+
+def test_the_next_session_does_not_inherit_the_last_ones_penalties():
+    """São Paulo FP1 2026: the window opened on the Mexico race's keyframes and the
+    practice summary listed the race's penalties."""
+    topics = race_topics()
+    topics["RaceControlMessages"] = {
+        "Messages": [
+            {
+                "Utc": "2026-05-10T13:30:00",
+                "Lap": 30,
+                "Category": "Other",
+                "Message": "FIA STEWARDS: 5 SECOND TIME PENALTY FOR CAR 16 (LEC) - "
+                "CAUSING A COLLISION",
+            }
+        ]
+    }
+    state = LiveState()
+    state.apply_keyframes(topics)
+    builder = live_view.LiveViewBuilder()
+    sections = builder.sections(state, NOW)
+    assert len(sections["stewards"][1]["penalties"]) == 1
+    assert {r["number"]: r["penalty"] for r in sections["tower"][1]}["16"] == 5
+
+    state.apply("SessionInfo", {"Key": 9002, "Type": "Practice", "Name": "Practice 1"})
+    sections = builder.sections(state, NOW)
+    assert sections["stewards"][1]["penalties"] == []
+    assert all(row["penalty"] is None for row in sections["tower"][1])
+
+    state.apply(
+        "RaceControlMessages",
+        {
+            "Messages": {
+                "0": {
+                    "Utc": "2026-05-10T14:00:00",
+                    "Category": "Other",
+                    "Message": "FIA STEWARDS: 5 SECOND TIME PENALTY FOR CAR 4 (NOR) - "
+                    "SPEEDING IN THE PIT LANE",
+                }
+            }
+        },
+    )
+    penalties = builder.sections(state, NOW)["stewards"][1]["penalties"]
+    assert [p["cars"][0]["tla"] for p in penalties] == ["NOR"]

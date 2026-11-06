@@ -97,3 +97,49 @@ def test_f1s_own_deltas_pass_untouched():
     target = {"Lines": {"1": {"Sectors": [{}, {}]}}}
     delta = {"Lines": {"1": {"Sectors": {"2": {"Value": "1"}}}, "2": {"X": 1}}}
     assert bounded(target, delta) is delta
+
+
+def _logs(key: int) -> dict:
+    return {
+        "SessionInfo": {"Key": key, "Type": "Race"},
+        "RaceControlMessages": {"Messages": [{"Message": "LAST SESSION"}]},
+        "TeamRadio": {"Captures": [{"RacingNumber": "4"}]},
+        "PitLaneTimeCollection": {
+            "PitTimes": {"4": {"RacingNumber": "4", "Lap": "20", "Duration": "22.1"}}
+        },
+    }
+
+
+def test_the_next_session_starts_its_logs_clean():
+    # A window opens on the last session's keyframes, then F1 names the next one.
+    state = LiveState()
+    state.apply_keyframes(_logs(9001))
+    assert state.pit_log
+    before = state.version("RaceControlMessages", "TeamRadio", "pits")
+    state.apply("SessionInfo", {"Key": 9002, "Type": "Practice"})
+    assert state.generation == 1
+    for topic in ("RaceControlMessages", "TeamRadio", "PitLaneTimeCollection"):
+        assert state.get(topic) is None
+    assert state.pit_log == []
+    assert state.version("RaceControlMessages", "TeamRadio", "pits") > before
+    # Its own messages then arrive as usual, from index 0.
+    state.apply("RaceControlMessages", {"Messages": {"0": {"Message": "GREEN"}}})
+    assert state.get("RaceControlMessages") == {"Messages": {"0": {"Message": "GREEN"}}}
+
+
+def test_the_same_session_keeps_its_logs():
+    state = LiveState()
+    state.apply_keyframes(_logs(9001))
+    state.apply("SessionInfo", {"Key": "9001", "Name": "Race"})
+    state.apply("SessionInfo", {"Name": "Grand Prix"})  # no key: nothing changed
+    assert state.generation == 0
+    assert state.get("RaceControlMessages")["Messages"][0]["Message"] == "LAST SESSION"
+    assert state.pit_log
+
+
+def test_a_first_session_info_is_not_a_switch():
+    state = LiveState()
+    state.apply_keyframes({"RaceControlMessages": {"Messages": [{"Message": "X"}]}})
+    state.apply("SessionInfo", {"Key": 9002})
+    assert state.generation == 0
+    assert state.get("RaceControlMessages") is not None

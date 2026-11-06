@@ -14,6 +14,7 @@ from typing import Any
 
 from .archive_parse import decode_z
 from .merge import DELETED, merge
+from .values import to_int
 
 # Topics anyone can receive (verified live on 2026-09-26) and that something reads.
 # TopThree, TimingStats and SessionData were dropped: nothing used them, and they
@@ -38,6 +39,15 @@ AUTH_TOPICS: tuple[str, ...] = ("Position.z",)
 
 POSITION_TOPIC = "Position.z"
 PITS = "pits"  # the version key of the pit log
+
+# The topics that only ever grow during a session. When the feed moves on to the
+# next session these are the last session's, and F1's first messages for the new
+# one would land on top of them (decision 68).
+SESSION_LOGS: tuple[str, ...] = (
+    "RaceControlMessages",
+    "TeamRadio",
+    "PitLaneTimeCollection",
+)
 
 type Sample = tuple[str, float, float, bool]
 
@@ -93,6 +103,10 @@ def bounded(target: Any, delta: Any) -> Any:
     return out
 
 
+def _session_key(info: Any) -> int | None:
+    return to_int(info.get("Key")) if isinstance(info, dict) else None
+
+
 @dataclass(frozen=True, slots=True)
 class CarPosition:
     x: float
@@ -112,6 +126,9 @@ class LiveState:
     # Pit lane times seen this session. F1 deletes each entry from
     # PitLaneTimeCollection soon after sending it, so the log keeps them.
     pit_log: list[dict[str, Any]] = field(default_factory=list)
+    # Grows each time the feed moves on to another session within this state:
+    # what was derived from the last session's logs must start again.
+    generation: int = 0
 
     def get(self, topic: str) -> Any:
         return self.topics.get(topic)
@@ -143,12 +160,29 @@ class LiveState:
             samples = self._apply_positions(delta)
         else:
             current = self.topics.get(topic)
+            before = _session_key(current) if topic == "SessionInfo" else None
             self.topics[topic] = merge(current, bounded(current, delta))
+            if before is not None and _session_key(self.topics[topic]) not in (
+                None,
+                before,
+            ):
+                self._next_session()
             self._log_pits(topic, delta)
         self._bump(topic)
         if utc:
             self.last_utc = utc
         return samples
+
+    def _next_session(self) -> None:
+        """The feed named another session (a window opened on the last one's
+        keyframes): its race control, radio and pit times are not this one's."""
+        for topic in SESSION_LOGS:
+            if self.topics.pop(topic, None) is not None:
+                self._bump(topic)
+        if self.pit_log:
+            self.pit_log = []
+            self._bump(PITS)
+        self.generation += 1
 
     def carry_over(self, previous: LiveState) -> None:
         """A reconnect to the same session: keep what F1 will not send again.

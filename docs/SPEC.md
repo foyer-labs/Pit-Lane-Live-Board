@@ -1215,6 +1215,18 @@ Decisions taken in chat with the owner.
   and numbers the cars by best lap, those without a time last. Races and qualifying
   keep the feed's gaps (qualifying's per part, decision 59).
 
+68. **The next session starts its logs clean** (a user's report from the São Paulo FP1
+  2026 summary: "Penalties: LEC +5s, RUS +10s, PER +5s, HUL +10s", the Mexico City
+  race's). A window opens on the keyframes of the last session (decision 62), and
+  when F1 names the next one its race control, team radio and pit times were still
+  the last session's: the new messages landed on top of them, and the stewards' book,
+  started again only by a reconnect, kept the old penalties for the summary, the
+  tower and the stewards sensor. When `SessionInfo.Key` changes from one known key
+  to another within a state, `LiveState` drops those three topics and the pit log
+  and moves its `generation` on; the view builder starts its book and its cache
+  again on a new generation, as it does on new keyframes. The other topics are
+  overwritten field by field by the new session and are left alone.
+
 ---
 
 ## 18. Choices awaiting confirmation
