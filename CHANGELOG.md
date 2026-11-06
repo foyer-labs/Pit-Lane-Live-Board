@@ -6,6 +6,16 @@ under **Changed — read before updating**.
 
 ## [Unreleased]
 
+## [0.12.5] - 2026-11-06
+
+### Fixed
+- **The last race's penalties in the next session.** When the Live page started
+  following a session while the feed still carried the previous one, that session's
+  race control stayed in: a São Paulo FP1 summary listed the Mexico City race's
+  penalties. When the feed moves on to the next session, race control, team radio and
+  pit times now start clean, and with them the penalties in the summary, the timing
+  tower and the stewards sensor.
+
 ## [0.12.4] - 2026-11-05
 
 ### Fixed
